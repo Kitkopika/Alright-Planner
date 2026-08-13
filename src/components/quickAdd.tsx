@@ -21,6 +21,7 @@ import { Chip, ChipRow, Field, TextBox, Button } from './ui';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
 import { addDays, dateKey, todayKey, timeHM } from '../core/time';
 import { Priority, Recurrence, TransactionKind } from '../core/types';
+import { QUICK_ADD_KIND } from '../core/kinds';
 
 type QuickType = 'task' | 'reminder' | 'event' | 'expense' | 'income' | 'note' | 'habit' | 'goal';
 
@@ -79,7 +80,7 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
                 now={now}
                 categories={categories}
                 onCreate={(partial) => {
-                  create(type as never, partial as never);
+                  create(QUICK_ADD_KIND[type], partial as never);
                   done();
                 }}
                 onBack={() => setType(null)}

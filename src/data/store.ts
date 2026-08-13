@@ -82,7 +82,11 @@ function baseEntity(partial: Partial<AnyEntity>): Pick<AnyEntity, 'id' | 'create
 
 /** Reads a collection as an AnyEntity[] (internal CRUD uses the union type). */
 function asList(data: AppData, kind: EntityKind): AnyEntity[] {
-  return data.collections[kind] as AnyEntity[];
+  const list = data.collections[kind];
+  if (!Array.isArray(list)) {
+    throw new Error(`LifeOS: unknown collection "${String(kind)}".`);
+  }
+  return list as AnyEntity[];
 }
 
 /** Returns a shallow copy of data with one collection replaced. */
