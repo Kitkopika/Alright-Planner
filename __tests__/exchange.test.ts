@@ -156,6 +156,32 @@ describe('import safety (normalization)', () => {
     expect(result.dropped.tasks).toBe(1);
     expect(result.document!.data.collections.tasks).toHaveLength(0);
   });
+
+  it('rejects out-of-range years (future-dated entities cannot win merges)', () => {
+    const raw = {
+      format: 'life-os',
+      version: 1,
+      data: {
+        collections: {
+          // Year 9999 is a *parseable* date but outside the allowed range.
+          tasks: [
+            {
+              id: 't1',
+              createdAt: '2026-01-01T00:00',
+              updatedAt: '9999-12-31T23:59',
+              deletedAt: null,
+              rev: 1,
+              title: 'x',
+              status: 'todo',
+              priority: 'low',
+            },
+          ],
+        },
+      },
+    };
+    const result = validateDocument(raw);
+    expect(result.dropped.tasks).toBe(1);
+  });
 });
 
 describe('merge conflict handling', () => {
@@ -239,14 +265,27 @@ describe('merge conflict handling', () => {
     expect(data.collections.tasks[0].title).toBe('first');
   });
 
-  it('planImport previews without mutating local data', () => {
+  it('planImport previews without mutating local data and matches the applied merge', () => {
     const incoming = makeData({
-      tasks: [{ ...baseEntity('t-new', '2026-01-02T08:00', 1), kind: 'task', title: 'n', status: 'todo', priority: 'low' }],
+      tasks: [
+        { ...baseEntity('t-new', '2026-01-02T08:00', 1), kind: 'task', title: 'n', status: 'todo', priority: 'low' },
+        { ...baseEntity('t1', '2026-01-03T08:00', 1), kind: 'task', title: 'updated title', status: 'doing', priority: 'high' },
+      ],
     });
     const local = localData();
     const plan = planImport(local, incoming, 'merge');
     expect(plan.report.added).toBe(1);
+    expect(plan.report.updated).toBe(1);
     expect(local.collections.tasks).toHaveLength(1); // untouched
+    // The plan's per-kind changes must equal what applying the merge produces.
+    const { data: applied } = mergeData(local, incoming);
+    const planIds = new Set([
+      ...(plan.changes.tasks?.added || []),
+      ...(plan.changes.tasks?.updated || []),
+      ...(plan.changes.tasks?.deleted || []),
+    ]);
+    const appliedIds = new Set(applied.collections.tasks.filter((t) => JSON.stringify(t) !== JSON.stringify(local.collections.tasks.find((l) => l.id === t.id))).map((t) => t.id));
+    expect(planIds).toEqual(appliedIds);
   });
 
   it('replace wipes local data', () => {

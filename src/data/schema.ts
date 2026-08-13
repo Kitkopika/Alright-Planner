@@ -181,6 +181,17 @@ const SHAPES: Record<EntityKind, Record<string, Validator>> = {
   },
 };
 
+const MIN_YEAR = 1900;
+const MAX_YEAR = 2100;
+
+/** True when the string parses as a plausible ISO-ish local timestamp. */
+function isValidTimestamp(value: string): boolean {
+  const d = tryParseISO(value);
+  if (d === null) return false;
+  const year = d.getFullYear();
+  return year >= MIN_YEAR && year <= MAX_YEAR;
+}
+
 export interface NormalizeResult {
   entity: AnyEntity | null;
 }
@@ -208,9 +219,10 @@ export function normalizeEntity(kind: EntityKind, raw: unknown): AnyEntity | nul
   if (typeof o.id !== 'string' || o.id.length === 0 || o.id.length > 128) return null;
   if (typeof o.createdAt !== 'string' || typeof o.updatedAt !== 'string') return null;
   // Timestamps must be real ISO-ish dates ("YYYY-MM-DD" or "YYYY-MM-DDTHH:mm")
-  // so lexicographic conflict resolution cannot be gamed with "9999-…".
-  if (tryParseISO(o.createdAt) === null || tryParseISO(o.updatedAt) === null) return null;
-  if (o.deletedAt !== null && (typeof o.deletedAt !== 'string' || tryParseISO(o.deletedAt) === null)) return null;
+  // within a sane year range (1900-2100), so lexicographic conflict resolution
+  // cannot be gamed with extreme values like "9999-…".
+  if (!isValidTimestamp(o.createdAt) || !isValidTimestamp(o.updatedAt)) return null;
+  if (o.deletedAt !== null && (typeof o.deletedAt !== 'string' || !isValidTimestamp(o.deletedAt))) return null;
   if (typeof o.rev !== 'number' || !Number.isFinite(o.rev) || o.rev < 0) return null;
 
   const shape = SHAPES[kind];
