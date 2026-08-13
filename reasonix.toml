@@ -1,0 +1,2 @@
+[permissions]
+allow = ["Bash=for t in java javac kotlin kotlinc dart flutter node npm python3 pip3 make cmake gradle xcodebuild; do printf \"%-12s: \" \"$t\"; command -v $t >/dev/null 2>&1 && $t --version 2>&1 | head -1 || echo \"NOT FOUND\"; done; echo \"---\"; sw_vers 2>/dev/null; echo \"---\"; ls ~/Library/Android/sdk 2>/dev/null | head -5 || echo \"no android sdk\""]

@@ -1,0 +1,205 @@
+{
+  "format": "life-os",
+  "version": 1,
+  "exportedAt": "2026-08-14T09:00:00.000Z",
+  "device": { "id": "a1b2c3d4", "name": "Pixel 8" },
+  "data": {
+    "collections": {
+      "goals": [
+        {
+          "id": "goal-1",
+          "kind": "goal",
+          "title": "Run a half marathon",
+          "description": "21.1 km before winter",
+          "status": "active",
+          "deadline": "2026-11-15",
+          "color": "#4F46E5",
+          "createdAt": "2026-06-01T08:00",
+          "updatedAt": "2026-08-01T08:00",
+          "deletedAt": null,
+          "rev": 3
+        }
+      ],
+      "projects": [
+        {
+          "id": "proj-1",
+          "kind": "project",
+          "name": "Training plan",
+          "goalId": "goal-1",
+          "status": "active",
+          "color": "#0891B2",
+          "createdAt": "2026-06-01T08:05",
+          "updatedAt": "2026-06-01T08:05",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "tasks": [
+        {
+          "id": "task-1",
+          "kind": "task",
+          "title": "Long run: 10 km",
+          "status": "todo",
+          "priority": "high",
+          "dueAt": "2026-08-16T07:00",
+          "projectId": "proj-1",
+          "recurrence": { "freq": "weekly", "interval": 1, "byWeekdays": [0] },
+          "createdAt": "2026-08-10T18:00",
+          "updatedAt": "2026-08-14T09:00",
+          "deletedAt": null,
+          "rev": 2
+        },
+        {
+          "id": "task-2",
+          "kind": "task",
+          "title": "Stretch routine",
+          "status": "done",
+          "priority": "low",
+          "projectId": "proj-1",
+          "completedAt": "2026-08-14T07:30",
+          "createdAt": "2026-08-14T07:00",
+          "updatedAt": "2026-08-14T07:30",
+          "deletedAt": null,
+          "rev": 2
+        }
+      ],
+      "events": [
+        {
+          "id": "event-1",
+          "kind": "event",
+          "title": "Team standup",
+          "startAt": "2026-08-14T09:30",
+          "endAt": "2026-08-14T10:00",
+          "allDay": false,
+          "recurrence": { "freq": "weekly", "interval": 1, "byWeekdays": [1, 3, 5] },
+          "reminderOffsetMin": 5,
+          "color": "#4F46E5",
+          "createdAt": "2026-08-01T09:00",
+          "updatedAt": "2026-08-01T09:00",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "reminders": [
+        {
+          "id": "rem-1",
+          "kind": "reminder",
+          "title": "Take meds",
+          "remindAt": "2026-08-14T08:00",
+          "recurrence": { "freq": "daily", "interval": 1 },
+          "status": "pending",
+          "createdAt": "2026-08-01T08:00",
+          "updatedAt": "2026-08-01T08:00",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "routines": [
+        {
+          "id": "routine-1",
+          "kind": "routine",
+          "name": "Morning routine",
+          "weekdays": [1, 2, 3, 4, 5],
+          "timeOfDay": "07:00",
+          "steps": [
+            { "id": "st-1", "label": "Drink water" },
+            { "id": "st-2", "label": "Plan the day" }
+          ],
+          "color": "#16A34A",
+          "createdAt": "2026-08-01T08:00",
+          "updatedAt": "2026-08-01T08:00",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "routineCompletions": [
+        {
+          "id": "rc-1",
+          "kind": "routineCompletion",
+          "routineId": "routine-1",
+          "date": "2026-08-14",
+          "doneStepIds": ["st-1", "st-2"],
+          "createdAt": "2026-08-14T07:10",
+          "updatedAt": "2026-08-14T07:10",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "habits": [
+        {
+          "id": "habit-1",
+          "kind": "habit",
+          "name": "Read 20 pages",
+          "frequency": { "type": "daily" },
+          "goalId": "goal-1",
+          "color": "#D97706",
+          "completions": ["2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13"],
+          "createdAt": "2026-08-01T08:00",
+          "updatedAt": "2026-08-13T22:00",
+          "deletedAt": null,
+          "rev": 5
+        }
+      ],
+      "transactions": [
+        {
+          "id": "tx-1",
+          "kind": "transaction",
+          "kind2": "expense",
+          "amountCents": 1250,
+          "currency": "USD",
+          "categoryId": "cat-food",
+          "occurredAt": "2026-08-14T12:30",
+          "note": "Groceries",
+          "createdAt": "2026-08-14T12:31",
+          "updatedAt": "2026-08-14T12:31",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "categories": [
+        {
+          "id": "cat-food",
+          "kind": "category",
+          "name": "Food",
+          "kind2": "expense",
+          "color": "#16A34A",
+          "monthlyBudgetCents": 40000,
+          "createdAt": "2026-08-01T08:00",
+          "updatedAt": "2026-08-01T08:00",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "notes": [
+        {
+          "id": "note-1",
+          "kind": "note",
+          "title": "Race day logistics",
+          "body": "Arrive 6:30, bib pickup, gels at km 10.",
+          "kind2": "note",
+          "tags": ["running"],
+          "projectId": "proj-1",
+          "createdAt": "2026-08-13T20:00",
+          "updatedAt": "2026-08-13T20:00",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ],
+      "focusSessions": [
+        {
+          "id": "focus-1",
+          "kind": "focusSession",
+          "startedAt": "2026-08-14T09:00",
+          "endedAt": "2026-08-14T09:25",
+          "durationMin": 25,
+          "type": "pomodoro",
+          "subject": "Deep work",
+          "createdAt": "2026-08-14T09:26",
+          "updatedAt": "2026-08-14T09:26",
+          "deletedAt": null,
+          "rev": 1
+        }
+      ]
+    }
+  }
+}
