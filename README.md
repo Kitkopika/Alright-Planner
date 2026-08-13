@@ -48,6 +48,26 @@ npm test             # jest (core logic: data model, import/export, recurrence, 
 npm run export:web   # bundles the whole app for web (proves it compiles end to end)
 ```
 
+### Build a standalone APK (Android)
+
+A signed, installable release APK is built and left at the project root:
+
+```
+life-os-0.1.0-release.apk   (com.lifeos.app, minSdk 24, targetSdk 36)
+```
+
+Rebuild it yourself with:
+
+```bash
+npx expo prebuild -p android   # generates the native android/ project once
+cd android
+JAVA_HOME=<jdk17> ANDROID_HOME=<android-sdk> ./gradlew assembleRelease
+```
+
+(Requires a JDK 17+, the Android SDK with platforms;android-36, build-tools 35/36,
+and NDK 27.0.12077973 + 27.1.12297006.) For a Play Store–ready AAB or cloud
+builds, use `npx eas build` with your Expo account instead.
+
 ## Data: one portable JSON file
 
 The entire app is a single document, `personal-data.json`, stored in the app's document directory (a rotating `.backup` copy is kept before each write). The same document is what you export and import — **the file is the source of truth**.
