@@ -23,15 +23,17 @@ export function Card({
   children,
   style,
   onPress,
+  onLongPress,
 }: {
   children: React.ReactNode;
   style?: ViewStyle;
   onPress?: () => void;
+  onLongPress?: () => void;
 }) {
   const inner = <View style={[styles.card, style]}>{children}</View>;
-  if (onPress) {
+  if (onPress || onLongPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => (pressed ? { opacity: 0.7 } : undefined)}>
+      <Pressable onPress={onPress} onLongPress={onLongPress} style={({ pressed }) => (pressed ? { opacity: 0.7 } : undefined)}>
         {inner}
       </Pressable>
     );

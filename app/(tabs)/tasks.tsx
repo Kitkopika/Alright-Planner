@@ -6,6 +6,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -26,9 +27,18 @@ import { FocusTimerModal } from '../../src/components/focusTimer';
 
 type Filter = 'all' | 'today' | 'overdue' | 'upcoming' | 'done' | 'projects';
 
+/** Days from now until the task's due date, or null when it has none/invalid. */
+function dueDiff(t: Task, now: Date): number | null {
+  if (!t.dueAt) return null;
+  const due = tryParseISO(t.dueAt);
+  if (!due) return null;
+  return dayDiff(now, due);
+}
+
 export default function TasksScreen() {
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
+  const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -62,11 +72,11 @@ export default function TasksScreen() {
     };
     switch (filter) {
       case 'today':
-        return [{ bucket: 'Today', items: todo.filter((t) => t.dueAt && dayDiff(now, tryParseISO(t.dueAt)!) === 0) }];
+        return [{ bucket: 'Today', items: todo.filter((t) => dueDiff(t, now) === 0) }];
       case 'overdue':
-        return [{ bucket: 'Overdue', items: todo.filter((t) => t.dueAt && dayDiff(now, tryParseISO(t.dueAt)!) < 0) }];
+        return [{ bucket: 'Overdue', items: todo.filter((t) => (dueDiff(t, now) ?? 0) < 0) }];
       case 'upcoming':
-        return [{ bucket: 'Upcoming', items: todo.filter((t) => t.dueAt && dayDiff(now, tryParseISO(t.dueAt)!) > 0) }];
+        return [{ bucket: 'Upcoming', items: todo.filter((t) => (dueDiff(t, now) ?? 0) > 0) }];
       case 'done':
         return [{ bucket: 'Done', items: done }];
       case 'projects':
@@ -91,9 +101,18 @@ export default function TasksScreen() {
     setEditorOpen(true);
   };
 
+  const onTaskLongPress = (t: Task) => {
+    Alert.alert(t.title, undefined, [
+      { text: t.status === 'done' ? 'Mark as todo' : 'Mark done', onPress: () => toggle(t) },
+      { text: 'Edit', onPress: () => openEditor(t.id) },
+      { text: 'Delete', style: 'destructive', onPress: () => remove('tasks', t.id) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
   const counts = {
-    overdue: tasks.filter((t) => t.status !== 'done' && t.dueAt && dayDiff(now, tryParseISO(t.dueAt)!) < 0).length,
-    today: tasks.filter((t) => t.status !== 'done' && t.dueAt && dayDiff(now, tryParseISO(t.dueAt)!) === 0).length,
+    overdue: tasks.filter((t) => t.status !== 'done' && (dueDiff(t, now) ?? 0) < 0).length,
+    today: tasks.filter((t) => t.status !== 'done' && dueDiff(t, now) === 0).length,
   };
 
   return (
@@ -122,7 +141,14 @@ export default function TasksScreen() {
               <View key={group.bucket}>
                 <SectionHeader title={`${group.bucket} · ${group.items.length}`} />
                 {group.items.map((t) => (
-                  <TaskRow key={t.id} task={t} projectName={projects.find((p) => p.id === t.projectId)?.name} onToggle={() => toggle(t)} onOpen={() => openEditor(t.id)} />
+                  <TaskRow
+                    key={t.id}
+                    task={t}
+                    projectName={projects.find((p) => p.id === t.projectId)?.name}
+                    onToggle={() => toggle(t)}
+                    onOpen={() => openEditor(t.id)}
+                    onLongPress={() => onTaskLongPress(t)}
+                  />
                 ))}
               </View>
             )
@@ -136,13 +162,14 @@ export default function TasksScreen() {
   );
 }
 
-function TaskRow({ task, projectName, onToggle, onOpen }: { task: Task; projectName?: string; onToggle: () => void; onOpen: () => void }) {
-  const subtasks = useLifeOS((s) => s.data.collections.tasks.filter((t) => !t.deletedAt && t.parentTaskId === task.id && t.status !== 'cancelled'));
+function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: Task; projectName?: string; onToggle: () => void; onOpen: () => void; onLongPress?: () => void }) {
+  const tasks = useLifeOS((s) => s.data.collections.tasks); // stable reference
+  const subtasks = tasks.filter((t) => !t.deletedAt && t.parentTaskId === task.id && t.status !== 'cancelled');
   const due = task.dueAt ? tryParseISO(task.dueAt) : null;
   const isOverdue = due && task.status !== 'done' && dayDiff(new Date(), due) < 0;
   const done = task.status === 'done';
   return (
-    <Card style={styles.taskRow} onPress={onOpen}>
+    <Card style={styles.taskRow} onPress={onOpen} onLongPress={onLongPress}>
       <Pressable onPress={onToggle} hitSlop={10}>
         <Ionicons name={done ? 'checkbox' : 'square-outline'} size={24} color={done ? colors.success : colors.textMuted} />
       </Pressable>

@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button } from './ui';
@@ -39,6 +40,7 @@ const TYPES: { type: QuickType; label: string; icon: keyof typeof Ionicons.glyph
 export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const create = useLifeOS((s) => s.create);
   const categories = useLifeOS((s) => s.data.collections.categories);
+  const insets = useSafeAreaInsets();
   const [type, setType] = useState<QuickType | null>(null);
 
   // Reset form when opened.
@@ -62,7 +64,7 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]}>
           <View style={styles.handle} />
           <Text style={styles.title}>{type ? TYPES.find((t) => t.type === type)?.label : 'Quick add'}</Text>
 

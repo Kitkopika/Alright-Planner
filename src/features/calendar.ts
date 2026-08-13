@@ -43,6 +43,7 @@ function hasTime(iso: string | null | undefined): boolean {
 }
 
 function eventOnDay(ev: Event, day: Date): CalendarItem | null {
+  if (ev.deletedAt) return null; // tombstoned events must not ghost in the calendar
   const start = tryParseISO(ev.startAt);
   if (!start) return null;
   if (ev.recurrence) {

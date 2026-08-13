@@ -38,6 +38,10 @@ export default function TabsLayout() {
           tabBarStyle: { paddingTop: 4 },
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
           tabBarItemStyle: { paddingVertical: 2 },
+          // Edge-to-edge: offset every scene below the status bar / display
+          // cutout using the real inset (never a hardcoded margin). The strip
+          // shows the app background so the design is unchanged.
+          sceneStyle: { paddingTop: insets.top, backgroundColor: colors.background },
         }}
       >
         {TABS.map((t) => (

@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
@@ -19,6 +19,7 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function CalendarScreen() {
   const data = useLifeOS((s) => s.data);
+  const remove = useLifeOS((s) => s.remove);
   const [mode, setMode] = useState<ViewMode>('month');
   const [selected, setSelected] = useState<Date>(new Date());
   const [editingEvent, setEditingEvent] = useState<string | null | undefined>(undefined);
@@ -46,6 +47,13 @@ export default function CalendarScreen() {
   const newEvent = () => {
     setEditingEvent(null);
     setEditorOpen(true);
+  };
+
+  const deleteItem = (item: CalendarItem) => {
+    Alert.alert('Delete?', item.title, [
+      { text: 'Delete', style: 'destructive', onPress: () => remove(item.kind === 'event' ? 'events' : 'tasks', item.entityId) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const monthLabel = `${['January','February','March','April','May','June','July','August','September','October','November','December'][selected.getMonth()]} ${selected.getFullYear()}`;
@@ -97,11 +105,11 @@ export default function CalendarScreen() {
                 );
               })}
             </View>
-            <DayList day={selectedDay} onOpen={openEvent} />
+            <DayList day={selectedDay} onOpen={openEvent} onDelete={deleteItem} />
           </>
         )}
 
-        {mode === 'day' && <DayList day={selectedDay} onOpen={openEvent} />}
+        {mode === 'day' && <DayList day={selectedDay} onOpen={openEvent} onDelete={deleteItem} />}
 
         {mode === 'week' && (
           <>
@@ -127,7 +135,7 @@ export default function CalendarScreen() {
               })}
             </View>
             {weekDays.map((d) => (
-              <DayList key={dateKey(d.date)} day={d} onOpen={openEvent} showHeader />
+              <DayList key={dateKey(d.date)} day={d} onOpen={openEvent} onDelete={deleteItem} showHeader />
             ))}
           </>
         )}
@@ -143,7 +151,7 @@ export default function CalendarScreen() {
                 .map((d) => (
                   <View key={dateKey(d.date)}>
                     <Text style={styles.agendaDate}>{dateKey(d.date) === todayKey() ? 'Today' : dateKey(d.date)}</Text>
-                    <DayList day={d} onOpen={openEvent} />
+                    <DayList day={d} onOpen={openEvent} onDelete={deleteItem} />
                   </View>
                 ))
             )}
@@ -164,10 +172,12 @@ export default function CalendarScreen() {
 function DayList({
   day,
   onOpen,
+  onDelete,
   showHeader,
 }: {
   day: { date: Date; items: CalendarItem[] };
   onOpen: (entityId: string) => void;
+  onDelete?: (item: CalendarItem) => void;
   showHeader?: boolean;
 }) {
   return (
@@ -176,7 +186,12 @@ function DayList({
         <EmptyState icon="calendar-clear-outline" title="Nothing on this day" />
       ) : (
         day.items.map((item) => (
-          <Card key={item.id} style={styles.item} onPress={() => onOpen(item.entityId)}>
+          <Card
+            key={item.id}
+            style={styles.item}
+            onPress={() => onOpen(item.entityId)}
+            onLongPress={() => onDelete?.(item)}
+          >
             <View style={[styles.itemBar, { backgroundColor: item.color || (item.kind === 'event' ? colors.accent : colors.textMuted) }]} />
             <View style={{ flex: 1 }}>
               <Text

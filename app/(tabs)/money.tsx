@@ -141,7 +141,7 @@ export default function MoneyScreen() {
               {items.map((t) => {
                 const cat = data.collections.categories.find((c) => c.id === t.categoryId);
                 return (
-                  <Card key={t.id} style={styles.txnRow}>
+                  <Card key={t.id} style={styles.txnRow} onLongPress={() => remove('transactions', t.id)}>
                     <View style={[styles.txnIcon, { backgroundColor: t.kind2 === 'income' ? colors.successSoft : colors.dangerSoft }]}>
                       <Ionicons name={t.kind2 === 'income' ? 'arrow-down' : 'arrow-up'} size={16} color={t.kind2 === 'income' ? colors.success : colors.danger} />
                     </View>

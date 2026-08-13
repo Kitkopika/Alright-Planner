@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -56,13 +57,23 @@ export default function GoalsScreen() {
 
 function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
   const data = useLifeOS((s) => s.data);
+  const remove = useLifeOS((s) => s.remove);
   const progress = goalProgress(goal.id, data);
   const projects = data.collections.projects.filter((p) => !p.deletedAt && p.goalId === goal.id && p.status !== 'archived');
   const tasks = data.collections.tasks.filter((t) => !t.deletedAt && projects.some((p) => p.id === t.projectId));
   const habits = data.collections.habits.filter((h) => !h.deletedAt && h.goalId === goal.id);
 
   return (
-    <Card style={{ marginBottom: spacing.md }} onPress={onOpen}>
+    <Card
+      style={{ marginBottom: spacing.md }}
+      onPress={onOpen}
+      onLongPress={() =>
+        Alert.alert('Delete goal?', goal.title, [
+          { text: 'Delete', style: 'destructive', onPress: () => remove('goals', goal.id) },
+          { text: 'Cancel', style: 'cancel' },
+        ])
+      }
+    >
       <View style={styles.goalHeader}>
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{goal.title}</Text>

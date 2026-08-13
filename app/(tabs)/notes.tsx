@@ -5,6 +5,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -33,6 +34,7 @@ interface SearchHit {
 
 export default function NotesScreen() {
   const data = useLifeOS((s) => s.data);
+  const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -110,7 +112,17 @@ export default function NotesScreen() {
           <EmptyState icon="document-text-outline" title="No notes" subtitle="Capture thoughts with + → Note" />
         ) : (
           notes.map((n) => (
-            <Card key={n.id} style={styles.noteCard} onPress={() => { setEditingId(n.id); setEditorOpen(true); }}>
+            <Card
+              key={n.id}
+              style={styles.noteCard}
+              onPress={() => { setEditingId(n.id); setEditorOpen(true); }}
+              onLongPress={() =>
+                Alert.alert('Delete note?', n.title || 'Untitled', [
+                  { text: 'Delete', style: 'destructive', onPress: () => remove('notes', n.id) },
+                  { text: 'Cancel', style: 'cancel' },
+                ])
+              }
+            >
               <View style={{ flex: 1 }}>
                 <View style={styles.noteTitleRow}>
                   <Text style={[typography.body, { fontWeight: '600', flex: 1 }]} numberOfLines={1}>{n.title || 'Untitled'}</Text>

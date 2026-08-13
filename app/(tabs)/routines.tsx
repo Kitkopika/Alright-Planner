@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -89,6 +90,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
+  const remove = useLifeOS((s) => s.remove);
   const today = todayKey();
   const completion = data.collections.routineCompletions.find((c) => c.routineId === routine.id && c.date === today && !c.deletedAt);
   const doneStepIds = completion?.doneStepIds || [];
@@ -105,7 +107,16 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
   };
 
   return (
-    <Card style={{ marginBottom: spacing.md }} onPress={onEdit}>
+    <Card
+      style={{ marginBottom: spacing.md }}
+      onPress={onEdit}
+      onLongPress={() =>
+        Alert.alert('Delete routine?', routine.name, [
+          { text: 'Delete', style: 'destructive', onPress: () => remove('routines', routine.id) },
+          { text: 'Cancel', style: 'cancel' },
+        ])
+      }
+    >
       <View style={styles.cardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{routine.name}</Text>
@@ -142,6 +153,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
 
 function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
   const update = useLifeOS((s) => s.update);
+  const remove = useLifeOS((s) => s.remove);
   const today = todayKey();
   const doneToday = habit.completions.includes(today);
   const streak = habitStreak(habit, new Date());
@@ -163,7 +175,16 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
   const completionRate = useCompletionRate(habit, 30);
 
   return (
-    <Card style={{ marginBottom: spacing.md }} onPress={onEdit}>
+    <Card
+      style={{ marginBottom: spacing.md }}
+      onPress={onEdit}
+      onLongPress={() =>
+        Alert.alert('Delete habit?', habit.name, [
+          { text: 'Delete', style: 'destructive', onPress: () => remove('habits', habit.id) },
+          { text: 'Cancel', style: 'cancel' },
+        ])
+      }
+    >
       <View style={styles.cardHeader}>
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{habit.name}</Text>
