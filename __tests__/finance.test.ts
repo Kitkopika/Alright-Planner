@@ -70,4 +70,28 @@ describe('CSV export', () => {
     expect(lines[1]).toContain('"Lunch, with ""friends""');
     expect(lines).toHaveLength(3); // note newline split
   });
+
+  it('neutralizes spreadsheet formula injection', () => {
+    const data = makeData({
+      categories: [cat('food', '=HYPERLINK("http://evil")')],
+      transactions: [
+        {
+          ...baseEntity('t1'),
+          kind: 'transaction',
+          kind2: 'expense',
+          amountCents: 100,
+          currency: 'USD',
+          categoryId: 'food',
+          occurredAt: '2026-08-14T12:00',
+          note: '=cmd|/C calc!A0',
+        },
+      ],
+    });
+    const csv = transactionsToCSV(data.collections.transactions, data.collections.categories);
+    // Leading = must be neutralized with a quote prefix in the cell
+    // (the cell is also quoted because it contains double quotes).
+    expect(csv).toContain("'=HYPERLINK(\"\"http://evil\"\")");
+    expect(csv).toContain("'=cmd|/C calc!A0");
+    expect(csv).not.toContain(',=cmd');
+  });
 });

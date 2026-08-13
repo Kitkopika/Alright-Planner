@@ -17,7 +17,9 @@ describe('docs/personal-data.example.json', () => {
     expect(doc.data.collections.notes[0].projectId).toBe('proj-1');
     // Deleted entity count must be zero — the file is clean.
     const kinds = Object.keys(doc.data.collections) as (keyof typeof doc.data.collections)[];
-    const all = kinds.flatMap((k) => doc.data.collections[k]);
+    const all: { id: string; deletedAt: string | null }[] = kinds.flatMap(
+      (k) => doc.data.collections[k] as { id: string; deletedAt: string | null }[]
+    );
     expect(all.every((e) => e.deletedAt === null)).toBe(true);
     // Every entity has a unique id.
     const ids = all.map((e) => e.id);

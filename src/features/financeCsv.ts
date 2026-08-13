@@ -7,6 +7,11 @@ import { Transaction, Category } from '../core/types';
 import { categoryById } from '../features/finance';
 
 function escapeCell(value: string): string {
+  // Neutralize spreadsheet formula injection (OWASP): a leading = + - @ (or
+  // tab/CR) makes Excel/Sheets evaluate the cell as a formula.
+  if (/^[=+\-@\t\r]/.test(value)) {
+    value = `'${value}`;
+  }
   if (/[",\n\r]/.test(value)) {
     return `"${value.replace(/"/g, '""')}"`;
   }

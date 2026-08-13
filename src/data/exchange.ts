@@ -203,17 +203,26 @@ export function planImport(local: AppData, incoming: AppData, mode: ImportMode):
     report.added = report.totalIncoming;
     return { mode, report, changes: {} };
   }
+  // Derive the plan from an actual dry merge so the preview can never
+  // disagree with what applying the import would do.
   const { data, report } = mergeData(local, incoming);
-  void data;
   const changes: ImportPlan['changes'] = {};
   for (const kind of ENTITY_KINDS) {
-    const localIds = new Set(local.collections[kind].map((e) => e.id));
-    const incomingIds = new Set(incoming.collections[kind].map((e) => e.id));
-    const added = incoming.collections[kind].filter((e) => !localIds.has(e.id)).map((e) => e.id);
-    const updated = incoming.collections[kind]
-      .filter((e) => localIds.has(e.id) && JSON.stringify(e) !== JSON.stringify(local.collections[kind].find((l) => l.id === e.id)))
-      .map((e) => e.id);
-    const deleted = incoming.collections[kind].filter((e) => e.deletedAt && localIds.has(e.id)).map((e) => e.id);
+    const localById = new Map(local.collections[kind].map((e) => [e.id, e]));
+    const merged = data.collections[kind];
+    const added: string[] = [];
+    const updated: string[] = [];
+    const deleted: string[] = [];
+    for (const e of merged) {
+      const prev = localById.get(e.id);
+      if (!prev) {
+        added.push(e.id);
+        continue;
+      }
+      if (JSON.stringify(prev) === JSON.stringify(e)) continue;
+      if (e.deletedAt && !prev.deletedAt) deleted.push(e.id);
+      else updated.push(e.id);
+    }
     if (added.length || updated.length || deleted.length) {
       changes[kind] = { added, updated, deleted };
     }

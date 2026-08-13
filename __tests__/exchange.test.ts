@@ -70,8 +70,8 @@ describe('import safety (normalization)', () => {
           tasks: [
             {
               id: 't1',
-              createdAt: 'x',
-              updatedAt: 'y',
+              createdAt: '2026-01-01T00:00',
+              updatedAt: '2026-01-02T00:00',
               deletedAt: null,
               rev: 1,
               title: 'ok',
@@ -102,9 +102,9 @@ describe('import safety (normalization)', () => {
         collections: {
           tasks: [
             null,
-            { id: 'ok', createdAt: 'c', updatedAt: 'u', deletedAt: null, rev: 1, title: 'x', status: 'todo', priority: 'low' },
+            { id: 'ok', createdAt: '2026-01-01T00:00', updatedAt: '2026-01-01T08:00', deletedAt: null, rev: 1, title: 'x', status: 'todo', priority: 'low' },
             { id: 42 }, // bad id type
-            { id: '', createdAt: 'c', updatedAt: 'u', deletedAt: null, rev: 1 }, // empty id
+            { id: '', createdAt: '2026-01-01T00:00', updatedAt: '2026-01-01T08:00', deletedAt: null, rev: 1 }, // empty id
           ],
         },
       },
@@ -128,6 +128,33 @@ describe('import safety (normalization)', () => {
     const result = validateDocument(raw);
     expect(result.dropped.tasks).toBe(1);
     expect(result.dropped.habits).toBe(1);
+  });
+
+  it('rejects entities with non-date timestamps so merge timestamps cannot be gamed', () => {
+    const raw = {
+      format: 'life-os',
+      version: 1,
+      data: {
+        collections: {
+          // "9999-99-99" is not a valid date -> rejected.
+          tasks: [
+            {
+              id: 't1',
+              createdAt: '2026-01-01T00:00',
+              updatedAt: '9999-99-99',
+              deletedAt: null,
+              rev: 1,
+              title: 'x',
+              status: 'todo',
+              priority: 'low',
+            },
+          ],
+        },
+      },
+    };
+    const result = validateDocument(raw);
+    expect(result.dropped.tasks).toBe(1);
+    expect(result.document!.data.collections.tasks).toHaveLength(0);
   });
 });
 

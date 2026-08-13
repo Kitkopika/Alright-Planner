@@ -17,6 +17,7 @@ import {
   LifeOSDocument,
   SCHEMA_VERSION,
 } from '../core/types';
+import { tryParseISO } from '../core/time';
 
 type Validator = (v: unknown) => boolean;
 
@@ -206,7 +207,10 @@ export function normalizeEntity(kind: EntityKind, raw: unknown): AnyEntity | nul
   const o = raw as Record<string, unknown>;
   if (typeof o.id !== 'string' || o.id.length === 0 || o.id.length > 128) return null;
   if (typeof o.createdAt !== 'string' || typeof o.updatedAt !== 'string') return null;
-  if (o.deletedAt !== null && typeof o.deletedAt !== 'string') return null;
+  // Timestamps must be real ISO-ish dates ("YYYY-MM-DD" or "YYYY-MM-DDTHH:mm")
+  // so lexicographic conflict resolution cannot be gamed with "9999-…".
+  if (tryParseISO(o.createdAt) === null || tryParseISO(o.updatedAt) === null) return null;
+  if (o.deletedAt !== null && (typeof o.deletedAt !== 'string' || tryParseISO(o.deletedAt) === null)) return null;
   if (typeof o.rev !== 'number' || !Number.isFinite(o.rev) || o.rev < 0) return null;
 
   const shape = SHAPES[kind];
