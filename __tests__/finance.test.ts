@@ -85,6 +85,15 @@ describe('CSV export', () => {
           occurredAt: '2026-08-14T12:00',
           note: '=cmd|/C calc!A0',
         },
+        {
+          ...baseEntity('t2'),
+          kind: 'transaction',
+          kind2: 'expense',
+          amountCents: -1234, // negative amount must stay numeric
+          currency: 'USD',
+          occurredAt: '2026-08-14T12:00',
+          note: '  @SUM(A1:A9)', // leading whitespace then @
+        },
       ],
     });
     const csv = transactionsToCSV(data.collections.transactions, data.collections.categories);
@@ -93,5 +102,10 @@ describe('CSV export', () => {
     expect(csv).toContain("'=HYPERLINK(\"\"http://evil\"\")");
     expect(csv).toContain("'=cmd|/C calc!A0");
     expect(csv).not.toContain(',=cmd');
+    // Whitespace-before-@ is neutralized too.
+    expect(csv).toContain("'  @SUM(A1:A9)");
+    // Negative amounts stay numeric (no quote prefix) so sums still work.
+    expect(csv).toContain('expense,-12.34,USD');
+    expect(csv).not.toContain("'-12.34");
   });
 });

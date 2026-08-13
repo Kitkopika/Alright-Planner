@@ -7,9 +7,13 @@ import { Transaction, Category } from '../core/types';
 import { categoryById } from '../features/finance';
 
 function escapeCell(value: string): string {
-  // Neutralize spreadsheet formula injection (OWASP): a leading = + - @ (or
-  // tab/CR) makes Excel/Sheets evaluate the cell as a formula.
-  if (/^[=+\-@\t\r]/.test(value)) {
+  // Spreadsheet formula injection (OWASP): a leading = + - @ (or tab/CR)
+  // makes Excel/Sheets evaluate the cell as a formula. Leading whitespace is
+  // stripped first because some importers trim before evaluating.
+  // Numeric cells (e.g. the amount column, including negatives) are exempt —
+  // a "-12.34" amount must stay numeric so spreadsheet sums still work.
+  const trimmed = value.trimStart();
+  if (!/^-?\d+(\.\d+)?$/.test(trimmed) && /^[=+\-@\t\r]/.test(trimmed)) {
     value = `'${value}`;
   }
   if (/[",\n\r]/.test(value)) {
