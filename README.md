@@ -53,7 +53,7 @@ npm run export:web   # bundles the whole app for web (proves it compiles end to 
 A signed, installable release APK is built and left at the project root:
 
 ```
-life-os-0.1.0-release.apk   (com.lifeos.app, minSdk 24, targetSdk 36)
+life-os-1.0.2-release.apk   (com.lifeos.app, v1.0.2, minSdk 24, targetSdk 36)
 ```
 
 Rebuild it yourself with:
