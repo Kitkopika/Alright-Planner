@@ -30,9 +30,11 @@ export default function GoalsScreen() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'active' | 'done' | 'all'>('all');
 
   const goals = data.collections.goals
     .filter((g) => !g.deletedAt && g.status !== 'archived')
+    .filter((g) => (statusFilter === 'all' ? true : g.status === statusFilter))
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
   return (
@@ -41,6 +43,11 @@ export default function GoalsScreen() {
         <Text style={typography.title}>Goals</Text>
         <Button title="+ Goal" small onPress={() => setEditorOpen(true)} />
       </View>
+      <ChipRow style={styles.filters}>
+        {(['all', 'active', 'done'] as const).map((s) => (
+          <Chip key={s} label={s[0].toUpperCase() + s.slice(1)} selected={statusFilter === s} onPress={() => setStatusFilter(s)} />
+        ))}
+      </ChipRow>
       <ScrollView contentContainerStyle={styles.content}>
         {goals.length === 0 ? (
           <EmptyState icon="flag-outline" title="No goals yet" subtitle="Goals give your projects and habits a why" />
@@ -314,6 +321,7 @@ function ProjectBlock({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
   content: { padding: spacing.lg, paddingBottom: 120 },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   goalRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

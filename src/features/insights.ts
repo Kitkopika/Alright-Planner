@@ -12,7 +12,7 @@ export type RangeLabel = 'week' | 'month';
 
 export interface Insights {
   range: RangeLabel;
-  tasks: { due: number; done: number; rate: number };
+  tasks: { due: number; done: number; rate: number; overdue: number };
   habits: { scheduled: number; done: number; rate: number; bestStreak: number };
   focus: { minutes: number; sessions: number; avgMinutes: number };
   spending: { incomeCents: number; expenseCents: number; netCents: number; topCategory: CategorySlice | null; byCategory: CategorySlice[] };
@@ -47,6 +47,11 @@ export function computeInsights(data: AppData, label: RangeLabel, now = new Date
     return due && due >= startOfDay(start) && due <= startOfDay(end);
   });
   const doneTasks = dueTasks.filter((t) => t.status === 'done');
+  const overdueTasks = tasks.filter((t) => {
+    if (t.status === 'done' || t.status === 'cancelled') return false;
+    const due = t.dueAt ? dateFromISO(t.dueAt) : null;
+    return !!due && due.getTime() < startOfDay(now).getTime();
+  }).length;
 
   // Habits: scheduled days in range vs completed.
   let habitScheduled = 0;
@@ -134,6 +139,7 @@ export function computeInsights(data: AppData, label: RangeLabel, now = new Date
       due: dueTasks.length,
       done: doneTasks.length,
       rate: dueTasks.length > 0 ? Math.round((doneTasks.length / dueTasks.length) * 100) : 0,
+      overdue: overdueTasks,
     },
     habits: {
       scheduled: habitScheduled,

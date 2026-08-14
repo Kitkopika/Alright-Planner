@@ -5,6 +5,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../data/store';
 import { isoDateTime } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
@@ -12,9 +13,28 @@ import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 
 const PRESETS = [25, 50, 90];
 
+/** "45s", "12m", or "1h 30m" — humanized remaining/duration time. */
+function formatDuration(totalSeconds: number): string {
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+  const m = Math.floor(totalSeconds / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+}
+
+/** Humanized duration from integer minutes ("30m", "1h 30m"). */
+function formatMinutes(min: number): string {
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  const rm = min % 60;
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+}
+
 export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
+  const remove = useLifeOS((s) => s.remove);
 
   const [minutes, setMinutes] = useState(25);
   const [customMin, setCustomMin] = useState('');
@@ -99,8 +119,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
     setRunning(false);
   };
 
-  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-  const ss = String(secondsLeft % 60).padStart(2, '0');
+  const timeLabel = formatDuration(secondsLeft);
   const sessions = data.collections.focusSessions.filter((s) => !s.deletedAt).sort((a, b) => (b.startedAt > a.startedAt ? 1 : -1)).slice(0, 8);
   const tasks = data.collections.tasks.filter((t) => !t.deletedAt && t.status !== 'done').slice(0, 8);
 
@@ -111,7 +130,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
           <Text style={styles.title}>Focus</Text>
 
           <View style={styles.timerWrap}>
-            <Text style={styles.timer}>{mm}:{ss}</Text>
+            <Text style={styles.timer}>{timeLabel}</Text>
             <Text style={styles.timerHint}>{running ? 'Focusing…' : minutes === 25 ? 'Pomodoro' : `${minutes} min`}</Text>
           </View>
 
@@ -154,7 +173,10 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
                   <Text style={[typography.body, { flex: 1, fontSize: 14 }]} numberOfLines={1}>
                     {s.subject || tasks.find((t) => t.id === s.taskId)?.title || 'Focus'}
                   </Text>
-                  <Text style={typography.caption}>{s.durationMin} min</Text>
+                  <Text style={typography.caption}>{formatMinutes(s.durationMin)}</Text>
+                  <Pressable onPress={() => remove('focusSessions', s.id)} hitSlop={8}>
+                    <Ionicons name="close-circle-outline" size={16} color={colors.textMuted} />
+                  </Pressable>
                 </View>
               ))}
             </View>

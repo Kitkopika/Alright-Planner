@@ -83,6 +83,7 @@ export default function CalendarScreen() {
           <Pressable onPress={() => { setSelected(new Date()); setMode('day'); }} hitSlop={8}>
             <Text style={styles.todayLink}>Today</Text>
           </Pressable>
+          <IconButton name="add-circle-outline" size={26} color={colors.accent} onPress={() => { setEditingEvent(null); setEditorOpen(true); }} />
         </View>
       </View>
 

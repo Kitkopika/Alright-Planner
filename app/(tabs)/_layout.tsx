@@ -1,15 +1,14 @@
 /**
  * Tab navigation: Today, Calendar, Tasks, Routines, Money, Goals, Notes,
- * Insights — plus the universal Quick Add ("+") floating button.
+ * Insights. The universal Quick Add ("+") lives only on the Today (Home)
+ * screen; every other screen has its own page-specific add action.
  */
 
-import React, { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme';
-import { QuickAddModal } from '../../src/components/quickAdd';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -25,68 +24,35 @@ const TABS: { name: string; label: string; icon: IconName; iconActive: IconName 
 ];
 
 export default function TabsLayout() {
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.textMuted,
-          tabBarStyle: { paddingTop: 4 },
-          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
-          tabBarItemStyle: { paddingVertical: 2 },
-          // Edge-to-edge: offset every scene below the status bar / display
-          // cutout using the real inset (never a hardcoded margin). The strip
-          // shows the app background so the design is unchanged.
-          sceneStyle: { paddingTop: insets.top, backgroundColor: colors.background },
-        }}
-      >
-        {TABS.map((t) => (
-          <Tabs.Screen
-            key={t.name}
-            name={t.name}
-            options={{
-              title: t.label,
-              tabBarIcon: ({ color, focused, size }) => (
-                <Ionicons name={focused ? t.iconActive : t.icon} size={size} color={color} />
-              ),
-            }}
-          />
-        ))}
-      </Tabs>
-
-      {/* Universal Quick Add */}
-      <Pressable
-        onPress={() => setQuickAddOpen(true)}
-        style={[styles.fab, { bottom: insets.bottom + 64 }]}
-        accessibilityLabel="Quick add"
-      >
-        <Ionicons name="add" size={30} color="#FFFFFF" />
-      </Pressable>
-
-      <QuickAddModal visible={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
-    </>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { paddingTop: 4 },
+        tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
+        tabBarItemStyle: { paddingVertical: 2 },
+        // Edge-to-edge: offset every scene below the status bar / display
+        // cutout using the real inset (never a hardcoded margin). The strip
+        // shows the app background so the design is unchanged.
+        sceneStyle: { paddingTop: insets.top, backgroundColor: colors.background },
+      }}
+    >
+      {TABS.map((t) => (
+        <Tabs.Screen
+          key={t.name}
+          name={t.name}
+          options={{
+            title: t.label,
+            tabBarIcon: ({ color, focused, size }) => (
+              <Ionicons name={focused ? t.iconActive : t.icon} size={size} color={color} />
+            ),
+          }}
+        />
+      ))}
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 18,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 6,
-    zIndex: 10,
-  },
-});

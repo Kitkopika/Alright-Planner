@@ -87,13 +87,15 @@ function summarize(
 
 /** Builds day/week/month/year summaries for the given transactions. */
 export function buildSummaries(transactions: Transaction[], categories: Category[], now = new Date()): FinanceSummaries {
+  // Ignore tombstoned (soft-deleted) transactions everywhere.
+  const live = transactions.filter((t) => !t.deletedAt);
   // Week uses Monday start; month/year use calendar ranges.
   const weekStart = startOfWeek(now);
   const monthStart = startOfMonth(now);
   const yearStart = new Date(now.getFullYear(), 0, 1);
 
   const inRangeTxns = (from: Date, to: Date) =>
-    transactions.filter((t) => {
+    live.filter((t) => {
       const when = dateFromISO(t.occurredAt);
       const startMs = startOfDay(from).getTime();
       const endExclusive = startOfDay(to).getTime() + 86400000;

@@ -63,34 +63,41 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
-        <View style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]}>
-          <View style={styles.handle} />
-          <Text style={styles.title}>{type ? TYPES.find((t) => t.type === type)?.label : 'Quick add'}</Text>
-
-          {!type ? (
-            <View style={styles.grid}>
-              {TYPES.map((t) => (
-                <PressableTile key={t.type} icon={t.icon} label={t.label} color={t.color} onPress={() => setType(t.type)} />
-              ))}
+      <Pressable style={styles.backdrop} onPress={close}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdropInner}>
+          <Pressable style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]} onPress={() => {}}>
+            <View style={styles.handle} />
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>{type ? TYPES.find((t) => t.type === type)?.label : 'Quick add'}</Text>
+              <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">
+                <Ionicons name="close" size={22} color={colors.textSecondary} />
+              </Pressable>
             </View>
-          ) : (
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <FormFor
-                key={resetKey}
-                type={type}
-                now={now}
-                categories={categories}
-                onCreate={(partial) => {
-                  create(QUICK_ADD_KIND[type], partial as never);
-                  done();
-                }}
-                onBack={() => setType(null)}
-              />
-            </ScrollView>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+
+            {!type ? (
+              <View style={styles.grid}>
+                {TYPES.map((t) => (
+                  <PressableTile key={t.type} icon={t.icon} label={t.label} color={t.color} onPress={() => setType(t.type)} />
+                ))}
+              </View>
+            ) : (
+              <ScrollView keyboardShouldPersistTaps="handled">
+                <FormFor
+                  key={resetKey}
+                  type={type}
+                  now={now}
+                  categories={categories}
+                  onCreate={(partial) => {
+                    create(QUICK_ADD_KIND[type], partial as never);
+                    done();
+                  }}
+                  onBack={() => setType(null)}
+                />
+              </ScrollView>
+            )}
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Pressable>
     </Modal>
   );
 }
@@ -351,6 +358,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
+  backdropInner: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   sheet: {
     backgroundColor: colors.background,
     borderTopLeftRadius: radius.lg,
@@ -368,9 +379,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     marginBottom: spacing.md,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
   title: {
     ...typography.title,
-    marginBottom: spacing.lg,
+    flex: 1,
   },
   grid: {
     flexDirection: 'row',

@@ -52,7 +52,7 @@ describe('computeInsights', () => {
 
   it('returns zeros when there is no data', () => {
     const insights = computeInsights(makeData(), 'week', new Date(2026, 7, 14));
-    expect(insights.tasks).toEqual({ due: 0, done: 0, rate: 0 });
+    expect(insights.tasks).toEqual({ due: 0, done: 0, rate: 0, overdue: 0 });
     expect(insights.habits.scheduled).toBe(0);
     expect(insights.focus.minutes).toBe(0);
     expect(insights.spending.expenseCents).toBe(0);

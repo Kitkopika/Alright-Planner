@@ -40,12 +40,14 @@ export default function TasksScreen() {
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
+  const [priorityFilter, setPriorityFilter] = useState<Task['priority'] | 'all'>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
 
   const now = new Date();
-  const tasks = data.collections.tasks.filter((t) => !t.deletedAt && t.status !== 'cancelled');
+  const allTasks = data.collections.tasks.filter((t) => !t.deletedAt && t.status !== 'cancelled');
+  const tasks = priorityFilter === 'all' ? allTasks : allTasks.filter((t) => t.priority === priorityFilter);
   const projects = data.collections.projects.filter((p) => !p.deletedAt && p.status !== 'archived');
 
   const visible = useMemo(() => {
@@ -125,11 +127,19 @@ export default function TasksScreen() {
             {counts.today} due today
           </Text>
         </View>
-        <Button title="Focus" small variant="ghost" onPress={() => setFocusOpen(true)} />
+        <View style={styles.headerActions}>
+          <Button title="Focus" small variant="ghost" onPress={() => setFocusOpen(true)} />
+          <Button title="+ Task" small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
+        </View>
       </View>
       <ChipRow style={styles.filters}>
         {(['all', 'today', 'overdue', 'upcoming', 'done', 'projects'] as Filter[]).map((f) => (
           <Chip key={f} label={f[0].toUpperCase() + f.slice(1)} selected={filter === f} onPress={() => setFilter(f)} />
+        ))}
+      </ChipRow>
+      <ChipRow style={styles.filters}>
+        {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((p) => (
+          <Chip key={p} label={p === 'all' ? 'All priority' : p} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
         ))}
       </ChipRow>
       <ScrollView contentContainerStyle={styles.content}>
@@ -370,7 +380,8 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerActions: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
   content: { padding: spacing.lg, paddingBottom: 120 },
   taskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm, paddingVertical: spacing.md },

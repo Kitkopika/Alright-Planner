@@ -24,25 +24,33 @@ import { transactionsToCSV } from '../../src/features/financeCsv';
 import { dateKey, isoCompare, isoDateTime } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox } from '../../src/components/ui';
-import { MoneyField } from '../../src/components/form';
+import { DateField, MoneyField, TimeField, combineDateTime, splitDateTime } from '../../src/components/form';
 
 type Range = 'today' | 'week' | 'month' | 'year';
 
 export default function MoneyScreen() {
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
+  const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
 
   const [range, setRange] = useState<Range>('month');
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [editingTxn, setEditingTxn] = useState<string | null>(null);
+  const [txnEditorOpen, setTxnEditorOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<'all' | TransactionKind>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string | 'all'>('all');
 
   const summaries = useMemo(() => buildSummaries(data.collections.transactions, data.collections.categories), [data]);
   const summary = summaries[range];
 
-  const txns = useMemo(
-    () => [...data.collections.transactions].filter((t) => !t.deletedAt).sort((a, b) => isoCompare(b.occurredAt, a.occurredAt)),
-    [data]
-  );
+  const txns = useMemo(() => {
+    const list = [...data.collections.transactions].filter((t) => !t.deletedAt);
+    return list
+      .filter((t) => (typeFilter === 'all' ? true : t.kind2 === typeFilter))
+      .filter((t) => (categoryFilter === 'all' ? true : t.categoryId === categoryFilter))
+      .sort((a, b) => isoCompare(b.occurredAt, a.occurredAt));
+  }, [data, typeFilter, categoryFilter]);
 
   const grouped = useMemo(() => {
     const groups = new Map<string, typeof txns>();
@@ -87,6 +95,17 @@ export default function MoneyScreen() {
         {(['today', 'week', 'month', 'year'] as Range[]).map((r) => (
           <Chip key={r} label={r[0].toUpperCase() + r.slice(1)} selected={range === r} onPress={() => setRange(r)} />
         ))}
+      </ChipRow>
+      <ChipRow style={styles.filters}>
+        {(['all', 'expense', 'income'] as const).map((t) => (
+          <Chip key={t} label={t === 'all' ? 'All' : t[0].toUpperCase() + t.slice(1)} selected={typeFilter === t} onPress={() => setTypeFilter(t)} />
+        ))}
+        <Chip label="All categories" selected={categoryFilter === 'all'} onPress={() => setCategoryFilter('all')} />
+        {data.collections.categories
+          .filter((c) => !c.deletedAt && (typeFilter === 'all' || c.kind2 === typeFilter))
+          .map((c) => (
+            <Chip key={c.id} label={c.name} selected={categoryFilter === c.id} onPress={() => setCategoryFilter(categoryFilter === c.id ? 'all' : c.id)} />
+          ))}
       </ChipRow>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -141,7 +160,12 @@ export default function MoneyScreen() {
               {items.map((t) => {
                 const cat = data.collections.categories.find((c) => c.id === t.categoryId);
                 return (
-                  <Card key={t.id} style={styles.txnRow} onLongPress={() => remove('transactions', t.id)}>
+                  <Card
+                    key={t.id}
+                    style={styles.txnRow}
+                    onPress={() => { setEditingTxn(t.id); setTxnEditorOpen(true); }}
+                    onLongPress={() => remove('transactions', t.id)}
+                  >
                     <View style={[styles.txnIcon, { backgroundColor: t.kind2 === 'income' ? colors.successSoft : colors.dangerSoft }]}>
                       <Ionicons name={t.kind2 === 'income' ? 'arrow-down' : 'arrow-up'} size={16} color={t.kind2 === 'income' ? colors.success : colors.danger} />
                     </View>
@@ -166,6 +190,7 @@ export default function MoneyScreen() {
       </ScrollView>
 
       <CategoriesModal visible={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
+      <TransactionEditorModal txnId={editingTxn} visible={txnEditorOpen} onClose={() => setTxnEditorOpen(false)} />
     </View>
   );
 }
@@ -283,6 +308,100 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
   );
 }
 
+function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | null; visible: boolean; onClose: () => void }) {
+  const data = useLifeOS((s) => s.data);
+  const update = useLifeOS((s) => s.update);
+  const remove = useLifeOS((s) => s.remove);
+  const editing = txnId ? data.collections.transactions.find((t) => t.id === txnId && !t.deletedAt) : undefined;
+
+  const [cents, setCents] = useState(0);
+  const [kind2, setKind2] = useState<TransactionKind>('expense');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+
+  useEffect(() => {
+    if (!visible) return;
+    if (editing) {
+      setCents(editing.amountCents);
+      setKind2(editing.kind2);
+      setCategoryId(editing.categoryId || null);
+      setNote(editing.note || '');
+      const { date: d, time: t } = splitDateTime(editing.occurredAt);
+      setDate(d);
+      setTime(t);
+    } else {
+      setCents(0);
+      setKind2('expense');
+      setCategoryId(null);
+      setNote('');
+      setDate(dateKey(new Date()));
+      setTime('');
+    }
+  }, [visible, editing]);
+
+  const cats = data.collections.categories.filter((c) => !c.deletedAt && c.kind2 === kind2);
+
+  const save = () => {
+    if (!editing || cents <= 0) return;
+    const occurredAt = combineDateTime(date, time);
+    if (!occurredAt) return;
+    update('transactions', editing.id, {
+      amountCents: cents,
+      kind2,
+      categoryId: categoryId || null,
+      note: note.trim() || undefined,
+      occurredAt,
+    });
+    onClose();
+  };
+
+  const del = () => {
+    if (editing) {
+      remove('transactions', editing.id);
+      onClose();
+    }
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+        <View style={styles.sheet}>
+          <Text style={styles.sheetTitle}>Edit transaction</Text>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <MoneyField cents={cents} onChange={setCents} label="Amount" />
+            <Field label="Type">
+              <ChipRow>
+                <Chip label="Expense" selected={kind2 === 'expense'} onPress={() => { setKind2('expense'); setCategoryId(null); }} />
+                <Chip label="Income" selected={kind2 === 'income'} onPress={() => { setKind2('income'); setCategoryId(null); }} />
+              </ChipRow>
+            </Field>
+            <Field label="Category">
+              <ChipRow>
+                <Chip label="None" selected={!categoryId} onPress={() => setCategoryId(null)} />
+                {cats.map((c) => (
+                  <Chip key={c.id} label={c.name} selected={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
+                ))}
+              </ChipRow>
+            </Field>
+            <Field label="Note">
+              <TextBox value={note} onChangeText={setNote} placeholder="Note" />
+            </Field>
+            <DateField label="Date" value={date} onChange={setDate} />
+            <TimeField label="Time" value={time} onChange={setTime} allowClear />
+            <View style={styles.actions}>
+              <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />
+              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -307,5 +426,6 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   sheetTitle: { ...typography.title, marginBottom: spacing.lg },
+  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   catAdd: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
 });

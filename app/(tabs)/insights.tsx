@@ -34,7 +34,7 @@ export default function InsightsScreen() {
         icon="checkbox-outline"
         color={colors.accent}
         value={`${insights.tasks.done}/${insights.tasks.due}`}
-        label={`${insights.tasks.rate}% completed`}
+        label={`${insights.tasks.rate}% completed${insights.tasks.overdue > 0 ? ` · ${insights.tasks.overdue} overdue` : ''}`}
         pct={insights.tasks.rate}
         empty="No tasks due in this range"
       />

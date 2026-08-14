@@ -13,6 +13,7 @@ import { computeToday } from '../../src/features/today';
 import { dateKey, isoDateTime, timeHM, tryParseISO, weekdayNames } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Card, SectionHeader, ProgressBar, Badge, TextBox, Button, EmptyState } from '../../src/components/ui';
+import { QuickAddModal } from '../../src/components/quickAdd';
 import { formatMoney } from '../../src/features/finance';
 import { Reminder } from '../../src/core/types';
 
@@ -24,6 +25,7 @@ export default function TodayScreen() {
   const create = useLifeOS((s) => s.create);
 
   const [quickNote, setQuickNote] = useState('');
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   const today = useMemo(() => computeToday(data, new Date()), [data]);
   const now = new Date();
@@ -111,7 +113,8 @@ export default function TodayScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -316,7 +319,14 @@ export default function TodayScreen() {
           </View>
         )}
       </Card>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Universal Quick Add — lives only on Home */}
+      <Pressable onPress={() => setQuickAddOpen(true)} style={styles.fab} accessibilityLabel="Quick add">
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </Pressable>
+      <QuickAddModal visible={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
+    </View>
   );
 }
 
@@ -394,4 +404,21 @@ const styles = StyleSheet.create({
   moneyRow: { flexDirection: 'row' },
   goalRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   recentNoteRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  fab: {
+    position: 'absolute',
+    right: 18,
+    bottom: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
+    zIndex: 10,
+  },
 });
