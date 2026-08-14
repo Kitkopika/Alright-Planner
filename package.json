@@ -2,7 +2,7 @@
   "name": "life-os",
   "description": "Life OS — a lightweight, local-first personal life operating system. Android-first, cross-platform.",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "main": "expo-router/entry",
   "private": true,
   "scripts": {

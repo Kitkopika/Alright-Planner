@@ -163,7 +163,14 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
     saveNow: persist,
 
     resetAll: async () => {
+      // Clear in-memory data, then hard-delete both the main file and its
+      // rotating backup, then write a fresh empty document.
       set({ data: emptyData() });
+      try {
+        await getDocumentStore().remove();
+      } catch (e) {
+        console.warn('LifeOS: reset remove failed', e);
+      }
       await persist();
     },
 

@@ -116,7 +116,14 @@ export default function DataScreen() {
   const confirmReset = () => {
     Alert.alert('Erase all data?', 'This deletes everything on this device (the JSON file and its backup). Consider exporting first.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Erase', style: 'destructive', onPress: () => void resetAll() },
+      {
+        text: 'Erase',
+        style: 'destructive',
+        onPress: async () => {
+          await resetAll();
+          Alert.alert('Erased', 'All local data has been removed.');
+        },
+      },
     ]);
   };
 
