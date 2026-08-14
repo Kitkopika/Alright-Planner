@@ -21,7 +21,7 @@ import { useLifeOS } from '../../src/data/store';
 import { Category, TransactionKind } from '../../src/core/types';
 import { buildSummaries, formatMoney } from '../../src/features/finance';
 import { transactionsToCSV } from '../../src/features/financeCsv';
-import { dateKey, isoCompare } from '../../src/core/time';
+import { dateKey, isoCompare, isoDateTime } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox } from '../../src/components/ui';
 import { MoneyField } from '../../src/components/form';
@@ -193,7 +193,7 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
       amountCents: cents,
       currency: 'USD',
       categoryId: categoryId || null,
-      occurredAt: new Date().toISOString().slice(0, 16),
+      occurredAt: isoDateTime(new Date()),
       note: note.trim() || undefined,
     });
     setCents(0);

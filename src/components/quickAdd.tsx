@@ -20,7 +20,7 @@ import { useLifeOS } from '../data/store';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button } from './ui';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
-import { addDays, dateKey, todayKey, timeHM } from '../core/time';
+import { addDays, dateKey, todayKey, timeHM, isoDateTime } from '../core/time';
 import { Priority, Recurrence, TransactionKind } from '../core/types';
 import { QUICK_ADD_KIND } from '../core/kinds';
 
@@ -240,7 +240,7 @@ function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | '
           amountCents: cents,
           currency: 'USD',
           categoryId: categoryId || null,
-          occurredAt: new Date().toISOString().slice(0, 16),
+          occurredAt: isoDateTime(new Date()),
           note: note.trim() || undefined,
         })
       }

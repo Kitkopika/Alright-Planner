@@ -19,7 +19,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { Task } from '../../src/core/types';
-import { addDays, dateKey, dayDiff, startOfWeek, todayKey, tryParseISO } from '../../src/core/time';
+import { addDays, dateKey, dayDiff, isoDateTime, startOfWeek, todayKey, tryParseISO } from '../../src/core/time';
 import { colors, priorityColors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/components/form';
@@ -92,7 +92,7 @@ export default function TasksScreen() {
     const isDone = t.status === 'done';
     update('tasks', t.id, {
       status: isDone ? 'todo' : 'done',
-      completedAt: isDone ? null : new Date().toISOString().slice(0, 16),
+      completedAt: isDone ? null : isoDateTime(new Date()),
     });
   };
 

@@ -11,6 +11,7 @@ import { computeInsights, RangeLabel } from '../../src/features/insights';
 import { formatMoney } from '../../src/features/finance';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Card, Chip, ChipRow, ProgressBar, SectionHeader } from '../../src/components/ui';
+import { HBars, VBars } from '../../src/components/charts';
 
 export default function InsightsScreen() {
   const data = useLifeOS((s) => s.data);
@@ -48,6 +49,9 @@ export default function InsightsScreen() {
         empty="No habits tracked"
         extra={insights.habits.bestStreak > 0 ? `Best streak 🔥 ${insights.habits.bestStreak}` : undefined}
       />
+      <ChartCard title="Daily habit completion">
+        <VBars values={insights.habitByDay} max={1} color={colors.success} labels={dayLabels(insights.dayKeys)} />
+      </ChartCard>
 
       <SectionHeader title="Focus" />
       <StatCard
@@ -57,6 +61,9 @@ export default function InsightsScreen() {
         label={`${insights.focus.sessions} sessions · ${insights.focus.avgMinutes} min avg`}
         empty="No focus sessions yet"
       />
+      <ChartCard title="Focus minutes per day">
+        <VBars values={insights.focusByDay} max={Math.max(1, ...insights.focusByDay)} color={colors.warning} labels={dayLabels(insights.dayKeys)} />
+      </ChartCard>
 
       <SectionHeader title="Money" />
       <StatCard
@@ -71,6 +78,18 @@ export default function InsightsScreen() {
             : undefined
         }
       />
+      {insights.spending.byCategory.length > 0 && (
+        <ChartCard title="Spending by category">
+          <HBars
+            rows={insights.spending.byCategory.slice(0, 6).map((c) => ({
+              label: c.name,
+              value: c.cents,
+              color: c.color,
+              valueText: formatMoney(c.cents),
+            }))}
+          />
+        </ChartCard>
+      )}
 
       <SectionHeader title="Goals" />
       <Card>
@@ -97,6 +116,20 @@ export default function InsightsScreen() {
       </Card>
     </ScrollView>
   );
+}
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Card style={{ marginTop: spacing.sm }}>
+      <Text style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}>{title}</Text>
+      {children}
+    </Card>
+  );
+}
+
+/** Short "DD" labels from date keys (day-of-month). */
+function dayLabels(dayKeys: string[]): string[] {
+  return dayKeys.map((k) => k.slice(8, 10).replace(/^0/, ''));
 }
 
 function StatCard({

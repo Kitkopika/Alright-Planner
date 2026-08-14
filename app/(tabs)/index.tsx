@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLifeOS } from '../../src/data/store';
 import { computeToday } from '../../src/features/today';
-import { dateKey, timeHM, tryParseISO, weekdayNames } from '../../src/core/time';
+import { dateKey, isoDateTime, timeHM, tryParseISO, weekdayNames } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Card, SectionHeader, ProgressBar, Badge, TextBox, Button, EmptyState } from '../../src/components/ui';
 import { formatMoney } from '../../src/features/finance';
@@ -28,6 +28,15 @@ export default function TodayScreen() {
   const today = useMemo(() => computeToday(data, new Date()), [data]);
   const now = new Date();
 
+  const focusTodayMin = useMemo(() => {
+    const key = dateKey(now);
+    return data.collections.focusSessions
+      .filter((s) => !s.deletedAt && s.startedAt.startsWith(key))
+      .reduce((a, s) => a + s.durationMin, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+  const focusTodayLabel = focusTodayMin >= 60 ? `${Math.floor(focusTodayMin / 60)}h ${focusTodayMin % 60}m` : `${focusTodayMin}m`;
+
   const toggleTask = (id: string, recurring: boolean) => {
     const t = data.collections.tasks.find((x) => x.id === id);
     if (!t) return;
@@ -38,7 +47,7 @@ export default function TodayScreen() {
       update('tasks', id, { completedDates: next });
     } else {
       const isDone = t.status === 'done';
-      update('tasks', id, { status: isDone ? 'todo' : 'done', completedAt: isDone ? null : new Date().toISOString().slice(0, 16) });
+      update('tasks', id, { status: isDone ? 'todo' : 'done', completedAt: isDone ? null : isoDateTime(new Date()) });
     }
   };
 
@@ -69,11 +78,21 @@ export default function TodayScreen() {
   };
 
   const saveQuickNote = () => {
-    const title = quickNote.trim();
-    if (!title) return;
-    create('notes', { title, body: '', kind2: 'note' });
+    const text = quickNote.trim();
+    if (!text) return;
+    const firstLine = text.split('\n')[0].slice(0, 80);
+    create('notes', { title: firstLine || 'Quick note', body: text, kind2: 'note' });
     setQuickNote('');
   };
+
+  const recentQuickNotes = useMemo(
+    () =>
+      data.collections.notes
+        .filter((n) => !n.deletedAt && n.kind2 === 'note')
+        .sort((a, b) => (b.updatedAt > a.updatedAt ? 1 : -1))
+        .slice(0, 3),
+    [data]
+  );
 
   const dismissReminder = (r: Reminder) => {
     const key = dateKey(now);
@@ -119,6 +138,14 @@ export default function TodayScreen() {
         </View>
         <ProgressBar pct={today.progress.pct} style={{ marginTop: spacing.sm }} />
       </Card>
+
+      {/* At-a-glance stats */}
+      <View style={styles.statsRow}>
+        <StatTile icon="checkbox-outline" color={colors.accent} value={`${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} label="Tasks" />
+        <StatTile icon="repeat-outline" color={colors.success} value={`${today.habits.filter((h) => h.doneToday).length}/${today.habits.length}`} label="Habits" />
+        <StatTile icon="timer-outline" color={colors.warning} value={focusTodayLabel} label="Focus" />
+        <StatTile icon="wallet-outline" color={today.spending.netCents >= 0 ? colors.success : colors.danger} value={today.spending.label} label="Net" />
+      </View>
 
       {/* Schedule */}
       <SectionHeader title="Schedule" />
@@ -272,11 +299,22 @@ export default function TodayScreen() {
         <TextBox
           value={quickNote}
           onChangeText={setQuickNote}
-          placeholder="Capture something…"
-          onSubmitEditing={saveQuickNote}
-          returnKeyType="done"
+          placeholder="Capture a thought… (first line becomes the title)"
+          multiline
+          style={{ minHeight: 72, textAlignVertical: 'top' }}
         />
-        <Button title="Save note" onPress={saveQuickNote} small style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
+        <Button title="Save note" onPress={saveQuickNote} disabled={!quickNote.trim()} small style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
+        {recentQuickNotes.length > 0 && (
+          <View style={{ marginTop: spacing.md }}>
+            {recentQuickNotes.map((n) => (
+              <View key={n.id} style={styles.recentNoteRow}>
+                <Ionicons name="document-text-outline" size={14} color={colors.textMuted} />
+                <Text style={[typography.caption, { flex: 1 }]} numberOfLines={1}>{n.title}</Text>
+                <Text style={[typography.caption, { color: colors.textMuted }]}>{dateKey(new Date(n.updatedAt))}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Card>
     </ScrollView>
   );
@@ -284,6 +322,16 @@ export default function TodayScreen() {
 
 function formatLongDate(d: Date): string {
   return `${weekdayNames(false)[d.getDay()]}, ${d.getDate()} ${['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]}`;
+}
+
+function StatTile({ icon, color, value, label }: { icon: keyof typeof Ionicons.glyphMap; color: string; value: string; label: string }) {
+  return (
+    <View style={styles.statTile}>
+      <Ionicons name={icon} size={16} color={color} />
+      <Text style={[typography.body, { fontWeight: '700', fontSize: 15 }]} numberOfLines={1}>{value}</Text>
+      <Text style={[typography.caption, { color: colors.textMuted }]}>{label}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -308,6 +356,16 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   progressCard: { marginBottom: spacing.xs },
+  statsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.xs },
+  statTile: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    padding: spacing.sm,
+    gap: 2,
+  },
   progressRow: { flexDirection: 'row', alignItems: 'center' },
   ring: {
     width: 52,
@@ -335,4 +393,5 @@ const styles = StyleSheet.create({
   },
   moneyRow: { flexDirection: 'row' },
   goalRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  recentNoteRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
 });

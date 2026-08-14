@@ -6,6 +6,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLifeOS } from '../data/store';
+import { isoDateTime } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 
@@ -21,15 +22,18 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [subject, setSubject] = useState('');
-  const [startedAt, setStartedAt] = useState<string | null>(null);
 
+  // Epoch-ms of when the current session started (ref, not state, so the
+  // interval/stop handlers always read the real start time — no stale closure
+  // and no timezone reinterpretation).
+  const startedAtRef = useRef<number | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (visible) {
       setRunning(false);
       setSecondsLeft(minutes * 60);
-      setStartedAt(null);
+      startedAtRef.current = null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -40,38 +44,40 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
     };
   }, []);
 
-  const start = () => {
-    setRunning(true);
-    setStartedAt(new Date().toISOString().slice(0, 16));
-    tickRef.current = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          if (tickRef.current) clearInterval(tickRef.current);
-          setRunning(false);
-          saveSession(true);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-  };
-
   const saveSession = (completed: boolean) => {
-    if (!startedAt) return;
-    const started = new Date(startedAt);
-    const ended = new Date();
-    const duration = Math.max(1, Math.round((ended.getTime() - started.getTime()) / 60000));
-    if (!completed && duration < 1) return;
+    const startedMs = startedAtRef.current;
+    if (startedMs == null) return;
+    const endedMs = Date.now();
+    // Actual elapsed minutes, minimum 1 (a few seconds still counts).
+    const duration = Math.max(1, Math.round((endedMs - startedMs) / 60000));
+    void completed;
     create('focusSessions', {
-      startedAt: started.toISOString().slice(0, 16),
-      endedAt: ended.toISOString().slice(0, 16),
+      startedAt: isoDateTime(new Date(startedMs)),
+      endedAt: isoDateTime(new Date(endedMs)),
       durationMin: duration,
       type: PRESETS.includes(minutes) ? 'pomodoro' : 'custom',
       taskId: taskId || null,
       subject: subject.trim() || null,
     });
-    setStartedAt(null);
+    startedAtRef.current = null;
   };
+
+  const start = () => {
+    startedAtRef.current = Date.now();
+    setRunning(true);
+    tickRef.current = setInterval(() => {
+      setSecondsLeft((s) => s - 1);
+    }, 1000);
+  };
+
+  // Natural completion (countdown reached 0).
+  useEffect(() => {
+    if (!running || secondsLeft > 0) return;
+    if (tickRef.current) clearInterval(tickRef.current);
+    setRunning(false);
+    saveSession(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, secondsLeft]);
 
   const stop = () => {
     if (tickRef.current) clearInterval(tickRef.current);
