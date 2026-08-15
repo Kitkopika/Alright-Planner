@@ -9,16 +9,18 @@ Everything you track — tasks, calendar, routines, habits, reminders, money, no
 ## Highlights
 
 - **Today dashboard** — schedule, tasks, habits/routines, reminders, spending, goals, quick notes and a daily progress ring in one screen.
-- **Calendar** — day / week / month / agenda views, events, deadlines, recurring events, tasks integrated, event reminders.
+- **Calendar** — day / week / month / year views, events (editable start + end times), recurring events, task deadlines. The month grid shows **dots** for single-day events and **continuous bars** for multi-day ones; the week time table places items **side by side** and **sizes them by duration**, with multi-day events drawn as one connected bar across days.
 - **Tasks** — subtasks, priorities, due dates, recurring tasks, projects, calendar integration.
 - **Routines & Habits** — custom routine templates scheduled per weekday, step checklists, habit streaks and 30-day completion history.
 - **Reminders** — date/time, recurring and event-linked; dismiss/snooze per occurrence (in-app; OS notifications are a later add-on).
-- **Finance** — income/expenses, categories (with budgets), quick entry, day/week/month/year summaries, category stats, CSV + JSON export.
+- **Finance** — income/expenses, categories (with colors and budgets), quick entry, day/week/month/year summaries, category stats, CSV + JSON export.
 - **Notes** — quick notes, journal, project notes, tags, links, global search across notes/tasks/events/goals/projects, and linking to tasks/projects/goals/events.
 - **Goals & Projects** — Goal → Project → Task with automatic progress, deadlines.
-- **Focus/Study** — Pomodoro or custom timer linked to a task/project; sessions feed Insights.
+- **Focus/Study** — Pomodoro or custom duration (scrollable hours + minutes wheel) linked to a task/project. While a session runs the screen locks: leaving the app pauses the timer, and back/close require confirmation. Sessions feed Insights.
 - **Insights** — task completion, habit rates and streaks, focus time, spending, goal progress (week/month).
 - **Quick Add** — universal `+` button for Task, Reminder, Event, Expense, Income, Note, Habit, Goal.
+- **Settings** — light/dark/system theme, custom accent color (rainbow wheel picker), language (English/ไทย), currency — persisted to a small JSON file.
+- **Home-screen widget** — an "Alright — Today" Android widget showing today's tasks and events, refreshed whenever the app is opened.
 - **Data & Backup** — export to `personal-data.json`, import (merge or replace with a dry-run preview), restore from the on-device rotating backup, erase all.
 
 ## Tech stack
@@ -53,20 +55,25 @@ npm run export:web   # bundles the whole app for web (proves it compiles end to 
 A signed, installable release APK is built and left at the project root:
 
 ```
-life-os-1.1.0-release.apk   (com.lifeos.app, v1.1.0, minSdk 24, targetSdk 36)
+Alright-1.5.0-release.apk   (com.lifeos.app, v1.5.0, minSdk 24, targetSdk 36)
 ```
 
-Rebuild it yourself with:
+Rebuild it yourself from the checked-in native project (the SDK path lives in
+`android/local.properties`):
 
 ```bash
-npx expo prebuild -p android   # generates the native android/ project once
 cd android
-JAVA_HOME=<jdk17> ANDROID_HOME=<android-sdk> ./gradlew assembleRelease
+JAVA_HOME=<jdk17> ./gradlew assembleRelease
 ```
 
-(Requires a JDK 17+, the Android SDK with platforms;android-36, build-tools 35/36,
-and NDK 27.0.12077973 + 27.1.12297006.) For a Play Store–ready AAB or cloud
-builds, use `npx eas build` with your Expo account instead.
+(Requires a JDK 17+ and the Android SDK with platforms;android-36, build-tools
+35/36, and NDK 27.0.12077973 + 27.1.12297006.)
+
+> ⚠️ **Do not run `npx expo prebuild -p android`** — it regenerates the native
+> project from scratch and would drop the home-screen widget wiring. The widget
+> files are tracked in git; the rest of `android/` is gitignored prebuild output.
+> The release build currently signs with the debug keystore (fine for sideloading);
+> use `npx eas build` for a Play Store–ready AAB or cloud builds.
 
 ## Data: one portable JSON file
 
