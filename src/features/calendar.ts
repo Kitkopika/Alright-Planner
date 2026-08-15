@@ -20,6 +20,8 @@ export interface CalendarItem {
   overdue?: boolean;
   /** True for events that span more than one day (long/multi-day). */
   spanning?: boolean;
+  /** True for recurring-series instances (do not merge into one span bar). */
+  recurring?: boolean;
 }
 
 export interface DayItems {
@@ -68,6 +70,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
       kind: 'event',
       entityId: ev.id,
       spanning: eventSpanning(ev, start),
+      recurring: true,
     };
   }
   // Non-recurring: include the event on every day of [start, end] so
@@ -88,6 +91,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
     kind: 'event',
     entityId: ev.id,
     spanning,
+    recurring: false,
   };
 }
 

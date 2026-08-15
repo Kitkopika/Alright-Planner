@@ -158,7 +158,9 @@ export default function CalendarScreen() {
                 const spans = new Map<string, { item: CalendarItem; first: number; last: number }>();
                 const singles: { it: CalendarItem; di: number }[] = [];
                 for (const { it, di } of hourItems) {
-                  if (it.spanning) {
+                  // Only non-recurring multi-day events become one connected
+                  // line; recurring instances stay as per-day blocks.
+                  if (it.spanning && !it.recurring) {
                     const g = spans.get(it.entityId) || { item: it, first: di, last: di };
                     g.first = Math.min(g.first, di);
                     g.last = Math.max(g.last, di);
@@ -168,13 +170,13 @@ export default function CalendarScreen() {
                   }
                 }
                 return (
-                  <View key={h} style={[styles.weekGridRow, { height: 34 }, isNow && styles.weekRowNow]}>
+                  <View key={h} style={[styles.weekGridRow, { height: 54 }, isNow && styles.weekRowNow]}>
                     <Text style={[styles.weekTimeCell, styles.weekTimeLabel, isNow && { color: colors.danger }]}>
                       {String(h).padStart(2, '0')}:00
                     </Text>
                     {weekDays.map((d, di) => (
                       <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]}>
-                        {singles.filter((x) => x.di === di).map((x) => (
+                        {singles.filter((x) => x.di === di).slice(0, 2).map((x) => (
                           <WeekBlock key={x.it.id} item={x.it} onOpen={openEvent} onDelete={deleteItem} />
                         ))}
                       </View>
@@ -507,7 +509,7 @@ function createStyles() {
   weekSpanBar: {
     position: 'absolute',
     top: 5,
-    height: 22,
+    height: 20,
     borderRadius: 4,
     paddingHorizontal: 4,
     justifyContent: 'center',
@@ -519,7 +521,7 @@ function createStyles() {
   weekBlock: {
     borderRadius: 4,
     paddingHorizontal: 3,
-    paddingVertical: 2,
+    paddingVertical: 1,
     marginBottom: 1,
     borderLeftWidth: 3,
     borderLeftColor: colors.accent,
