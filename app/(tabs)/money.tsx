@@ -98,14 +98,14 @@ export default function MoneyScreen() {
 
       <ChipRow style={styles.filters}>
         {(['today', 'week', 'month', 'year'] as Range[]).map((r) => (
-          <Chip key={r} label={r[0].toUpperCase() + r.slice(1)} selected={range === r} onPress={() => setRange(r)} />
+          <Chip key={r} label={t(r)} selected={range === r} onPress={() => setRange(r)} />
         ))}
       </ChipRow>
       <ChipRow style={styles.filters}>
-        {(['all', 'expense', 'income'] as const).map((t) => (
-          <Chip key={t} label={t === 'all' ? 'All' : t[0].toUpperCase() + t.slice(1)} selected={typeFilter === t} onPress={() => setTypeFilter(t)} />
+        {(['all', 'expense', 'income'] as const).map((x) => (
+          <Chip key={x} label={x === 'all' ? t('all') : t(x)} selected={typeFilter === x} onPress={() => setTypeFilter(x)} />
         ))}
-        <Chip label="All categories" selected={categoryFilter === 'all'} onPress={() => setCategoryFilter('all')} />
+        <Chip label={t('allCategories')} selected={categoryFilter === 'all'} onPress={() => setCategoryFilter('all')} />
         {data.collections.categories
           .filter((c) => !c.deletedAt && (typeFilter === 'all' || c.kind2 === typeFilter))
           .map((c) => (
@@ -217,6 +217,7 @@ function SummaryCol({ label, value, color }: { label: string; value: string; col
 function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit: (p: Record<string, unknown>) => void }) {
   styles = createStyles();
   const currency = useSettings((s) => s.currency);
+  const t = useT();
   const [cents, setCents] = useState(0);
   const [kind2, setKind2] = useState<TransactionKind>('expense');
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -240,15 +241,15 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
   return (
     <Card>
       <ChipRow>
-        <Chip label="Expense" selected={kind2 === 'expense'} onPress={() => { setKind2('expense'); setCategoryId(null); }} />
-        <Chip label="Income" selected={kind2 === 'income'} onPress={() => { setKind2('income'); setCategoryId(null); }} />
+        <Chip label={t('expense')} selected={kind2 === 'expense'} onPress={() => { setKind2('expense'); setCategoryId(null); }} />
+        <Chip label={t('income')} selected={kind2 === 'income'} onPress={() => { setKind2('income'); setCategoryId(null); }} />
       </ChipRow>
       <View style={styles.quickRow}>
         <View style={{ flex: 1 }}>
-          <MoneyField cents={cents} onChange={setCents} label="Amount" />
+          <MoneyField cents={cents} onChange={setCents} label={t('amount')} />
         </View>
         <View style={{ flex: 1.5 }}>
-          <Field label="Category">
+          <Field label={t('category')}>
             <ChipRow>
               <Chip label="—" selected={!categoryId} onPress={() => setCategoryId(null)} />
               {cats.slice(0, 6).map((c) => (
@@ -259,8 +260,8 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
         </View>
       </View>
       <View style={styles.quickRow}>
-        <TextBox value={note} onChangeText={setNote} placeholder="Note (optional)" style={{ flex: 1 }} />
-        <Button title="Add" onPress={submit} />
+        <TextBox value={note} onChangeText={setNote} placeholder={t('notePlaceholder')} style={{ flex: 1 }} />
+        <Button title={t('addLabel')} onPress={submit} />
       </View>
     </Card>
   );
@@ -268,6 +269,7 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
 
 function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -293,15 +295,15 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>Categories</Text>
+          <Text style={styles.sheetTitle}>{t('categories')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <ChipRow>
-              <Chip label="Expense" selected={kind2 === 'expense'} onPress={() => setKind2('expense')} />
-              <Chip label="Income" selected={kind2 === 'income'} onPress={() => setKind2('income')} />
+              <Chip label={t('expense')} selected={kind2 === 'expense'} onPress={() => setKind2('expense')} />
+              <Chip label={t('income')} selected={kind2 === 'income'} onPress={() => setKind2('income')} />
             </ChipRow>
             <View style={styles.catAdd}>
-              <TextBox value={name} onChangeText={setName} placeholder="New category name" style={{ flex: 1 }} />
-              <Button title="Add" small onPress={save} />
+              <TextBox value={name} onChangeText={setName} placeholder={t('newCategoryName')} style={{ flex: 1 }} />
+              <Button title={t('addLabel')} small onPress={save} />
             </View>
             {cats.map((c) => (
               <View key={c.id} style={styles.catRow}>
@@ -313,7 +315,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
                 </Pressable>
               </View>
             ))}
-            <Button title="Close" variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
+            <Button title={t('close')} variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
           </ScrollView>
         </View>
       </View>
@@ -323,6 +325,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
 
 function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -382,16 +385,16 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>Edit transaction</Text>
+          <Text style={styles.sheetTitle}>{t('editTransaction')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <MoneyField cents={cents} onChange={setCents} label="Amount" />
-            <Field label="Type">
+            <MoneyField cents={cents} onChange={setCents} label={t('amount')} />
+            <Field label={t('type')}>
               <ChipRow>
-                <Chip label="Expense" selected={kind2 === 'expense'} onPress={() => { setKind2('expense'); setCategoryId(null); }} />
-                <Chip label="Income" selected={kind2 === 'income'} onPress={() => { setKind2('income'); setCategoryId(null); }} />
+                <Chip label={t('expense')} selected={kind2 === 'expense'} onPress={() => { setKind2('expense'); setCategoryId(null); }} />
+                <Chip label={t('income')} selected={kind2 === 'income'} onPress={() => { setKind2('income'); setCategoryId(null); }} />
               </ChipRow>
             </Field>
-            <Field label="Category">
+            <Field label={t('category')}>
               <ChipRow>
                 <Chip label="None" selected={!categoryId} onPress={() => setCategoryId(null)} />
                 {cats.map((c) => (
@@ -399,15 +402,15 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
                 ))}
               </ChipRow>
             </Field>
-            <Field label="Note">
-              <TextBox value={note} onChangeText={setNote} placeholder="Note" />
+            <Field label={t('note')}>
+              <TextBox value={note} onChangeText={setNote} placeholder={t('note')} />
             </Field>
-            <DateField label="Date" value={date} onChange={setDate} />
-            <TimeField label="Time" value={time} onChange={setTime} allowClear />
+            <DateField label={t('dueDate')} value={date} onChange={setDate} />
+            <TimeField label={t('dueTime')} value={time} onChange={setTime} allowClear />
             <View style={styles.actions}>
-              <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>

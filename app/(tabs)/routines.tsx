@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useT } from '../../src/i18n';
 import { useLifeOS } from '../../src/data/store';
 import { Habit, Routine, RoutineStep } from '../../src/core/types';
 import { addDays, dateKey, todayKey } from '../../src/core/time';
@@ -31,6 +32,7 @@ type Tab = 'routines' | 'habits';
 
 export default function RoutinesScreen() {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const [tab, setTab] = useState<Tab>('routines');
   const [routineEditor, setRoutineEditor] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export default function RoutinesScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={typography.title}>Routines</Text>
+        <Text style={typography.title}>{t('routines')}</Text>
         <View style={styles.headerActions}>
           <Button
             title="+"
@@ -56,19 +58,19 @@ export default function RoutinesScreen() {
         </View>
       </View>
       <ChipRow style={styles.filters}>
-        <Chip label="Routines" selected={tab === 'routines'} onPress={() => setTab('routines')} />
-        <Chip label="Habits" selected={tab === 'habits'} onPress={() => setTab('habits')} />
+        <Chip label={t('routines')} selected={tab === 'routines'} onPress={() => setTab('routines')} />
+        <Chip label={t('habits')} selected={tab === 'habits'} onPress={() => setTab('habits')} />
       </ChipRow>
 
       <ScrollView contentContainerStyle={styles.content}>
         {tab === 'routines' ? (
           routines.length === 0 ? (
-            <EmptyState icon="repeat-outline" title="No routines yet" subtitle="Build a morning or evening routine" />
+            <EmptyState icon="repeat-outline" title={t('noRoutines')} subtitle={t('noRoutinesSub')} />
           ) : (
             routines.map((r) => <RoutineCard key={r.id} routine={r} onEdit={() => { setRoutineEditor(r.id); setEditorOpen(true); }} />)
           )
         ) : habits.length === 0 ? (
-          <EmptyState icon="repeat-outline" title="No habits yet" subtitle="Track something daily" />
+          <EmptyState icon="repeat-outline" title={t('noHabitsY')} subtitle={t('noHabitsSub')} />
         ) : (
           habits.map((h) => <HabitCard key={h.id} habit={h} onEdit={() => { setHabitEditor(h.id); setEditorOpen(true); }} />)
         )}
@@ -89,6 +91,7 @@ export default function RoutinesScreen() {
 
 function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -113,7 +116,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
       style={{ marginBottom: spacing.md }}
       onPress={onEdit}
       onLongPress={() =>
-        Alert.alert('Delete routine?', routine.name, [
+        Alert.alert(t('deleteRoutineQ'), routine.name, [
           { text: 'Delete', style: 'destructive', onPress: () => remove('routines', routine.id) },
           { text: 'Cancel', style: 'cancel' },
         ])
@@ -123,11 +126,11 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{routine.name}</Text>
           <Text style={typography.caption}>
-            {routine.weekdays.length === 7 ? 'Every day' : routine.weekdays.map((w) => WEEKDAY_LABELS[w]).join(', ')}
+            {routine.weekdays.length === 7 ? t('everyDay') : routine.weekdays.map((w) => WEEKDAY_LABELS[w]).join(', ')}
             {routine.timeOfDay ? ` · ${routine.timeOfDay}` : ''}
           </Text>
         </View>
-        <Badge text={allDone ? 'done' : scheduledToday ? `${doneStepIds.length}/${routine.steps.length}` : '—'} color={allDone ? colors.success : colors.textSecondary} bg={allDone ? colors.successSoft : colors.surfaceAlt} />
+        <Badge text={allDone ? t('doneLabel') : scheduledToday ? `${doneStepIds.length}/${routine.steps.length}` : '—'} color={allDone ? colors.success : colors.textSecondary} bg={allDone ? colors.successSoft : colors.surfaceAlt} />
       </View>
 
       {scheduledToday && routine.steps.length > 0 ? (
@@ -156,6 +159,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
 
 function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
   styles = createStyles();
+  const t = useT();
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const today = todayKey();
@@ -183,7 +187,7 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
       style={{ marginBottom: spacing.md }}
       onPress={onEdit}
       onLongPress={() =>
-        Alert.alert('Delete habit?', habit.name, [
+        Alert.alert(t('deleteHabitQ'), habit.name, [
           { text: 'Delete', style: 'destructive', onPress: () => remove('habits', habit.id) },
           { text: 'Cancel', style: 'cancel' },
         ])
@@ -193,8 +197,8 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{habit.name}</Text>
           <Text style={typography.caption}>
-            {habit.frequency.type === 'daily' ? 'Daily' : habit.frequency.type === 'weekly' ? 'Weekly' : 'Custom days'}
-            {completionRate != null ? ` · ${completionRate}% last 30d` : ''}
+            {habit.frequency.type === 'daily' ? t('daily') : habit.frequency.type === 'weekly' ? t('weekly') : t('customDays')}
+            {completionRate != null ? ` · ${completionRate}% ${t('last30d')}` : ''}
           </Text>
         </View>
         <Pressable onPress={toggle} hitSlop={10} style={[styles.habitToggle, doneToday && styles.habitToggleDone]}>
@@ -209,8 +213,8 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
         })}
       </View>
       <View style={styles.statsRow}>
-        <Badge text={`🔥 ${streak} day streak`} color={colors.warning} bg={colors.warningSoft} />
-        {!scheduled && <Badge text="not scheduled today" />}
+        <Badge text={`🔥 ${streak} ${t('dayStreak')}`} color={colors.warning} bg={colors.warningSoft} />
+        {!scheduled && <Badge text={t('notScheduledToday')} />}
       </View>
     </Card>
   );
@@ -236,6 +240,7 @@ function useCompletionRate(habit: Habit, days: number): number | null {
 
 export function RoutineEditorModal({ routineId, visible, onClose }: { routineId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -298,12 +303,12 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>{editing ? 'Edit routine' : 'New routine'}</Text>
+          <Text style={styles.sheetTitle}>{editing ? t('editRoutine') : t('newRoutine')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Name">
+            <Field label={t('name')}>
               <TextBox value={name} onChangeText={setName} placeholder="e.g. Morning routine" autoFocus={!editing} />
             </Field>
-            <Field label="Days">
+            <Field label={t('days')}>
               <ChipRow>
                 {WEEKDAY_LABELS.map((l, i) => {
                   const on = weekdays.includes(i);
@@ -313,32 +318,32 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
                 })}
               </ChipRow>
               <ChipRow style={{ marginTop: 6 }}>
-                <Chip label="Every day" selected={weekdays.length === 7} onPress={() => setWeekdays([0, 1, 2, 3, 4, 5, 6])} />
-                <Chip label="Weekdays" selected={weekdays.length === 5 && [1, 2, 3, 4, 5].every((d) => weekdays.includes(d))} onPress={() => setWeekdays([1, 2, 3, 4, 5])} />
+                <Chip label={t('everyDay')} selected={weekdays.length === 7} onPress={() => setWeekdays([0, 1, 2, 3, 4, 5, 6])} />
+                <Chip label={t('weekdays')} selected={weekdays.length === 5 && [1, 2, 3, 4, 5].every((d) => weekdays.includes(d))} onPress={() => setWeekdays([1, 2, 3, 4, 5])} />
               </ChipRow>
             </Field>
-            <Field label="Time (optional)">
+            <Field label={t('timeOpt')}>
               <TextBox value={timeOfDay} onChangeText={setTimeOfDay} placeholder="HH:mm" />
             </Field>
-            <Field label="Steps">
+            <Field label={t('steps')}>
               {steps.map((s, i) => (
                 <View key={s.id} style={styles.stepEditRow}>
                   <Text style={styles.stepIndex}>{i + 1}.</Text>
-                  <TextBox value={s.label} onChangeText={(v) => setStepLabel(s.id, v)} placeholder="Step…" style={{ flex: 1 }} />
+                  <TextBox value={s.label} onChangeText={(v) => setStepLabel(s.id, v)} placeholder={t('stepPlaceholder')} style={{ flex: 1 }} />
                   <Pressable onPress={() => setSteps(steps.filter((x) => x.id !== s.id))} hitSlop={8}>
                     <Ionicons name="trash-outline" size={16} color={colors.danger} />
                   </Pressable>
                 </View>
               ))}
               <View style={styles.stepAdd}>
-                <TextBox value={newStep} onChangeText={setNewStep} placeholder="Add step…" style={{ flex: 1 }} onSubmitEditing={addStep} returnKeyType="done" />
-                <Button title="Add" small onPress={addStep} />
+                <TextBox value={newStep} onChangeText={setNewStep} placeholder={t('addStep')} style={{ flex: 1 }} onSubmitEditing={addStep} returnKeyType="done" />
+                <Button title={t('add')} small onPress={addStep} />
               </View>
             </Field>
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
@@ -353,6 +358,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
 
 export function HabitEditorModal({ habitId, visible, onClose }: { habitId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -409,16 +415,16 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>{editing ? 'Edit habit' : 'New habit'}</Text>
+          <Text style={styles.sheetTitle}>{editing ? t('editHabit') : t('newHabit')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Name">
+            <Field label={t('name')}>
               <TextBox value={name} onChangeText={setName} placeholder="e.g. Read 20 pages" autoFocus={!editing} />
             </Field>
-            <Field label="Frequency">
+            <Field label={t('frequency')}>
               <ChipRow>
-                <Chip label="Daily" selected={freqType === 'daily'} onPress={() => setFreqType('daily')} />
-                <Chip label="Weekly" selected={freqType === 'weekly'} onPress={() => setFreqType('weekly')} />
-                <Chip label="Custom days" selected={freqType === 'custom'} onPress={() => setFreqType('custom')} />
+                <Chip label={t('daily')} selected={freqType === 'daily'} onPress={() => setFreqType('daily')} />
+                <Chip label={t('weekly')} selected={freqType === 'weekly'} onPress={() => setFreqType('weekly')} />
+                <Chip label={t('customDays')} selected={freqType === 'custom'} onPress={() => setFreqType('custom')} />
               </ChipRow>
             </Field>
             {freqType === 'custom' && (
@@ -432,7 +438,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
               </ChipRow>
             )}
             {freqType === 'weekly' && (
-              <Field label="Target times per week">
+              <Field label={t('targetTimes')}>
                 <ChipRow>
                   {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                     <Chip key={n} label={String(n)} selected={timesPerWeek === n} onPress={() => setTimesPerWeek(n)} />
@@ -440,18 +446,18 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
                 </ChipRow>
               </Field>
             )}
-            <Field label="Linked goal (optional)">
+            <Field label={t('linkedGoal')}>
               <ChipRow>
-                <Chip label="None" selected={!goalId} onPress={() => setGoalId(null)} />
+                <Chip label={t('none')} selected={!goalId} onPress={() => setGoalId(null)} />
                 {goals.map((g) => (
                   <Chip key={g.id} label={g.title} selected={goalId === g.id} onPress={() => setGoalId(g.id)} />
                 ))}
               </ChipRow>
             </Field>
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
