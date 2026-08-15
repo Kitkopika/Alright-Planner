@@ -136,7 +136,8 @@ export default function TodayScreen() {
           <View style={{ flex: 1 }}>
             <Text style={typography.section}>{t('dailyProgress')}</Text>
             <Text style={typography.caption}>
-              {today.progress.done} of {today.progress.total} done{today.progress.total > 0 ? ` · ${today.progress.pct}%` : ''}
+              {t('progressOf').replace('{done}', String(today.progress.done)).replace('{total}', String(today.progress.total))}
+              {today.progress.total > 0 ? ` · ${today.progress.pct}%` : ''}
             </Text>
           </View>
           <View style={styles.ring}>

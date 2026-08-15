@@ -136,7 +136,14 @@ export default function NotesScreen() {
                 <View style={styles.noteMeta}>
                   <Text style={[typography.caption, { color: colors.textMuted }]}>{dateKey(new Date(n.updatedAt))}</Text>
                   {(n.tags || []).slice(0, 3).map((t) => <Badge key={t} text={`#${t}`} color={colors.accent} bg={colors.accentSoft} />)}
-                  {n.taskId || n.projectId || n.goalId || n.eventId ? <Badge text={t('linkedBadge')} color={colors.info} bg={colors.infoSoft} /> : null}
+                  {(() => {
+                    const linked =
+                      (n.taskId ? data.collections.tasks.find((x) => x.id === n.taskId && !x.deletedAt)?.title : '') ||
+                      (n.projectId ? data.collections.projects.find((x) => x.id === n.projectId && !x.deletedAt)?.name : '') ||
+                      (n.goalId ? data.collections.goals.find((x) => x.id === n.goalId && !x.deletedAt)?.title : '') ||
+                      (n.eventId ? data.collections.events.find((x) => x.id === n.eventId && !x.deletedAt)?.title : '');
+                    return linked ? <Badge text={`${t('linkedBadge')} · ${linked}`} color={colors.info} bg={colors.infoSoft} /> : null;
+                  })()}
                 </View>
               </View>
             </Card>
@@ -253,28 +260,28 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
             </Field>
 
             <Field label={t('linkTo')}>
-              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4 }]}>Task</Text>
+              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4 }]}>{t('typeTask')}</Text>
               <ChipRow>
                 <Chip label={t('none')} selected={!taskId} onPress={() => setTaskId(null)} />
                 {tasks.slice(0, 6).map((t) => (
                   <Chip key={t.id} label={t.title.slice(0, 18)} selected={taskId === t.id} onPress={() => setTaskId(t.id)} />
                 ))}
               </ChipRow>
-              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Project</Text>
+              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>{t('project')}</Text>
               <ChipRow>
                 <Chip label={t('none')} selected={!projectId} onPress={() => setProjectId(null)} />
                 {projects.slice(0, 6).map((p) => (
                   <Chip key={p.id} label={p.name.slice(0, 18)} selected={projectId === p.id} onPress={() => setProjectId(p.id)} />
                 ))}
               </ChipRow>
-              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Goal</Text>
+              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>{t('typeGoal')}</Text>
               <ChipRow>
                 <Chip label={t('none')} selected={!goalId} onPress={() => setGoalId(null)} />
                 {goals.slice(0, 6).map((g) => (
                   <Chip key={g.id} label={g.title.slice(0, 18)} selected={goalId === g.id} onPress={() => setGoalId(g.id)} />
                 ))}
               </ChipRow>
-              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Event</Text>
+              <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>{t('eventLabel')}</Text>
               <ChipRow>
                 <Chip label={t('none')} selected={!eventId} onPress={() => setEventId(null)} />
                 {events.slice(0, 6).map((e) => (

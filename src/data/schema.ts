@@ -29,6 +29,13 @@ const isObj: Validator = (v) => !!v && typeof v === 'object' && !Array.isArray(v
 const isStrArr: Validator = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string');
 const isNumArr: Validator = (v) => Array.isArray(v) && v.every((x) => typeof x === 'number' && Number.isFinite(x));
 
+/** Validate a list of ReminderOffset { id, offsetMin } entries. */
+const isReminderOffsets: Validator = (v) =>
+  v === undefined ||
+  v === null ||
+  (Array.isArray(v) &&
+    v.every((x) => !!x && typeof x === 'object' && typeof (x as Record<string, unknown>).id === 'string' && typeof (x as Record<string, unknown>).offsetMin === 'number'));
+
 /** Validate a recurrence object. */
 function isRecurrence(v: unknown): boolean {
   if (!isObj(v)) return false;
@@ -69,9 +76,9 @@ const SHAPES: Record<EntityKind, Record<string, Validator>> = {
     eventId: isStrOrNull,
     completedDates: isStrArr,
     completedAt: isStrOrNull,
-    estimatedMinutes: isNum,
     tags: isStrArr,
     sortOrder: isNum,
+    reminders: isReminderOffsets,
   },
   events: {
     title: isStr,
@@ -80,6 +87,7 @@ const SHAPES: Record<EntityKind, Record<string, Validator>> = {
     allDay: isBool,
     recurrence: (v) => v === null || v === undefined || isRecurrence(v),
     reminderOffsetMin: (v) => v === null || v === undefined || isNum(v),
+    reminders: isReminderOffsets,
     location: isStr,
     notes: isStr,
     color: isStr,

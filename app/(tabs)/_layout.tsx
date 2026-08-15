@@ -21,7 +21,6 @@ const TABS: { name: string; tKey: TKey; icon: IconName; iconActive: IconName }[]
   { name: 'money', tKey: 'money', icon: 'wallet-outline', iconActive: 'wallet' },
   { name: 'goals', tKey: 'goals', icon: 'flag-outline', iconActive: 'flag' },
   { name: 'notes', tKey: 'notes', icon: 'document-text-outline', iconActive: 'document-text' },
-  { name: 'insights', tKey: 'insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
 ];
 
 export default function TabsLayout() {

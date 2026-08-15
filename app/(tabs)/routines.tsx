@@ -23,6 +23,7 @@ import { addDays, dateKey, todayKey } from '../../src/core/time';
 import { habitScheduledToday, habitStreak } from '../../src/features/today';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
+import { DateField, TimeField } from '../../src/components/form';
 import { newId } from '../../src/core/id';
 
 const PALETTE = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED', '#DB2777'];
@@ -47,7 +48,7 @@ export default function RoutinesScreen() {
         <Text style={typography.title}>{t('routines')}</Text>
         <View style={styles.headerActions}>
           <Button
-            title="+"
+            title={`+ ${tab === 'routines' ? t('routines') : t('habits')}`}
             small
             onPress={() => {
               setRoutineEditor(null);
@@ -324,7 +325,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
               </ChipRow>
             </Field>
             <Field label={t('timeOpt')}>
-              <TextBox value={timeOfDay} onChangeText={setTimeOfDay} placeholder="HH:mm" />
+              <TimeField value={timeOfDay} onChange={setTimeOfDay} allowClear />
             </Field>
             <Field label={t('steps')}>
               {steps.map((s, i) => (

@@ -28,6 +28,12 @@ export interface BaseEntity {
 export type TaskStatus = 'todo' | 'doing' | 'done' | 'cancelled';
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 
+/** A "remind me X before" offset attached to an event or task. */
+export interface ReminderOffset {
+  id: string;
+  offsetMin: number;
+}
+
 export type RecurrenceFreq = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 /** Simple recurrence rule. Weekday numbers: 0 = Sunday ... 6 = Saturday. */
@@ -78,9 +84,10 @@ export interface Task extends BaseEntity {
   /** For recurring tasks: date keys ("YYYY-MM-DD") on which an instance was completed. */
   completedDates?: string[];
   completedAt?: string | null;
-  estimatedMinutes?: number;
   tags?: string[];
   sortOrder?: number;
+  /** "Remind me X before" offsets. */
+  reminders?: ReminderOffset[] | null;
 }
 
 export interface Event extends BaseEntity {
@@ -91,8 +98,10 @@ export interface Event extends BaseEntity {
   endAt?: string | null;
   allDay?: boolean;
   recurrence?: Recurrence | null;
-  /** Minutes before start to remind. */
+  /** Minutes before start to remind (legacy single reminder). */
   reminderOffsetMin?: number | null;
+  /** "Remind me X before" offsets. */
+  reminders?: ReminderOffset[] | null;
   location?: string;
   notes?: string;
   color?: string;

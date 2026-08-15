@@ -17,6 +17,7 @@ import {
 import { useLifeOS } from '../data/store';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { ReminderPicker, ReminderOffset } from './reminderPicker';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from './form';
 import { Recurrence } from '../core/types';
 import { useT } from '../i18n';
@@ -54,7 +55,7 @@ export function EventEditorModal({
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null);
   const [color, setColor] = useState(EVENT_COLORS[0]);
   const [notes, setNotes] = useState('');
-  const [reminderMin, setReminderMin] = useState<string>('');
+  const [reminders, setReminders] = useState<ReminderOffset[]>([]);
 
   useEffect(() => {
     if (!visible) return;
@@ -70,7 +71,9 @@ export function EventEditorModal({
       setRecurrence(editing.recurrence || null);
       setColor(editing.color || EVENT_COLORS[0]);
       setNotes(editing.notes || '');
-      setReminderMin(editing.reminderOffsetMin != null ? String(editing.reminderOffsetMin) : '');
+      // Migrate the legacy single offset into the reminders list.
+      const legacy = editing.reminderOffsetMin != null ? [{ id: `${editing.id}:rem`, offsetMin: editing.reminderOffsetMin }] : [];
+      setReminders(editing.reminders && editing.reminders.length > 0 ? editing.reminders : legacy);
     } else {
       const today = new Date();
       setTitle('');
@@ -82,7 +85,7 @@ export function EventEditorModal({
       setRecurrence(null);
       setColor(EVENT_COLORS[0]);
       setNotes('');
-      setReminderMin('');
+      setReminders([]);
     }
   }, [visible, editing, initialDate]);
 
@@ -100,7 +103,6 @@ export function EventEditorModal({
     // same-day events can set a start + end time (e.g. 12:30–14:00).
     const endDay = endDate || (endTime ? date : '');
     const endAt = endDay ? (allDay ? endDay : `${endDay}T${endTime || time || '10:00'}`) : null;
-    const reminderOffsetMin = reminderMin.trim() === '' ? null : parseInt(reminderMin.trim(), 10);
     const payload = {
       title: title.trim(),
       startAt,
@@ -109,7 +111,8 @@ export function EventEditorModal({
       recurrence,
       color,
       notes: notes.trim() || undefined,
-      reminderOffsetMin,
+      reminders: reminders.length > 0 ? reminders : null,
+      reminderOffsetMin: null,
     };
     if (editing) {
       update('events', editing.id, payload);
@@ -153,7 +156,7 @@ export function EventEditorModal({
               </ChipRow>
             </Field>
             <Field label={t('remindBefore')}>
-              <TextBox value={reminderMin} onChangeText={setReminderMin} placeholder="e.g. 30" keyboardType="number-pad" />
+              <ReminderPicker reminders={reminders} onChange={setReminders} />
             </Field>
             <Field label={t('taskNotes')}>
               <TextBox value={notes} onChangeText={setNotes} placeholder={t('optional')} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />

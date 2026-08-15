@@ -26,28 +26,28 @@ import { isoDateTime } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 import { WheelPicker } from './wheel';
-import { useT } from '../i18n';
+import { TKey, useT } from '../i18n';
 
 const PRESETS = [25, 50, 90];
 const HOURS = Array.from({ length: 100 }, (_, i) => i); // 0–99 hours
 const MINUTES = Array.from({ length: 60 }, (_, i) => i); // 0–59, 1-minute steps
 
-/** "45s", "12m", or "1h 30m" — humanized remaining/duration time. */
-function formatDuration(totalSeconds: number): string {
+/** "45s", "12m", or "1h 30m" — humanized remaining/duration time (locale-aware). */
+function formatDuration(totalSeconds: number, tt: (k: TKey) => string): string {
   if (totalSeconds < 60) return `${totalSeconds}s`;
   const m = Math.floor(totalSeconds / 60);
-  if (m < 60) return `${m}m`;
+  if (m < 60) return `${m}${tt('minShort')}`;
   const h = Math.floor(m / 60);
   const rm = m % 60;
-  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  return rm > 0 ? `${h}${tt('hourShort')} ${rm}${tt('minShort')}` : `${h}${tt('hourShort')}`;
 }
 
-/** Humanized duration from integer minutes ("30m", "1h 30m"). */
-function formatMinutes(min: number): string {
-  if (min < 60) return `${min}m`;
+/** Humanized duration from integer minutes ("30m", "1h 30m") — locale-aware. */
+function formatMinutes(min: number, tt: (k: TKey) => string): string {
+  if (min < 60) return `${min}${tt('minShort')}`;
   const h = Math.floor(min / 60);
   const rm = min % 60;
-  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  return rm > 0 ? `${h}${tt('hourShort')} ${rm}${tt('minShort')}` : `${h}${tt('hourShort')}`;
 }
 
 
@@ -246,7 +246,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   }, [running, secondsLeft, saveSession]);
 
   const locked = running || paused;
-  const timeLabel = formatDuration(secondsLeft);
+  const timeLabel = formatDuration(secondsLeft, t);
   const hint = done
     ? t('focusComplete')
     : paused
@@ -255,7 +255,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
         ? t('focusing')
         : minutes === 25
           ? t('daily')
-          : `${minutes} ${t('minSuffix')}`;
+          : `${minutes} ${t('minShort')}`;
   const sessions = data.collections.focusSessions.filter((s) => !s.deletedAt).sort((a, b) => (b.startedAt > a.startedAt ? 1 : -1)).slice(0, 8);
   const tasks = data.collections.tasks.filter((task) => !task.deletedAt && task.status !== 'done').slice(0, 8);
   const lockLabel = subject.trim() || tasks.find((task) => task.id === taskId)?.title || '';
@@ -293,7 +293,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
               <>
                 <ChipRow>
                   {PRESETS.map((m) => (
-                    <Chip key={m} label={`${m} min`} selected={minutes === m} onPress={() => changeDuration(m)} />
+                    <Chip key={m} label={`${m} ${t('minShort')}`} selected={minutes === m} onPress={() => changeDuration(m)} />
                   ))}
                 </ChipRow>
 
@@ -324,7 +324,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
                         <Text style={[typography.body, { flex: 1, fontSize: 14 }]} numberOfLines={1}>
                           {s.subject || tasks.find((task) => task.id === s.taskId)?.title || t('focus')}
                         </Text>
-                        <Text style={typography.caption}>{formatMinutes(s.durationMin)}</Text>
+                        <Text style={typography.caption}>{formatMinutes(s.durationMin, t)}</Text>
                         <Pressable onPress={() => remove('focusSessions', s.id)} hitSlop={8}>
                           <Ionicons name="close-circle-outline" size={16} color={colors.textMuted} />
                         </Pressable>

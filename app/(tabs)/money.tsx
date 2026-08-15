@@ -95,10 +95,9 @@ export default function MoneyScreen() {
       <View style={styles.header}>
         <Text style={typography.title}>{t('money')}</Text>
         <View style={styles.headerActions}>
-          <Button title="CSV" small variant="ghost" onPress={exportCSV} />
-          <Button title={t('categories')} small variant="ghost" onPress={() => setCategoriesOpen(true)} />
-        </View>
-      </View>
+          <Button title="CSV" small onPress={exportCSV} />
+          <Button title={t('categories')} small onPress={() => setCategoriesOpen(true)} />
+        </View>      </View>
 
       <ChipRow style={styles.filters}>
         {(['today', 'week', 'month', 'year'] as Range[]).map((r) => (

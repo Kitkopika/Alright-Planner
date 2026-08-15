@@ -23,6 +23,7 @@ import { addDays, dateKey, dayDiff, isoDateTime, startOfWeek, todayKey, tryParse
 import { colors, priorityColors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/components/form';
+import { ReminderPicker, ReminderOffset } from '../../src/components/reminderPicker';
 import { FocusTimerModal } from '../../src/components/focusTimer';
 import { TKey, useT } from '../../src/i18n';
 
@@ -95,10 +96,20 @@ export default function TasksScreen() {
 
   const toggle = (t: Task) => {
     const isDone = t.status === 'done';
+    const next = isDone ? 'todo' : 'done';
     update('tasks', t.id, {
-      status: isDone ? 'todo' : 'done',
+      status: next,
       completedAt: isDone ? null : isoDateTime(new Date()),
     });
+    // Auto-tick / untick every subtask together with its parent task.
+    for (const st of allTasks) {
+      if (st.parentTaskId === t.id) {
+        update('tasks', st.id, {
+          status: next,
+          completedAt: isDone ? null : isoDateTime(new Date()),
+        });
+      }
+    }
   };
 
   const openEditor = (id: string) => {
@@ -179,6 +190,7 @@ export default function TasksScreen() {
 function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: Task; projectName?: string; onToggle: () => void; onOpen: () => void; onLongPress?: () => void }) {
   styles = createStyles();
   const t = useT();
+  const update = useLifeOS((s) => s.update);
   const tasks = useLifeOS((s) => s.data.collections.tasks); // stable reference
   const subtasks = tasks.filter((t) => !t.deletedAt && t.parentTaskId === task.id && t.status !== 'cancelled');
   const due = task.dueAt ? tryParseISO(task.dueAt) : null;
@@ -200,8 +212,32 @@ function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: T
           {task.dueAt ? <Badge text={dueLabel(task.dueAt, t)} color={isOverdue ? colors.danger : colors.textSecondary} bg={isOverdue ? colors.dangerSoft : colors.surfaceAlt} /> : null}
           {task.recurrence ? <Badge text="repeat" color={colors.info} bg={colors.infoSoft} /> : null}
           {projectName ? <Badge text={projectName} color={colors.accent} bg={colors.accentSoft} /> : null}
-          {subtasks.length > 0 ? <Badge text={`${subtasks.length} subtask${subtasks.length > 1 ? 's' : ''}`} /> : null}
+          {task.reminders && task.reminders.length > 0 ? <Badge text={t('reminders')} color={colors.warning} bg={colors.warningSoft} /> : null}
         </View>
+        {subtasks.length > 0 && (
+          <View style={styles.subtaskList}>
+            {subtasks.map((st) => {
+              const stDone = st.status === 'done';
+              return (
+                <Pressable
+                  key={st.id}
+                  style={styles.subtaskRowCompact}
+                  onPress={() =>
+                    update('tasks', st.id, {
+                      status: stDone ? 'todo' : 'done',
+                      completedAt: stDone ? null : isoDateTime(new Date()),
+                    })
+                  }
+                >
+                  <Ionicons name={stDone ? 'checkbox' : 'square-outline'} size={15} color={stDone ? colors.success : colors.textMuted} />
+                  <Text style={[styles.subtaskTitle, stDone && { textDecorationLine: 'line-through', color: colors.textMuted }]} numberOfLines={1}>
+                    {st.title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </View>
       <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
     </Card>
@@ -230,6 +266,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
 
   const editing = taskId ? data.collections.tasks.find((t) => t.id === taskId && !t.deletedAt) : undefined;
   const subtasks = data.collections.tasks.filter((t) => !t.deletedAt && t.parentTaskId === taskId && t.status !== 'cancelled');
+  const linkedNotes = data.collections.notes.filter((n) => !n.deletedAt && n.taskId === taskId);
   const projects = data.collections.projects.filter((p) => !p.deletedAt && p.status !== 'archived');
 
   const [title, setTitle] = useState('');
@@ -241,7 +278,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
   const [recurrence, setRecurrence] = useState<Task['recurrence']>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [tags, setTags] = useState('');
-  const [minutes, setMinutes] = useState('');
+  const [reminders, setReminders] = useState<ReminderOffset[]>([]);
   const [newSubtask, setNewSubtask] = useState('');
 
   useEffect(() => {
@@ -257,7 +294,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
       setRecurrence(editing.recurrence || null);
       setProjectId(editing.projectId || null);
       setTags((editing.tags || []).join(', '));
-      setMinutes(editing.estimatedMinutes != null ? String(editing.estimatedMinutes) : '');
+      setReminders(editing.reminders && editing.reminders.length > 0 ? editing.reminders : []);
       setNewSubtask('');
     } else {
       setTitle('');
@@ -269,7 +306,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
       setRecurrence(null);
       setProjectId(null);
       setTags('');
-      setMinutes('');
+      setReminders([]);
       setNewSubtask('');
     }
   }, [visible, editing]);
@@ -286,7 +323,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
       recurrence,
       projectId: projectId || null,
       tags: tags.split(',').map((s) => s.trim()).filter(Boolean),
-      estimatedMinutes: minutes ? parseInt(minutes, 10) : undefined,
+      reminders: reminders.length > 0 ? reminders : null,
     };
     if (editing) update('tasks', editing.id, payload);
     else create('tasks', payload);
@@ -347,9 +384,22 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
             <Field label={t('tagsComma')}>
               <TextBox value={tags} onChangeText={setTags} placeholder="work, errand" />
             </Field>
-            <Field label={t('estimatedMinutes')}>
-              <TextBox value={minutes} onChangeText={setMinutes} placeholder="e.g. 45" keyboardType="number-pad" />
+            <Field label={t('remindBefore')}>
+              <ReminderPicker reminders={reminders} onChange={setReminders} />
             </Field>
+
+            {editing && linkedNotes.length > 0 && (
+              <Field label={t('linkedNotes')}>
+                {linkedNotes.map((n) => (
+                  <View key={n.id} style={styles.linkedNoteRow}>
+                    <Ionicons name="document-text-outline" size={14} color={colors.textSecondary} />
+                    <Text style={[typography.body, { flex: 1, fontSize: 13 }]} numberOfLines={1}>
+                      {n.title || t('untitled')}
+                    </Text>
+                  </View>
+                ))}
+              </Field>
+            )}
 
             {editing && (
               <Field label={`${t('subtasks')} (${subtasks.length})`}>
@@ -409,6 +459,10 @@ function createStyles() {
     maxHeight: '90%',
   },
   sheetTitle: { ...typography.title, marginBottom: spacing.lg },
+  subtaskList: { marginTop: spacing.xs, gap: 2 },
+  subtaskRowCompact: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
+  subtaskTitle: { flex: 1, fontSize: 12, color: colors.text },
+  linkedNoteRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 3 },
   subtaskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 6 },
   subtaskAdd: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
