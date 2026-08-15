@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Goals"
+            android:textColor="#1C1C22"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+        <TextView
+            android:id="@+id/widget_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textColor="#6B6B76"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- 6 goal rows -->
+    <LinearLayout android:id="@+id/goal_row0" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row0_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row0_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row0_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/goal_row1" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row1_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row1_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row1_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/goal_row2" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row2_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row2_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row2_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/goal_row3" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row3_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row3_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row3_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/goal_row4" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row4_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row4_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row4_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/goal_row5" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <View android:id="@+id/goal_row5_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/goal_row5_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/goal_row5_pct" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#4F46E5" android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="12dp"
+        android:textColor="#9A9AA5"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</LinearLayout>

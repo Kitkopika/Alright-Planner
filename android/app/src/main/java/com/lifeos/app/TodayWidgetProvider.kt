@@ -25,7 +25,13 @@ class TodayWidgetProvider : AppWidgetProvider() {
 
         @JvmStatic
         fun updateWidget(context: Context, manager: AppWidgetManager, widgetId: Int) {
-            manager.updateAppWidget(widgetId, buildViews(context, widgetId))
+            val views = try {
+                buildViews(context, widgetId)
+            } catch (e: Exception) {
+                // Never let the widget render blank because of a render error.
+                RemoteViews(context.packageName, R.layout.today_widget)
+            }
+            manager.updateAppWidget(widgetId, views)
         }
 
         private fun buildViews(context: Context, widgetId: Int): RemoteViews {

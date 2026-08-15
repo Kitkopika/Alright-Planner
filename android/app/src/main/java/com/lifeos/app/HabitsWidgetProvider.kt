@@ -25,7 +25,13 @@ class HabitsWidgetProvider : AppWidgetProvider() {
 
         @JvmStatic
         fun updateWidget(context: Context, manager: AppWidgetManager, widgetId: Int) {
-            manager.updateAppWidget(widgetId, buildViews(context, widgetId))
+            val views = try {
+                buildViews(context, widgetId)
+            } catch (e: Exception) {
+                // Never let the widget render blank because of a render error.
+                RemoteViews(context.packageName, R.layout.habits_widget)
+            }
+            manager.updateAppWidget(widgetId, views)
         }
 
         private fun buildViews(context: Context, widgetId: Int): RemoteViews {
@@ -75,7 +81,7 @@ class HabitsWidgetProvider : AppWidgetProvider() {
             val collections = doc.optJSONObject("data")?.optJSONObject("collections") ?: return emptyList()
             val out = mutableListOf<HabitItem>()
             val cal = java.util.Calendar.getInstance()
-            val dow = (cal.get(java.util.Calendar.DAY_OF_WEEK) + 5) % 7 // 0 = Monday ... 6 = Sunday
+            val dow = (cal.get(java.util.Calendar.DAY_OF_WEEK) + 6) % 7 // 0 = Sunday ... 6 = Saturday (matches routine.weekdays)
 
             // Habits scheduled/completed today.
             collections.optJSONArray("habits")?.let { habits ->

@@ -113,6 +113,8 @@ object WidgetData {
             MoneyWidgetProvider::class.java,
             HabitsWidgetProvider::class.java,
             FocusWidgetProvider::class.java,
+            GoalsWidgetProvider::class.java,
+            RemindersWidgetProvider::class.java,
         )
         for (provider in providers) {
             val ids = manager.getAppWidgetIds(ComponentName(context, provider))
@@ -122,6 +124,8 @@ object WidgetData {
                     MoneyWidgetProvider::class.java -> MoneyWidgetProvider.updateWidget(context, manager, id)
                     HabitsWidgetProvider::class.java -> HabitsWidgetProvider.updateWidget(context, manager, id)
                     FocusWidgetProvider::class.java -> FocusWidgetProvider.updateWidget(context, manager, id)
+                    GoalsWidgetProvider::class.java -> GoalsWidgetProvider.updateWidget(context, manager, id)
+                    RemindersWidgetProvider::class.java -> RemindersWidgetProvider.updateWidget(context, manager, id)
                 }
             }
         }

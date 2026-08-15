@@ -4,4 +4,6 @@
   <string name="widget_money_description">Today\'s spending at a glance.</string>
   <string name="widget_habits_description">Today\'s habits and routines.</string>
   <string name="widget_focus_description">Today\'s focus time.</string>
+  <string name="widget_goals_description">Your active goals with progress.</string>
+  <string name="widget_reminders_description">Today\'s reminders.</string>
 </resources>
