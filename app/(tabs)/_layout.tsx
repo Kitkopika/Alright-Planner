@@ -9,22 +9,24 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme';
+import { TKey, useT } from '../../src/i18n';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
-const TABS: { name: string; label: string; icon: IconName; iconActive: IconName }[] = [
-  { name: 'index', label: 'Today', icon: 'today-outline', iconActive: 'today' },
-  { name: 'calendar', label: 'Calendar', icon: 'calendar-outline', iconActive: 'calendar' },
-  { name: 'tasks', label: 'Tasks', icon: 'checkbox-outline', iconActive: 'checkbox' },
-  { name: 'routines', label: 'Routines', icon: 'repeat-outline', iconActive: 'repeat' },
-  { name: 'money', label: 'Money', icon: 'wallet-outline', iconActive: 'wallet' },
-  { name: 'goals', label: 'Goals', icon: 'flag-outline', iconActive: 'flag' },
-  { name: 'notes', label: 'Notes', icon: 'document-text-outline', iconActive: 'document-text' },
-  { name: 'insights', label: 'Insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
+const TABS: { name: string; tKey: TKey; icon: IconName; iconActive: IconName }[] = [
+  { name: 'index', tKey: 'today', icon: 'today-outline', iconActive: 'today' },
+  { name: 'calendar', tKey: 'calendar', icon: 'calendar-outline', iconActive: 'calendar' },
+  { name: 'tasks', tKey: 'tasks', icon: 'checkbox-outline', iconActive: 'checkbox' },
+  { name: 'routines', tKey: 'routines', icon: 'repeat-outline', iconActive: 'repeat' },
+  { name: 'money', tKey: 'money', icon: 'wallet-outline', iconActive: 'wallet' },
+  { name: 'goals', tKey: 'goals', icon: 'flag-outline', iconActive: 'flag' },
+  { name: 'notes', tKey: 'notes', icon: 'document-text-outline', iconActive: 'document-text' },
+  { name: 'insights', tKey: 'insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
 ];
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const tt = useT();
 
   return (
     <Tabs
@@ -41,14 +43,14 @@ export default function TabsLayout() {
         sceneStyle: { paddingTop: insets.top, backgroundColor: colors.background },
       }}
     >
-      {TABS.map((t) => (
+      {TABS.map((tab) => (
         <Tabs.Screen
-          key={t.name}
-          name={t.name}
+          key={tab.name}
+          name={tab.name}
           options={{
-            title: t.label,
+            title: tt(tab.tKey),
             tabBarIcon: ({ color, focused, size }) => (
-              <Ionicons name={focused ? t.iconActive : t.icon} size={size} color={color} />
+              <Ionicons name={focused ? tab.iconActive : tab.icon} size={size} color={color} />
             ),
           }}
         />

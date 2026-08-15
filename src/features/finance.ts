@@ -123,8 +123,15 @@ export function formatCents(cents: number): string {
   return `${sign}${major}.${minor.toString().padStart(2, '0')}`;
 }
 
-export function formatMoney(cents: number, currency = 'USD'): string {
-  const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', JPY: '¥', KRW: '₩', CNY: '¥' };
+/** Active display currency; defaults to THB (Thai Baht) and is set from Settings. */
+let defaultCurrency = 'THB';
+
+export function setDefaultCurrency(currency: string): void {
+  defaultCurrency = currency;
+}
+
+export function formatMoney(cents: number, currency = defaultCurrency): string {
+  const symbols: Record<string, string> = { USD: '$', THB: '฿', EUR: '€', GBP: '£', JPY: '¥', KRW: '₩', CNY: '¥' };
   const sym = symbols[currency] || `${currency} `;
   return `${sym}${formatCents(cents)}`;
 }

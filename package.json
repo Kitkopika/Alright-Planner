@@ -1,8 +1,8 @@
 {
-  "name": "life-os",
-  "description": "Life OS — a lightweight, local-first personal life operating system. Android-first, cross-platform.",
+  "name": "alright",
+  "description": "Alright — a lightweight, local-first personal life app. Android-first, cross-platform.",
   "license": "MIT",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "main": "expo-router/entry",
   "private": true,
   "scripts": {
@@ -30,6 +30,7 @@
     "react-native": "0.86.2",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
     "react-native-web": "^0.21.2",
     "zustand": "^5.0.8"
   },

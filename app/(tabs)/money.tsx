@@ -18,13 +18,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useLifeOS } from '../../src/data/store';
+import { useSettings } from '../../src/data/settings';
 import { Category, TransactionKind } from '../../src/core/types';
 import { buildSummaries, formatMoney } from '../../src/features/finance';
 import { transactionsToCSV } from '../../src/features/financeCsv';
-import { dateKey, isoCompare, isoDateTime } from '../../src/core/time';
+import { dateKey, formatDateKeyDDMM, isoCompare, isoDateTime } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox } from '../../src/components/ui';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField, MoneyField, TimeField, combineDateTime, splitDateTime } from '../../src/components/form';
+import { DonutChart } from '../../src/components/charts';
 
 type Range = 'today' | 'week' | 'month' | 'year';
 
@@ -127,18 +129,22 @@ export default function MoneyScreen() {
           <EmptyState icon="pie-chart-outline" title="No spending in this range" />
         ) : (
           <Card>
-            {summary.byCategory.map((slice) => (
-              <View key={slice.categoryId || 'none'} style={styles.catRow}>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.catHeader}>
+            <View style={styles.donutWrap}>
+              <DonutChart
+                data={summary.byCategory.map((s) => ({ value: s.cents, color: s.color }))}
+                centerLabel={`${Math.round(summary.byCategory[0].pct * 100)}%`}
+              />
+              <View style={styles.donutLegend}>
+                {summary.byCategory.slice(0, 5).map((slice) => (
+                  <View key={slice.categoryId || 'none'} style={styles.legendRow}>
                     <View style={[styles.catDot, { backgroundColor: slice.color }]} />
-                    <Text style={typography.body}>{slice.name}</Text>
-                    <Text style={[typography.body, { fontWeight: '700' }]}>{formatMoney(slice.cents)}</Text>
+                    <Text style={[typography.caption, { flex: 1 }]} numberOfLines={1}>{slice.name}</Text>
+                    <Text style={[typography.caption, { fontWeight: '700' }]}>{formatMoney(slice.cents)}</Text>
                   </View>
-                  <ProgressBar pct={slice.pct * 100} color={slice.color} height={5} style={{ marginTop: 4 }} />
-                </View>
+                ))}
               </View>
-            ))}
+            </View>
+            {summary.byCategory.length > 5 ? <Text style={[typography.caption, { color: colors.textMuted, marginTop: spacing.sm }]}>+{summary.byCategory.length - 5} more</Text> : null}
           </Card>
         )}
 
@@ -156,7 +162,7 @@ export default function MoneyScreen() {
         ) : (
           grouped.map(([day, items]) => (
             <View key={day}>
-              <Text style={styles.dayLabel}>{day}</Text>
+              <Text style={styles.dayLabel}>{formatDateKeyDDMM(day)}</Text>
               {items.map((t) => {
                 const cat = data.collections.categories.find((c) => c.id === t.categoryId);
                 return (
@@ -205,6 +211,7 @@ function SummaryCol({ label, value, color }: { label: string; value: string; col
 }
 
 function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit: (p: Record<string, unknown>) => void }) {
+  const currency = useSettings((s) => s.currency);
   const [cents, setCents] = useState(0);
   const [kind2, setKind2] = useState<TransactionKind>('expense');
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -216,7 +223,7 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
     onSubmit({
       kind2,
       amountCents: cents,
-      currency: 'USD',
+      currency,
       categoryId: categoryId || null,
       occurredAt: isoDateTime(new Date()),
       note: note.trim() || undefined,
@@ -410,6 +417,9 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: 120 },
   summaryRow3: { flexDirection: 'row' },
   catRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
+  donutWrap: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  donutLegend: { flex: 1, gap: 6 },
+  legendRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   catHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, justifyContent: 'space-between' },
   catDot: { width: 10, height: 10, borderRadius: 5 },
   dayLabel: { ...typography.label, color: colors.textSecondary, marginTop: spacing.md, marginBottom: spacing.xs },

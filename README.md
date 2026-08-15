@@ -1,4 +1,4 @@
-# Life OS
+# Alright
 
 A lightweight, **local-first personal life operating system** prototype. Android-first, one codebase that also runs on iOS and the web.
 
@@ -53,7 +53,7 @@ npm run export:web   # bundles the whole app for web (proves it compiles end to 
 A signed, installable release APK is built and left at the project root:
 
 ```
-life-os-1.0.2-release.apk   (com.lifeos.app, v1.0.2, minSdk 24, targetSdk 36)
+life-os-1.1.0-release.apk   (com.lifeos.app, v1.1.0, minSdk 24, targetSdk 36)
 ```
 
 Rebuild it yourself with:

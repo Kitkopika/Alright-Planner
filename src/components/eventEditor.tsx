@@ -26,11 +26,14 @@ export function EventEditorModal({
   eventId,
   visible,
   onClose,
+  initialDate,
 }: {
   /** null/undefined = create new. */
   eventId?: string | null;
   visible: boolean;
   onClose: () => void;
+  /** Default date for new events (YYYY-MM-DD), e.g. the calendar day in view. */
+  initialDate?: string;
 }) {
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
@@ -68,7 +71,7 @@ export function EventEditorModal({
     } else {
       const today = new Date();
       setTitle('');
-      setDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+      setDate(initialDate || `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
       setTime('');
       setAllDay(false);
       setEndDate('');
@@ -78,7 +81,7 @@ export function EventEditorModal({
       setNotes('');
       setReminderMin('');
     }
-  }, [visible, editing]);
+  }, [visible, editing, initialDate]);
 
   const buildStart = (): string => {
     if (!date) return '';

@@ -17,6 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
+import { useSettings } from '../data/settings';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button } from './ui';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
@@ -233,6 +234,7 @@ function EventForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>
 }
 
 function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | 'income'; categories: { id: string; name: string; kind2: TransactionKind }[]; onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const currency = useSettings((s) => s.currency);
   const [cents, setCents] = useState(0);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -245,7 +247,7 @@ function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | '
         onCreate({
           kind2: kind,
           amountCents: cents,
-          currency: 'USD',
+          currency,
           categoryId: categoryId || null,
           occurredAt: isoDateTime(new Date()),
           note: note.trim() || undefined,

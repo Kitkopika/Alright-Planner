@@ -13,7 +13,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
-import { addDays, dateKey, startOfWeek, todayKey } from '../../src/core/time';
+import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
 import { EventEditorModal } from '../../src/components/eventEditor';
@@ -68,14 +68,22 @@ export default function CalendarScreen() {
       ? `${MONTH_NAMES[selected.getMonth()]} ${selected.getFullYear()}`
       : `${selected.getFullYear()}`;
 
+  const newEvent = () => {
+    setEditingEvent(null);
+    setEditorOpen(true);
+  };
+
   return (
     <View style={styles.screen}>
       <View style={styles.controls}>
-        <ChipRow>
-          {(['day', 'week', 'month', 'year'] as ViewMode[]).map((m) => (
-            <Chip key={m} label={m[0].toUpperCase() + m.slice(1)} selected={mode === m} onPress={() => setMode(m)} />
-          ))}
-        </ChipRow>
+        <View style={styles.modeRow}>
+          <ChipRow style={{ flex: 1 }}>
+            {(['day', 'week', 'month', 'year'] as ViewMode[]).map((m) => (
+              <Chip key={m} label={m[0].toUpperCase() + m.slice(1)} selected={mode === m} onPress={() => setMode(m)} />
+            ))}
+          </ChipRow>
+          <IconButton name="add-circle-outline" size={26} color={colors.accent} onPress={newEvent} />
+        </View>
         <View style={styles.navRow}>
           <IconButton name="chevron-back" onPress={() => shift(-1)} />
           <Text style={styles.monthLabel}>{label}</Text>
@@ -83,7 +91,6 @@ export default function CalendarScreen() {
           <Pressable onPress={() => { setSelected(new Date()); setMode('day'); }} hitSlop={8}>
             <Text style={styles.todayLink}>Today</Text>
           </Pressable>
-          <IconButton name="add-circle-outline" size={26} color={colors.accent} onPress={() => { setEditingEvent(null); setEditorOpen(true); }} />
         </View>
       </View>
 
@@ -133,16 +140,21 @@ export default function CalendarScreen() {
                 const inMonth = day.getMonth() === selected.getMonth();
                 const isToday = dateKey(day) === todayKey();
                 const isSelected = dateKey(day) === dateKey(selected);
-                const hasItems = dayItems(data, day).items.length > 0;
+                const items = dayItems(data, day).items;
+                const hasEvents = items.some((i) => i.kind === 'event');
+                const hasTasks = items.some((i) => i.kind === 'task');
                 return (
                   <Pressable key={dateKey(day)} onPress={() => setSelected(day)} style={[styles.cell, isSelected && styles.cellSelected]}>
                     <Text style={[styles.cellDay, !inMonth && styles.cellDim, isToday && styles.cellToday]}>{day.getDate()}</Text>
-                    {hasItems ? <View style={[styles.cellDot, isToday && { backgroundColor: colors.accent }]} /> : null}
+                    <View style={styles.cellDots}>
+                      {hasEvents ? <View style={[styles.cellDot, { backgroundColor: colors.accent }]} /> : null}
+                      {hasTasks ? <View style={[styles.cellDot, { backgroundColor: colors.danger }]} /> : null}
+                    </View>
                   </Pressable>
                 );
               })}
             </View>
-            <SectionTitle text={`${selected.getDate()} ${MONTH_NAMES[selected.getMonth()].slice(0, 3)}`} />
+            <SectionTitle text={formatDateKeyDDMM(dateKey(selected))} />
             <DayTimeline items={selectedDay.items} date={selected} onOpen={openEvent} onDelete={deleteItem} />
           </>
         )}
@@ -163,7 +175,7 @@ export default function CalendarScreen() {
         )}
       </ScrollView>
 
-      <EventEditorModal eventId={editingEvent} visible={editorOpen} onClose={() => setEditorOpen(false)} />
+      <EventEditorModal eventId={editingEvent} visible={editorOpen} onClose={() => setEditorOpen(false)} initialDate={dateKey(selected)} />
     </View>
   );
 }
@@ -272,12 +284,17 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
       {cells.map((d, i) => {
         if (d == null) return <View key={`e${i}`} style={styles.miniCell} />;
         const day = new Date(year, month, d);
-        const has = dayItems(data, day).items.length > 0;
+        const items = dayItems(data, day).items;
+        const hasEvents = items.some((it) => it.kind === 'event');
+        const hasTasks = items.some((it) => it.kind === 'task');
         const isToday = dateKey(day) === todayK;
         return (
           <View key={i} style={[styles.miniCell, isToday && styles.miniCellToday]}>
             <Text style={styles.miniDayNum}>{d}</Text>
-            {has ? <View style={[styles.cellDot, { backgroundColor: colors.accent }]} /> : null}
+            <View style={styles.cellDots}>
+              {hasEvents ? <View style={[styles.cellDot, { backgroundColor: colors.accent }]} /> : null}
+              {hasTasks ? <View style={[styles.cellDot, { backgroundColor: colors.danger }]} /> : null}
+            </View>
           </View>
         );
       })}
@@ -288,6 +305,7 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   controls: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  modeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.sm },
   monthLabel: { ...typography.section, flex: 1, textAlign: 'center' },
   todayLink: { color: colors.accent, fontWeight: '600', fontSize: 14 },
@@ -310,7 +328,8 @@ const styles = StyleSheet.create({
   cellDay: { fontSize: 14, color: colors.text },
   cellDim: { color: colors.textMuted },
   cellToday: { color: colors.accent, fontWeight: '700' },
-  cellDot: { width: 5, height: 5, borderRadius: 2.5, marginTop: 2 },
+  cellDots: { flexDirection: 'row', gap: 2, marginTop: 2, minHeight: 5 },
+  cellDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   sectionTitle: { ...typography.label, color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
 
@@ -365,7 +384,7 @@ const styles = StyleSheet.create({
   },
   weekItemBar: { width: 3, height: 26, borderRadius: 1.5, alignSelf: 'stretch' },
   weekItemTitle: { flex: 1, fontSize: 10, color: colors.text, fontWeight: '500' },
-  weekItemTime: { fontSize: 9, color: colors.textMuted },
+  weekItemTime: { fontSize: 10, color: colors.textSecondary, fontWeight: '600' },
 
   // year
   yearGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

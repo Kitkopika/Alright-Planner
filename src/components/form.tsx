@@ -1,21 +1,100 @@
 /**
  * Form primitives for dates, times, recurrence and money.
- * Deliberately dependency-free: plain text inputs + quick-pick chips, so the
- * exact same code runs on Android, iOS and web (no native date picker).
+ *
+ * Date/Time use real UI pickers (a month-grid date picker and a time grid),
+ * rendered with pure React Native so they work identically on Android, iOS
+ * and web — no native module, no raw text input.
  */
 
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Recurrence, RecurrenceFreq } from '../core/types';
-import { addDays, dateKey, todayKey, tryParseISO } from '../core/time';
-import { colors } from '../theme';
-import { Chip, ChipRow, Field, TextBox } from './ui';
+import { addDays, dateKey, formatDateKeyDDMM, todayKey, tryParseISO, parseDateKey } from '../core/time';
+import { colors, radius, spacing, typography } from '../theme';
+import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 
 export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // ---------------------------------------------------------------------------
-// Date (YYYY-MM-DD)
+// Date (YYYY-MM-DD) — UI picker
 // ---------------------------------------------------------------------------
+
+/** Monday-based month grid (42 cells, leading/trailing nulls). */
+function monthCells(year: number, month: number): (Date | null)[] {
+  const first = new Date(year, month, 1);
+  const offset = (first.getDay() + 6) % 7;
+  const days = new Date(year, month + 1, 0).getDate();
+  const cells: (Date | null)[] = [];
+  for (let i = 0; i < offset; i++) cells.push(null);
+  for (let d = 1; d <= days; d++) cells.push(new Date(year, month, d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
+}
+
+export function DatePickerModal({
+  visible,
+  value,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  value: string;
+  onSelect: (dk: string) => void;
+  onClose: () => void;
+}) {
+  const initial = value && tryParseISO(value) ? parseDateKey(value) : new Date();
+  const [view, setView] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
+  const cells = monthCells(view.getFullYear(), view.getMonth());
+  const pick = (dk: string) => {
+    onSelect(dk);
+    onClose();
+  };
+  const shift = (delta: number) => setView(new Date(view.getFullYear(), view.getMonth() + delta, 1));
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.pickerBackdrop} onPress={onClose}>
+        <Pressable style={styles.pickerCard} onPress={() => {}}>
+          <View style={styles.pickerHeader}>
+            <Pressable onPress={() => shift(-1)} hitSlop={10}>
+              <Ionicons name="chevron-back" size={20} color={colors.text} />
+            </Pressable>
+            <Text style={styles.pickerTitle}>{MONTH_NAMES[view.getMonth()]} {view.getFullYear()}</Text>
+            <Pressable onPress={() => shift(1)} hitSlop={10}>
+              <Ionicons name="chevron-forward" size={20} color={colors.text} />
+            </Pressable>
+          </View>
+          <View style={styles.pickerWeekRow}>
+            {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
+              <Text key={d} style={styles.pickerWeek}>{d}</Text>
+            ))}
+          </View>
+          <View style={styles.pickerGrid}>
+            {cells.map((d, i) => {
+              if (!d) return <View key={i} style={styles.pickerCell} />;
+              const dk = dateKey(d);
+              const selected = dk === value;
+              const isToday = dk === todayKey();
+              return (
+                <Pressable key={i} onPress={() => pick(dk)} style={[styles.pickerCell, selected && styles.pickerCellSelected]}>
+                  <Text style={[styles.pickerDay, selected && { color: '#FFFFFF' }, isToday && !selected && { color: colors.accent, fontWeight: '700' }]}>
+                    {d.getDate()}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={styles.pickerFooter}>
+            <Button title="Today" variant="ghost" small onPress={() => pick(todayKey())} />
+            <Button title="Cancel" variant="ghost" small onPress={onClose} />
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
 
 export function DateField({
   label = 'Date',
@@ -28,45 +107,83 @@ export function DateField({
   onChange: (value: string) => void;
   allowClear?: boolean;
 }) {
-  const [text, setText] = useState(value);
-
-  const commit = (v: string) => {
-    setText(v);
-    onChange(v.trim());
-  };
-
-  const quick = (d: Date) => {
-    const key = dateKey(d);
-    setText(key);
-    onChange(key);
-  };
-
-  const valid = value === '' || tryParseISO(value) != null;
+  const [open, setOpen] = useState(false);
+  const quick = (d: Date) => onChange(dateKey(d));
 
   return (
     <Field label={label}>
-      <TextBox
-        value={text}
-        onChangeText={commit}
-        placeholder="YYYY-MM-DD"
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={[!valid && { borderColor: colors.danger }]}
-      />
+      <Pressable style={styles.pickerInput} onPress={() => setOpen(true)}>
+        <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value ? formatDateKeyDDMM(value) : 'Select date'}</Text>
+        <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+      </Pressable>
       <ChipRow style={{ marginTop: 6 }}>
         <Chip label="Today" onPress={() => quick(new Date())} />
         <Chip label="Tomorrow" onPress={() => quick(addDays(new Date(), 1))} />
         <Chip label="+1w" onPress={() => quick(addDays(new Date(), 7))} />
         <Chip label="+1m" onPress={() => quick(addDays(new Date(), 30))} />
-        {allowClear && <Chip label="Clear" onPress={() => commit('')} />}
+        {allowClear && <Chip label="Clear" onPress={() => onChange('')} />}
       </ChipRow>
+      <DatePickerModal visible={open} value={value} onSelect={onChange} onClose={() => setOpen(false)} />
     </Field>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Time (HH:mm)
+// Time (HH:mm) — UI picker
 // ---------------------------------------------------------------------------
+
+export function TimePickerModal({
+  visible,
+  value,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  value: string;
+  onSelect: (time: string) => void;
+  onClose: () => void;
+}) {
+  const [hh, setHh] = useState(value ? parseInt(value.slice(0, 2), 10) || 0 : 9);
+  const [mm, setMm] = useState(value ? parseInt(value.slice(3, 5), 10) || 0 : 0);
+  const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const ok = () => {
+    onSelect(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.pickerBackdrop} onPress={onClose}>
+        <Pressable style={styles.pickerCard} onPress={() => {}}>
+          <Text style={[styles.pickerTitle, { textAlign: 'center', marginBottom: spacing.md }]}>Select time</Text>
+          <ScrollView style={{ maxHeight: 320 }}>
+            <Text style={styles.pickerSectionLabel}>Hour</Text>
+            <View style={styles.pickerSection}>
+              {Array.from({ length: 24 }, (_, h) => (
+                <Pressable key={h} onPress={() => setHh(h)} style={[styles.chipSmall, hh === h && styles.chipSmallOn]}>
+                  <Text style={[styles.chipSmallText, hh === h && { color: '#FFFFFF' }]}>{String(h).padStart(2, '0')}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.pickerSectionLabel}>Minute</Text>
+            <View style={styles.pickerSection}>
+              {minutes.map((m) => (
+                <Pressable key={m} onPress={() => setMm(m)} style={[styles.chipSmall, mm === m && styles.chipSmallOn]}>
+                  <Text style={[styles.chipSmallText, mm === m && { color: '#FFFFFF' }]}>{String(m).padStart(2, '0')}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+          <View style={styles.pickerFooter}>
+            <Button title="Cancel" variant="ghost" small onPress={onClose} />
+            <Button title="OK" small onPress={ok} />
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
 
 export function TimeField({
   label = 'Time',
@@ -79,28 +196,22 @@ export function TimeField({
   onChange: (value: string) => void;
   allowClear?: boolean;
 }) {
-  const [text, setText] = useState(value);
-  const valid = value === '' || /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+  const [open, setOpen] = useState(false);
 
   return (
     <Field label={label}>
-      <TextBox
-        value={text}
-        onChangeText={(v) => {
-          setText(v);
-          onChange(v.trim());
-        }}
-        placeholder="HH:mm (e.g. 18:30)"
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={[!valid && { borderColor: colors.danger }]}
-      />
+      <Pressable style={styles.pickerInput} onPress={() => setOpen(true)}>
+        <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
+        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value || 'Select time'}</Text>
+        <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+      </Pressable>
       <ChipRow style={{ marginTop: 6 }}>
-        <Chip label="9:00" onPress={() => { setText('09:00'); onChange('09:00'); }} />
-        <Chip label="12:00" onPress={() => { setText('12:00'); onChange('12:00'); }} />
-        <Chip label="18:00" onPress={() => { setText('18:00'); onChange('18:00'); }} />
-        {allowClear && <Chip label="Clear" onPress={() => { setText(''); onChange(''); }} />}
+        <Chip label="9:00" onPress={() => onChange('09:00')} />
+        <Chip label="12:00" onPress={() => onChange('12:00')} />
+        <Chip label="18:00" onPress={() => onChange('18:00')} />
+        {allowClear && <Chip label="Clear" onPress={() => onChange('')} />}
       </ChipRow>
+      <TimePickerModal visible={open} value={value} onSelect={onChange} onClose={() => setOpen(false)} />
     </Field>
   );
 }
@@ -253,3 +364,48 @@ export function splitDateTime(iso: string | null | undefined): { date: string; t
 }
 
 export { todayKey };
+
+const styles = StyleSheet.create({
+  pickerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
+  pickerCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+  pickerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+  pickerTitle: { ...typography.section },
+  pickerWeekRow: { flexDirection: 'row', marginBottom: 4 },
+  pickerWeek: { flex: 1, textAlign: 'center', fontSize: 11, color: colors.textMuted, fontWeight: '600' },
+  pickerGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  pickerCell: { width: `${100 / 7}%`, aspectRatio: 1.4, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm },
+  pickerCellSelected: { backgroundColor: colors.accent },
+  pickerDay: { fontSize: 14, color: colors.text },
+  pickerFooter: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm, marginTop: spacing.md },
+  pickerSectionLabel: { ...typography.caption, color: colors.textSecondary, marginBottom: 4, marginTop: spacing.sm },
+  pickerSection: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chipSmall: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+  },
+  chipSmallOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipSmallText: { fontSize: 12, color: colors.text, fontWeight: '600' },
+  pickerInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    backgroundColor: colors.surface,
+  },
+  pickerInputText: { flex: 1, fontSize: 15, color: colors.text },
+});
+

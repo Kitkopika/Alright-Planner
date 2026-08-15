@@ -121,8 +121,8 @@ export default function TodayScreen() {
           <Text style={styles.date}>{today.weekday}</Text>
           <Text style={styles.subdate}>{formatLongDate(now)}</Text>
         </View>
-        <Pressable onPress={() => router.push('/data')} style={styles.iconBtn}>
-          <Ionicons name="cloud-upload-outline" size={22} color={colors.textSecondary} />
+        <Pressable onPress={() => router.push('/settings')} style={styles.iconBtn}>
+          <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
         </Pressable>
       </View>
 

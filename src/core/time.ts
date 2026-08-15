@@ -110,6 +110,13 @@ export function weekdayNames(short = true): string[] {
   return short ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 }
 
+/** "YYYY-MM-DD" -> "DD/MM/YYYY" for display. */
+export function formatDateKeyDDMM(dk: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dk);
+  if (!m) return dk;
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
 /** True when `date` is within [from, to] inclusive (both dates). */
 export function inRange(date: Date, from: Date, to: Date): boolean {
   return date.getTime() >= startOfDay(from).getTime() && date.getTime() <= startOfDay(to).getTime();
