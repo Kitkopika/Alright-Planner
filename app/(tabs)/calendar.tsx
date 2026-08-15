@@ -122,7 +122,7 @@ export default function CalendarScreen() {
                     >
                       <View style={[styles.weekItemBar, { backgroundColor: it.color || (it.kind === 'task' ? colors.textMuted : colors.accent) }]} />
                       <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text style={styles.weekItemTime}>{it.timeLabel || 'All day'}</Text>
+                        {it.timeLabel || it.allDay ? <Text style={styles.weekItemTime}>{it.timeLabel || 'All day'}</Text> : null}
                         <Text numberOfLines={1} style={styles.weekItemTitle}>{it.title}</Text>
                       </View>
                     </Pressable>
@@ -148,7 +148,7 @@ export default function CalendarScreen() {
                 const isSelected = dateKey(day) === dateKey(selected);
                 const items = dayItems(data, day).items;
                 const events = items.filter((i) => i.kind === 'event');
-                const hasDeadline = items.some((i) => i.kind === 'task');
+                const hasDeadline = items.some((i) => i.kind === 'task' && !i.done);
                 return (
                   <Pressable
                     key={dateKey(day)}
@@ -307,7 +307,7 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
         const day = new Date(year, month, d);
         const items = dayItems(data, day).items;
         const events = items.filter((it) => it.kind === 'event');
-        const hasDeadline = items.some((it) => it.kind === 'task');
+        const hasDeadline = items.some((it) => it.kind === 'task' && !it.done);
         const isToday = dateKey(day) === todayK;
         return (
           <View key={i} style={[styles.miniCell, isToday ? styles.miniCellToday : hasDeadline ? styles.miniCellDeadline : null]}>

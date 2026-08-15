@@ -70,7 +70,15 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
       spanning: eventSpanning(ev, start),
     };
   }
-  if (dayDiff(startOfDay(start), day) !== 0) return null;
+  // Non-recurring: include the event on every day of [start, end] so
+  // multi-day events span their full range (shown with a line indicator).
+  const startDay = startOfDay(start);
+  const dayStart = startOfDay(day);
+  if (dayStart.getTime() < startDay.getTime()) return null;
+  const end = ev.endAt ? tryParseISO(ev.endAt) : null;
+  const endDay = end ? startOfDay(end) : startDay;
+  if (dayStart.getTime() > endDay.getTime()) return null;
+  const spanning = endDay.getTime() > startDay.getTime();
   return {
     id: ev.id,
     title: ev.title,
@@ -79,7 +87,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
     color: ev.color,
     kind: 'event',
     entityId: ev.id,
-    spanning: eventSpanning(ev, start),
+    spanning,
   };
 }
 
