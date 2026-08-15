@@ -17,13 +17,19 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
-import { useT } from '../../src/i18n';
+import { useDateNames, useT } from '../../src/i18n';
 import { Goal, Project } from '../../src/core/types';
 import { goalProgress } from '../../src/features/today';
-import { dateKey, friendlyDateTime } from '../../src/core/time';
+import { dateKey, tryParseISO } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField } from '../../src/components/form';
+
+function fmtDue(iso: string | null | undefined, ws: string[], ms: string[]): string {
+  const d = tryParseISO(iso);
+  if (!d) return '';
+  return `${ws[(d.getDay() + 6) % 7]} ${d.getDate()} ${ms[d.getMonth()]}`;
+}
 
 export default function GoalsScreen() {
   styles = createStyles();
@@ -68,6 +74,7 @@ export default function GoalsScreen() {
 function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
   styles = createStyles();
   const t = useT();
+  const { monthsShort, weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const progress = goalProgress(goal.id, data);
@@ -89,7 +96,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
       <View style={styles.goalHeader}>
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{goal.title}</Text>
-          {goal.deadline ? <Text style={typography.caption}>Due {friendlyDateTime(goal.deadline)}</Text> : null}
+          {goal.deadline ? <Text style={typography.caption}>{t('due')} {fmtDue(goal.deadline, weekdaysShort, monthsShort)}</Text> : null}
         </View>
         <View style={styles.goalRight}>
           <Text style={[typography.body, { fontWeight: '700' }]}>{progress}%</Text>
@@ -197,6 +204,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
 function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
+  const { monthsShort, weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -232,7 +240,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
           <View style={styles.detailHeader}>
             <View style={{ flex: 1 }}>
               <Text style={typography.title}>{goal.title}</Text>
-              {goal.deadline ? <Text style={typography.caption}>Due {friendlyDateTime(goal.deadline)}</Text> : null}
+              {goal.deadline ? <Text style={typography.caption}>{t('due')} {fmtDue(goal.deadline, weekdaysShort, monthsShort)}</Text> : null}
             </View>
             <Pressable onPress={() => setEditingGoal(true)} hitSlop={8}>
               <Ionicons name="create-outline" size={22} color={colors.textSecondary} />
@@ -291,6 +299,7 @@ function ProjectBlock({
 }) {
   styles = createStyles();
   const t = useT();
+  const { monthsShort, weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -304,7 +313,7 @@ function ProjectBlock({
           <Text style={typography.body}>{project.name}</Text>
           <Text style={typography.caption}>
             {tasks.length === 0 ? t('noTasks') : `${done}/${tasks.length} ${t('doneLabel')}`}
-            {project.deadline ? ` · due ${friendlyDateTime(project.deadline)}` : ''}
+            {project.deadline ? ` · ${t('due')} ${fmtDue(project.deadline, weekdaysShort, monthsShort)}` : ''}
           </Text>
         </View>
         <Pressable onPress={() => remove('projects', project.id)} hitSlop={8}>

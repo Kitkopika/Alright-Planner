@@ -13,10 +13,7 @@ import { Recurrence, RecurrenceFreq } from '../core/types';
 import { addDays, dateKey, formatDateKeyDDMM, todayKey, tryParseISO, parseDateKey } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
-import { TKey, useT } from '../i18n';
-
-export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+import { TKey, useDateNames, useT } from '../i18n';
 
 // ---------------------------------------------------------------------------
 // Date (YYYY-MM-DD) — UI picker
@@ -50,6 +47,7 @@ export function DatePickerModal({
   const [view, setView] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
   const cells = monthCells(view.getFullYear(), view.getMonth());
   const t = useT();
+  const { months, weekdaysShortMon } = useDateNames();
   const pick = (dk: string) => {
     onSelect(dk);
     onClose();
@@ -64,13 +62,13 @@ export function DatePickerModal({
             <Pressable onPress={() => shift(-1)} hitSlop={10}>
               <Ionicons name="chevron-back" size={20} color={colors.text} />
             </Pressable>
-            <Text style={styles.pickerTitle}>{MONTH_NAMES[view.getMonth()]} {view.getFullYear()}</Text>
+            <Text style={styles.pickerTitle}>{months[view.getMonth()]} {view.getFullYear()}</Text>
             <Pressable onPress={() => shift(1)} hitSlop={10}>
               <Ionicons name="chevron-forward" size={20} color={colors.text} />
             </Pressable>
           </View>
           <View style={styles.pickerWeekRow}>
-            {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
+            {weekdaysShortMon.map((d) => (
               <Text key={d} style={styles.pickerWeek}>{d}</Text>
             ))}
           </View>
@@ -256,6 +254,7 @@ export function RecurrenceField({
 
   const activeFreq = value?.freq || '';
   const t = useT();
+  const { weekdaysShort } = useDateNames();
 
   return (
     <Field label={t('repeat')}>
@@ -282,7 +281,7 @@ export function RecurrenceField({
           </ChipRow>
           {activeFreq === 'weekly' ? (
             <ChipRow style={{ marginTop: 6 }}>
-              {WEEKDAY_LABELS.map((label, i) => {
+              {weekdaysShort.map((label, i) => {
                 const on = !!value.byWeekdays?.includes(i);
                 return (
                   <Chip

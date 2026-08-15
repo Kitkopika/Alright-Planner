@@ -143,7 +143,7 @@ export default function TasksScreen() {
       </ChipRow>
       <ChipRow style={styles.filters}>
         {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((p) => (
-          <Chip key={p} label={p === 'all' ? t('allPriority') : p} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
+          <Chip key={p} label={p === 'all' ? t('allPriority') : t(p)} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
         ))}
       </ChipRow>
       <ScrollView contentContainerStyle={styles.content}>
@@ -322,14 +322,14 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
             <Field label={t('priority')}>
               <ChipRow>
                 {(['low', 'medium', 'high', 'urgent'] as const).map((p) => (
-                  <Chip key={p} label={p} selected={priority === p} onPress={() => setPriority(p)} />
+                  <Chip key={p} label={t(p)} selected={priority === p} onPress={() => setPriority(p)} />
                 ))}
               </ChipRow>
             </Field>
             <Field label={t('status')}>
               <ChipRow>
                 {(['todo', 'doing', 'done', 'cancelled'] as const).map((s) => (
-                  <Chip key={s} label={s} selected={status === s} onPress={() => setStatus(s)} />
+                  <Chip key={s} label={s === 'done' ? t('doneLabel') : t(s)} selected={status === s} onPress={() => setStatus(s)} />
                 ))}
               </ChipRow>
             </Field>

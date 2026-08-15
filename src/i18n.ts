@@ -138,6 +138,13 @@ export const translations = {
     markDone: 'Mark done',
     markTodo: 'Mark as todo',
     priority: 'Priority',
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    urgent: 'Urgent',
+    todo: 'To do',
+    doing: 'Doing',
+    cancelled: 'Cancelled',
     status: 'Status',
     active: 'Active',
     archived: 'Archived',
@@ -279,6 +286,7 @@ export const translations = {
     overdue: 'Overdue',
     upcoming: 'Upcoming',
     dueToday: 'Due today',
+    due: 'Due',
     noDate: 'No date',
   },
   th: {
@@ -413,6 +421,13 @@ export const translations = {
     markDone: 'ทำเสร็จ',
     markTodo: 'กลับเป็นยังไม่ทำ',
     priority: 'ความสำคัญ',
+    low: 'ต่ำ',
+    medium: 'ปานกลาง',
+    high: 'สูง',
+    urgent: 'เร่งด่วน',
+    todo: 'ยังไม่ทำ',
+    doing: 'กำลังทำ',
+    cancelled: 'ยกเลิก',
     status: 'สถานะ',
     active: 'อยู่ระหว่าง',
     archived: 'เก็บไว้',
@@ -554,6 +569,7 @@ export const translations = {
     overdue: 'เกินกำหนด',
     upcoming: 'เร็วๆ นี้',
     dueToday: 'ครบวันนี้',
+    due: 'กำหนด',
     noDate: 'ไม่มีวัน',
   },
 } as const;
@@ -563,4 +579,35 @@ export type TKey = keyof typeof translations.en;
 export function useT(): (key: TKey) => string {
   const language = useSettings((s) => s.language);
   return (key: TKey) => translations[language][key] ?? key;
+}
+
+/** Localized weekday/month names (for dates that render day/month words). */
+export interface LocaleNames {
+  weekdays: string[];
+  weekdaysShort: string[];
+  weekdaysShortMon: string[];
+  months: string[];
+  monthsShort: string[];
+}
+
+export const localeNames: Record<'en' | 'th', LocaleNames> = {
+  en: {
+    weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    weekdaysShortMon: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
+  th: {
+    weekdays: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
+    weekdaysShort: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'],
+    weekdaysShortMon: ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'],
+    months: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+    monthsShort: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+  },
+};
+
+export function useDateNames(): LocaleNames {
+  const language = useSettings((s) => s.language);
+  return localeNames[language];
 }

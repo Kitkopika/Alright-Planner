@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useT } from '../../src/i18n';
+import { useDateNames, useT } from '../../src/i18n';
 import { useLifeOS } from '../../src/data/store';
 import { Habit, Routine, RoutineStep } from '../../src/core/types';
 import { addDays, dateKey, todayKey } from '../../src/core/time';
@@ -25,7 +25,6 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { newId } from '../../src/core/id';
 
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const PALETTE = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED', '#DB2777'];
 
 type Tab = 'routines' | 'habits';
@@ -92,6 +91,7 @@ export default function RoutinesScreen() {
 function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void }) {
   styles = createStyles();
   const t = useT();
+  const { weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -126,7 +126,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
         <View style={{ flex: 1 }}>
           <Text style={typography.section}>{routine.name}</Text>
           <Text style={typography.caption}>
-            {routine.weekdays.length === 7 ? t('everyDay') : routine.weekdays.map((w) => WEEKDAY_LABELS[w]).join(', ')}
+            {routine.weekdays.length === 7 ? t('everyDay') : routine.weekdays.map((w) => weekdaysShort[w]).join(', ')}
             {routine.timeOfDay ? ` · ${routine.timeOfDay}` : ''}
           </Text>
         </View>
@@ -241,6 +241,7 @@ function useCompletionRate(habit: Habit, days: number): number | null {
 export function RoutineEditorModal({ routineId, visible, onClose }: { routineId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
+  const { weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -310,7 +311,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
             </Field>
             <Field label={t('days')}>
               <ChipRow>
-                {WEEKDAY_LABELS.map((l, i) => {
+                {weekdaysShort.map((l, i) => {
                   const on = weekdays.includes(i);
                   return (
                     <Chip key={l} label={l} selected={on} onPress={() => setWeekdays(on ? weekdays.filter((x) => x !== i) : [...weekdays, i].sort())} />
@@ -359,6 +360,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
 export function HabitEditorModal({ habitId, visible, onClose }: { habitId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
+  const { weekdaysShort } = useDateNames();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -429,7 +431,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
             </Field>
             {freqType === 'custom' && (
               <ChipRow style={{ marginTop: 6 }}>
-                {WEEKDAY_LABELS.map((l, i) => {
+                {weekdaysShort.map((l, i) => {
                   const on = weekdays.includes(i);
                   return (
                     <Chip key={l} label={l} selected={on} onPress={() => setWeekdays(on ? weekdays.filter((x) => x !== i) : [...weekdays, i].sort())} />

@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
 import { useSettings } from '../data/settings';
-import { useT } from '../i18n';
+import { useDateNames, useT } from '../i18n';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button } from './ui';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
@@ -195,7 +195,7 @@ function TaskForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
       <Field label={t('priority')}>
         <ChipRow>
           {(['low', 'medium', 'high', 'urgent'] as Priority[]).map((p) => (
-            <Chip key={p} label={p} selected={priority === p} onPress={() => setPriority(p)} />
+            <Chip key={p} label={t(p)} selected={priority === p} onPress={() => setPriority(p)} />
           ))}
         </ChipRow>
       </Field>
@@ -302,12 +302,12 @@ function NoteForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
 
 function HabitForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
   const t = useT();
+  const { weekdaysShort } = useDateNames();
   const [name, setName] = useState('');
   const [freqType, setFreqType] = useState<'daily' | 'weekly' | 'custom'>('daily');
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
   const palette = ['#4F46E5', '#16A34A', '#D97706', '#DC2626', '#0891B2', '#7C3AED'];
   const [color] = useState(palette[Math.floor(Math.random() * palette.length)]);
-  const labels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   return (
     <FormShell
       onBack={onBack}
@@ -332,7 +332,7 @@ function HabitForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>
       </Field>
       {freqType === 'custom' && (
         <ChipRow style={{ marginTop: 6 }}>
-          {labels.map((l, i) => {
+          {weekdaysShort.map((l, i) => {
             const on = weekdays.includes(i);
             return (
               <Chip key={l} label={l} selected={on} onPress={() => setWeekdays(on ? weekdays.filter((x) => x !== i) : [...weekdays, i].sort())} />

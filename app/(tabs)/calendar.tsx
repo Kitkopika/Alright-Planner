@@ -17,18 +17,16 @@ import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../.
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
 import { EventEditorModal } from '../../src/components/eventEditor';
-import { useT } from '../../src/i18n';
+import { TKey, useDateNames, useT } from '../../src/i18n';
 
 type ViewMode = 'day' | 'week' | 'month' | 'year';
-
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function CalendarScreen() {
   styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const t = useT();
+  const { months, monthsShort, weekdaysShort } = useDateNames();
   const [mode, setMode] = useState<ViewMode>('month');
   const [selected, setSelected] = useState<Date>(new Date());
   const [editingEvent, setEditingEvent] = useState<string | null | undefined>(undefined);
@@ -64,11 +62,11 @@ export default function CalendarScreen() {
 
   const label =
     mode === 'day'
-      ? `${WEEKDAYS[(selected.getDay() + 6) % 7]} ${selected.getDate()} ${MONTH_NAMES[selected.getMonth()].slice(0, 3)} ${selected.getFullYear()}`
+      ? `${weekdaysShort[(selected.getDay() + 6) % 7]} ${selected.getDate()} ${monthsShort[selected.getMonth()]} ${selected.getFullYear()}`
       : mode === 'week'
-      ? `${weekStart.getDate()} – ${addDays(weekStart, 6).getDate()} ${MONTH_NAMES[weekStart.getMonth()].slice(0, 3)} ${weekStart.getFullYear()}`
+      ? `${weekStart.getDate()} – ${addDays(weekStart, 6).getDate()} ${monthsShort[weekStart.getMonth()]} ${weekStart.getFullYear()}`
       : mode === 'month'
-      ? `${MONTH_NAMES[selected.getMonth()]} ${selected.getFullYear()}`
+      ? `${months[selected.getMonth()]} ${selected.getFullYear()}`
       : `${selected.getFullYear()}`;
 
   const newEvent = () => {
@@ -106,7 +104,7 @@ export default function CalendarScreen() {
               <View key={dateKey(d.date)} style={styles.weekCol}>
                 <Pressable onPress={() => setSelected(d.date)} style={[styles.weekHead, dateKey(d.date) === todayKey() && styles.weekHeadToday]}>
                   <Text style={[styles.weekDow, dateKey(d.date) === dateKey(selected) && { color: colors.accent, fontWeight: '700' }]}>
-                    {WEEKDAYS[(d.date.getDay() + 6) % 7]}
+                    {weekdaysShort[(d.date.getDay() + 6) % 7]}
                   </Text>
                   <Text style={[styles.weekDayNum, dateKey(d.date) === todayKey() && { color: colors.accent, fontWeight: '700' }]}>
                     {d.date.getDate()}
@@ -136,7 +134,7 @@ export default function CalendarScreen() {
         {mode === 'month' && (
           <>
             <View style={styles.weekRow}>
-              {WEEKDAYS.map((w) => (
+              {weekdaysShort.map((w) => (
                 <Text key={w} style={styles.weekday}>{w}</Text>
               ))}
             </View>
@@ -177,7 +175,7 @@ export default function CalendarScreen() {
 
         {mode === 'year' && (
           <View style={styles.yearGrid}>
-            {MONTH_NAMES.map((name, m) => (
+            {months.map((name, m) => (
               <Pressable
                 key={name}
                 style={styles.yearMonth}
@@ -291,6 +289,7 @@ function DayTimeline({
 
 function MiniMonth({ year, month, data }: { year: number; month: number; data: ReturnType<typeof useLifeOS.getState>['data'] }) {
   styles = createStyles();
+  const { months } = useDateNames();
   const first = new Date(year, month, 1);
   const offset = (first.getDay() + 6) % 7;
   const days = new Date(year, month + 1, 0).getDate();

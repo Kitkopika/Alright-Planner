@@ -9,9 +9,9 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLifeOS } from '../../src/data/store';
-import { useT } from '../../src/i18n';
+import { useT, useDateNames } from '../../src/i18n';
 import { computeToday } from '../../src/features/today';
-import { dateKey, isoDateTime, timeHM, tryParseISO, weekdayNames } from '../../src/core/time';
+import { dateKey, isoDateTime, timeHM, tryParseISO } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Card, SectionHeader, ProgressBar, Badge, TextBox, Button, EmptyState } from '../../src/components/ui';
 import { QuickAddModal } from '../../src/components/quickAdd';
@@ -29,6 +29,7 @@ export default function TodayScreen() {
   const [quickNote, setQuickNote] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const t = useT();
+  const { months, weekdays } = useDateNames();
 
   const today = useMemo(() => computeToday(data, new Date()), [data]);
   const now = new Date();
@@ -121,8 +122,8 @@ export default function TodayScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.date}>{today.weekday}</Text>
-          <Text style={styles.subdate}>{formatLongDate(now)}</Text>
+          <Text style={styles.date}>{weekdays[now.getDay()]}</Text>
+          <Text style={styles.subdate}>{formatLongDate(now, weekdays, months)}</Text>
         </View>
         <Pressable onPress={() => router.push('/settings')} style={styles.iconBtn}>
           <Ionicons name="settings-outline" size={22} color={colors.textSecondary} />
@@ -333,8 +334,8 @@ export default function TodayScreen() {
   );
 }
 
-function formatLongDate(d: Date): string {
-  return `${weekdayNames(false)[d.getDay()]}, ${d.getDate()} ${['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]}`;
+function formatLongDate(d: Date, weekdays: string[], months: string[]): string {
+  return `${weekdays[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
 }
 
 function StatTile({ icon, color, value, label }: { icon: keyof typeof Ionicons.glyphMap; color: string; value: string; label: string }) {
