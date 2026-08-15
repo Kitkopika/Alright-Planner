@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand';
-import { setDefaultCurrency } from '../features/finance';
+import { setDefaultCurrency, setDisplayLanguage } from '../features/finance';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'th';
@@ -61,6 +61,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   setLanguage: (language) => {
     set({ language });
     save(get());
+    setDisplayLanguage(language);
   },
   setCurrency: (currency) => {
     set({ currency });
@@ -70,7 +71,9 @@ export const useSettings = create<SettingsState>((set, get) => ({
   hydrate: () => {
     const loaded = load();
     const currency = (loaded.currency as Currency) || DEFAULTS.currency;
-    set({ ...DEFAULTS, ...loaded, currency, hydrated: true });
+    const language = (loaded.language as Language) || DEFAULTS.language;
+    set({ ...DEFAULTS, ...loaded, currency, language, hydrated: true });
     setDefaultCurrency(currency);
+    setDisplayLanguage(language);
   },
 }));

@@ -45,6 +45,7 @@ export default function MoneyScreen() {
   const [txnEditorOpen, setTxnEditorOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionKind>('all');
   const [categoryFilter, setCategoryFilter] = useState<string | 'all'>('all');
+  const uncategorizedLabel = t('uncategorized');
 
   const summaries = useMemo(() => buildSummaries(data.collections.transactions, data.collections.categories), [data]);
   const summary = summaries[range];
@@ -181,7 +182,7 @@ export default function MoneyScreen() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={typography.body} numberOfLines={1}>
-                        {t.note || cat?.name || 'Uncategorized'}
+                        {t.note || cat?.name || uncategorizedLabel}
                       </Text>
                       <Text style={typography.caption}>{cat?.name || ''}</Text>
                     </View>

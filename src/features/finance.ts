@@ -32,12 +32,24 @@ export interface FinanceSummaries {
   year: RangeSummary;
 }
 
-const CATEGORY_FALLBACK = { name: 'Uncategorized', color: '#9CA3AF' };
+const CATEGORY_FALLBACK_COLOR = '#9CA3AF';
+
+/** Display language for the pure finance module (set from Settings). */
+let displayLanguage: 'en' | 'th' = 'en';
+
+export function setDisplayLanguage(lang: 'en' | 'th'): void {
+  displayLanguage = lang;
+}
+
+function categoryFallbackName(): string {
+  return displayLanguage === 'th' ? 'ไม่มีหมวดหมู่' : 'Uncategorized';
+}
 
 export function categoryById(categories: Category[], id: string | null | undefined): { name: string; color: string } {
-  if (!id) return CATEGORY_FALLBACK;
+  const fallback = { name: categoryFallbackName(), color: CATEGORY_FALLBACK_COLOR };
+  if (!id) return fallback;
   const c = categories.find((x) => x.id === id);
-  return c ? { name: c.name, color: c.color || CATEGORY_FALLBACK.color } : CATEGORY_FALLBACK;
+  return c ? { name: c.name, color: c.color || CATEGORY_FALLBACK_COLOR } : fallback;
 }
 
 function summarize(
