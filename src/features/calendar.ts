@@ -22,6 +22,8 @@ export interface CalendarItem {
   spanning?: boolean;
   /** True for recurring-series instances (do not merge into one span bar). */
   recurring?: boolean;
+  /** End time "HH:mm" for timed events (empty when the event has no end time). */
+  endTimeLabel?: string;
 }
 
 export interface DayItems {
@@ -46,6 +48,14 @@ function hasTime(iso: string | null | undefined): boolean {
   return !!iso && /T\d{2}:\d{2}/.test(iso);
 }
 
+/** "HH:mm" from an ISO string, or '' when it has no time part. */
+function timeLabelOf(iso: string | null | undefined): string {
+  if (!hasTime(iso)) return '';
+  const d = tryParseISO(iso);
+  if (!d) return '';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 /** True when the event's end date is later than its start date (multi-day). */
 function eventSpanning(ev: Event, start: Date): boolean {
   if (!ev.endAt) return false;
@@ -61,10 +71,15 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
   if (ev.recurrence) {
     if (!happensOn(ev.recurrence, start, day)) return null;
     const rebased = new Date(day.getFullYear(), day.getMonth(), day.getDate(), start.getHours(), start.getMinutes());
+    // Keep the original duration (capped at 24h for a per-day instance).
+    const origEnd = ev.endAt ? tryParseISO(ev.endAt) : null;
+    const durMin = origEnd ? Math.max(1, Math.round((origEnd.getTime() - start.getTime()) / 60000)) : 60;
+    const endD = new Date(rebased.getTime() + Math.min(durMin, 24 * 60) * 60000);
     return {
       id: `${ev.id}:${dateKey(day)}`,
       title: ev.title,
       timeLabel: ev.allDay ? 'All day' : `${String(rebased.getHours()).padStart(2, '0')}:${String(rebased.getMinutes()).padStart(2, '0')}`,
+      endTimeLabel: ev.allDay ? undefined : `${String(endD.getHours()).padStart(2, '0')}:${String(endD.getMinutes()).padStart(2, '0')}`,
       allDay: !!ev.allDay,
       color: ev.color,
       kind: 'event',
@@ -86,6 +101,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
     id: ev.id,
     title: ev.title,
     timeLabel: ev.allDay ? 'All day' : `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`,
+    endTimeLabel: ev.allDay ? undefined : timeLabelOf(ev.endAt) || undefined,
     allDay: !!ev.allDay,
     color: ev.color,
     kind: 'event',

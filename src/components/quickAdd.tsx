@@ -69,7 +69,7 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdropInner}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdropInner}>
           <Pressable style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]} onPress={() => {}}>
             <View style={styles.handle} />
             <View style={styles.titleRow}>

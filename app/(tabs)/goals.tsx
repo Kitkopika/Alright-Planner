@@ -49,7 +49,7 @@ export default function GoalsScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={typography.title}>Goals</Text>
+        <Text style={typography.title}>{t('goals')}</Text>
         <Button title={t('addGoal')} small onPress={() => setEditorOpen(true)} />
       </View>
       <ChipRow style={styles.filters}>
@@ -88,8 +88,8 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
       onPress={onOpen}
       onLongPress={() =>
         Alert.alert(t('deleteGoalQ'), goal.title, [
-          { text: 'Delete', style: 'destructive', onPress: () => remove('goals', goal.id) },
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('delete'), style: 'destructive', onPress: () => remove('goals', goal.id) },
+          { text: t('cancel'), style: 'cancel' },
         ])
       }
     >
@@ -105,10 +105,10 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
       </View>
       <ProgressBar pct={progress} color={goal.color || colors.accent} style={{ marginTop: spacing.sm }} />
       <View style={styles.goalMeta}>
-        {projects.length > 0 && <Badge text={`${projects.length} projects`} />}
-        {tasks.length > 0 && <Badge text={`${tasks.length} tasks`} />}
-        {habits.length > 0 && <Badge text={`${habits.length} habits`} />}
-        {progress === 100 && projects.length === 0 && tasks.length === 0 && <Badge text="no projects yet — tap to add" />}
+        {projects.length > 0 && <Badge text={`${projects.length} ${t('projectsLabel')}`} />}
+        {tasks.length > 0 && <Badge text={`${tasks.length} ${t('tasks')}`} />}
+        {habits.length > 0 && <Badge text={`${habits.length} ${t('habits')}`} />}
+        {progress === 100 && projects.length === 0 && tasks.length === 0 && <Badge text={t('noProjectsYetAdd')} />}
       </View>
     </Card>
   );
@@ -167,7 +167,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{editing ? t('editGoal') : t('newGoal')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -181,7 +181,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
             <Field label={t('status')}>
               <ChipRow>
                 {(['active', 'done', 'archived'] as const).map((s) => (
-                  <Chip key={s} label={s} selected={status === s} onPress={() => setStatus(s)} />
+                  <Chip key={s} label={s === 'active' ? t('active') : s === 'done' ? t('doneLabel') : t('archived')} selected={status === s} onPress={() => setStatus(s)} />
                 ))}
               </ChipRow>
             </Field>
@@ -235,7 +235,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={[styles.sheet, { maxHeight: '90%' }]}>
           <View style={styles.detailHeader}>
             <View style={{ flex: 1 }}>
@@ -278,7 +278,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
             </View>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
       <GoalEditorModal goalId={goalId} visible={editingGoal} onClose={() => setEditingGoal(false)} />
     </Modal>
   );

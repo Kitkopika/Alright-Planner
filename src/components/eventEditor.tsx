@@ -96,7 +96,10 @@ export function EventEditorModal({
   const save = () => {
     if (!title.trim() || !date) return;
     const startAt = buildStart();
-    const endAt = endDate ? (allDay ? endDate : `${endDate}T${endTime || '10:00'}`) : null;
+    // End day defaults to the start day when only an end time is given, so
+    // same-day events can set a start + end time (e.g. 12:30–14:00).
+    const endDay = endDate || (endTime ? date : '');
+    const endAt = endDay ? (allDay ? endDay : `${endDay}T${endTime || time || '10:00'}`) : null;
     const reminderOffsetMin = reminderMin.trim() === '' ? null : parseInt(reminderMin.trim(), 10);
     const payload = {
       title: title.trim(),
@@ -125,7 +128,7 @@ export function EventEditorModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.title}>{editing ? t('editEvent') : t('newEvent')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -139,8 +142,8 @@ export function EventEditorModal({
               </ChipRow>
             </Field>
             {!allDay && <TimeField value={time} onChange={setTime} />}
+            {!allDay && <TimeField label={t('endTime')} value={endTime} onChange={setEndTime} />}
             <DateField label={t('endDateOpt')} value={endDate} onChange={setEndDate} />
-            {!allDay && endDate && <TimeField label={t('endTime')} value={endTime} onChange={setEndTime} />}
             <RecurrenceField value={recurrence} onChange={setRecurrence} />
             <Field label={t('color')}>
               <ChipRow>

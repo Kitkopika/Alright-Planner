@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLifeOS } from '../../src/data/store';
@@ -117,8 +117,8 @@ export default function TodayScreen() {
   };
 
   return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -330,7 +330,7 @@ export default function TodayScreen() {
         <Ionicons name="add" size={30} color="#FFFFFF" />
       </Pressable>
       <QuickAddModal visible={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

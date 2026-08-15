@@ -31,6 +31,9 @@ import { DonutChart } from '../../src/components/charts';
 
 type Range = 'today' | 'week' | 'month' | 'year';
 
+/** Palette offered when creating a category (also used as random defaults). */
+const CATEGORY_COLORS = ['#4F46E5', '#7C3AED', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#DB2777', '#0F766E', '#CA8A04', '#65A30D'];
+
 export default function MoneyScreen() {
   styles = createStyles();
   const data = useLifeOS((s) => s.data);
@@ -88,7 +91,7 @@ export default function MoneyScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.screen}>
       <View style={styles.header}>
         <Text style={typography.title}>{t('money')}</Text>
         <View style={styles.headerActions}>
@@ -114,7 +117,7 @@ export default function MoneyScreen() {
           ))}
       </ChipRow>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Summary */}
         <Card>
           <View style={styles.summaryRow3}>
@@ -202,7 +205,7 @@ export default function MoneyScreen() {
 
       <CategoriesModal visible={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
       <TransactionEditorModal txnId={editingTxn} visible={txnEditorOpen} onClose={() => setTxnEditorOpen(false)} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -278,23 +281,26 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
   const [name, setName] = useState('');
   const [kind2, setKind2] = useState<TransactionKind>('expense');
   const [budget, setBudget] = useState('');
+  const [color, setColor] = useState(() => CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]);
 
   const save = () => {
     if (!name.trim()) return;
     create('categories', {
       name: name.trim(),
       kind2,
+      color,
       monthlyBudgetCents: budget.trim() ? Math.round(parseFloat(budget) * 100) : null,
     });
     setName('');
     setBudget('');
+    setColor(CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]);
   };
 
   const cats = data.collections.categories.filter((c) => !c.deletedAt);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{t('categories')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -306,6 +312,19 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
               <TextBox value={name} onChangeText={setName} placeholder={t('newCategoryName')} style={{ flex: 1 }} />
               <Button title={t('addLabel')} small onPress={save} />
             </View>
+            <Field label={t('color')}>
+              <View style={styles.catColorRow}>
+                {CATEGORY_COLORS.map((c) => (
+                  <Pressable
+                    key={c}
+                    onPress={() => setColor(c)}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    style={[styles.catColorDot, { backgroundColor: c }, color === c && styles.catColorDotOn]}
+                  />
+                ))}
+              </View>
+            </Field>
             {cats.map((c) => (
               <View key={c.id} style={styles.catRow}>
                 <View style={[styles.catDot, { backgroundColor: c.color || colors.accent }]} />
@@ -319,7 +338,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
             <Button title={t('close')} variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -384,7 +403,7 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{t('editTransaction')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -452,6 +471,9 @@ function createStyles() {
   sheetTitle: { ...typography.title, marginBottom: spacing.lg },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   catAdd: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
+  catColorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  catColorDot: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'transparent' },
+  catColorDotOn: { borderColor: colors.text },
   });
 }
 

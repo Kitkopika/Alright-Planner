@@ -16,6 +16,12 @@ Outputs (into assets/):
   android-icon-foreground.png 1024 A mark only, transparent, safe-zone centered
   android-icon-monochrome.png 1024 A mark only, white on transparent
 
+The logo is deliberately smaller than the canvas so the icon reads as a
+small mark with generous margin:
+  - Full-logo renders: the A spans ~50% of the icon.
+  - Adaptive foreground: the A spans ~45% of the canvas, safely inside the
+    OS mask (~66%).
+
 Requires Pillow (e.g. PYTHONPATH=/tmp/pillow-lib).
 """
 
@@ -35,6 +41,12 @@ C_MID = (79, 70, 229, 255)      # #4F46E5
 C_BAR = (139, 143, 248, 255)    # #8B8FF8
 C_WHITE = (255, 255, 255, 255)
 C_CLEAR = (0, 0, 0, 0)
+
+# A's bounding box in viewBox units is 328 wide x 320 tall.
+# Full logo: 328 * s / 1024 = 0.50  -> s = 1.5625.
+FULL_SCALE = 800 / 512
+# Adaptive foreground: 320 * s / 1024 = 0.45 -> s = 1.4375.
+FOREGROUND_SCALE = 460 / 320
 
 
 def pt(points, ox, oy, s):
@@ -65,16 +77,15 @@ def render(size, *, output_scale, backdrop, dark=C_DARK, mid=C_MID, bar=C_BAR):
 
 def main():
     out = "assets"
-    # Full logo (opaque white backdrop, viewBox 512 -> 1024).
-    render(1024, output_scale=1024 / 512, backdrop="white").save(f"{out}/icon.png")
-    render(48, output_scale=48 / 512, backdrop="white").save(f"{out}/favicon.png")
-    render(1024, output_scale=1024 / 512, backdrop="white").save(f"{out}/splash-icon.png")
+    # Full logo (opaque white backdrop): A ~50% of the canvas.
+    render(1024, output_scale=FULL_SCALE, backdrop="white").save(f"{out}/icon.png")
+    render(48, output_scale=FULL_SCALE * 48 / 1024, backdrop="white").save(f"{out}/favicon.png")
+    render(1024, output_scale=FULL_SCALE, backdrop="white").save(f"{out}/splash-icon.png")
     # Adaptive icon: flat white background + foreground mark in the safe zone.
     render(1024, output_scale=1.0, backdrop="white").save(f"{out}/android-icon-background.png")
-    # Foreground mark: A height 320 viewBox units -> ~58% of 1024 (safe zone).
-    mark_scale = 594 / 320
-    render(1024, output_scale=mark_scale, backdrop=None).save(f"{out}/android-icon-foreground.png")
-    render(1024, output_scale=mark_scale, backdrop=None, dark=C_WHITE, mid=C_WHITE, bar=C_WHITE).save(
+    # Foreground mark: ~45% of the canvas (inside the OS mask).
+    render(1024, output_scale=FOREGROUND_SCALE, backdrop=None).save(f"{out}/android-icon-foreground.png")
+    render(1024, output_scale=FOREGROUND_SCALE, backdrop=None, dark=C_WHITE, mid=C_WHITE, bar=C_WHITE).save(
         f"{out}/android-icon-monochrome.png"
     )
     print("assets rendered")

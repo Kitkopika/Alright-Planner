@@ -302,7 +302,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{editing ? t('editRoutine') : t('newRoutine')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -415,7 +415,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{editing ? t('editHabit') : t('newHabit')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">

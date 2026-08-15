@@ -309,7 +309,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{editing ? t('editTask') : t('newTask')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">

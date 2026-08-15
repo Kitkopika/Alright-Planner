@@ -7,13 +7,17 @@
  */
 
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Recurrence, RecurrenceFreq } from '../core/types';
 import { addDays, dateKey, formatDateKeyDDMM, todayKey, tryParseISO, parseDateKey } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { WheelPicker } from './wheel';
 import { TKey, useDateNames, useT } from '../i18n';
+
+const PICKER_HOURS = Array.from({ length: 24 }, (_, i) => i); // 0–23
+const PICKER_MINUTES = Array.from({ length: 60 }, (_, i) => i); // 0–59, 1-minute steps
 
 // ---------------------------------------------------------------------------
 // Date (YYYY-MM-DD) — UI picker
@@ -151,7 +155,6 @@ export function TimePickerModal({
   styles = createStyles();
   const [hh, setHh] = useState(value ? parseInt(value.slice(0, 2), 10) || 0 : 9);
   const [mm, setMm] = useState(value ? parseInt(value.slice(3, 5), 10) || 0 : 0);
-  const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
   const t = useT();
   const ok = () => {
     onSelect(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`);
@@ -163,24 +166,16 @@ export function TimePickerModal({
       <Pressable style={styles.pickerBackdrop} onPress={onClose}>
         <Pressable style={styles.pickerCard} onPress={() => {}}>
           <Text style={[styles.pickerTitle, { textAlign: 'center', marginBottom: spacing.md }]}>{t('selectTime')}</Text>
-          <ScrollView style={{ maxHeight: 320 }}>
-            <Text style={styles.pickerSectionLabel}>{t('hour')}</Text>
-            <View style={styles.pickerSection}>
-              {Array.from({ length: 24 }, (_, h) => (
-                <Pressable key={h} onPress={() => setHh(h)} style={[styles.chipSmall, hh === h && styles.chipSmallOn]}>
-                  <Text style={[styles.chipSmallText, hh === h && { color: '#FFFFFF' }]}>{String(h).padStart(2, '0')}</Text>
-                </Pressable>
-              ))}
-            </View>
-            <Text style={styles.pickerSectionLabel}>{t('minute')}</Text>
-            <View style={styles.pickerSection}>
-              {minutes.map((m) => (
-                <Pressable key={m} onPress={() => setMm(m)} style={[styles.chipSmall, mm === m && styles.chipSmallOn]}>
-                  <Text style={[styles.chipSmallText, mm === m && { color: '#FFFFFF' }]}>{String(m).padStart(2, '0')}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
+          <WheelPicker
+            hourValues={PICKER_HOURS}
+            minuteValues={PICKER_MINUTES}
+            hour={hh}
+            minute={mm}
+            onChange={(h, m) => {
+              setHh(h);
+              setMm(m);
+            }}
+          />
           <View style={styles.pickerFooter}>
             <Button title={t('cancel')} variant="ghost" small onPress={onClose} />
             <Button title={t('ok')} small onPress={ok} />

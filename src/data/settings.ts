@@ -1,17 +1,16 @@
 /**
  * Device settings: theme mode, accent color, language and currency.
- * Persisted to localStorage (web); on native this prototype keeps them in
- * memory for the session.
+ * Persisted to a small JSON file (`settings.json` on native, localStorage on
+ * web) so choices survive restarts.
  */
 
 import { create } from 'zustand';
+import { getSettingsStore } from './persistence';
 import { setDefaultCurrency, setDisplayLanguage } from '../features/finance';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'th';
 export type Currency = 'USD' | 'THB';
-
-const STORAGE_KEY = 'alright:settings';
 
 export interface SettingsState {
   theme: ThemeMode;
@@ -23,14 +22,21 @@ export interface SettingsState {
   setAccent: (c: string) => void;
   setLanguage: (l: Language) => void;
   setCurrency: (c: Currency) => void;
-  hydrate: () => void;
+  hydrate: () => Promise<void>;
 }
 
 const DEFAULTS = { theme: 'system' as ThemeMode, accent: '#4F46E5', language: 'en' as Language, currency: 'THB' as Currency };
 
-function load(): Partial<SettingsState> {
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+/** True when value is a 6-digit hex color like "#FF8800". */
+function isHexColor(value: unknown): value is string {
+  return typeof value === 'string' && HEX_COLOR_RE.test(value);
+}
+
+async function load(): Promise<Partial<SettingsState>> {
   try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+    const raw = await getSettingsStore().read();
     if (raw) return JSON.parse(raw) as Partial<SettingsState>;
   } catch {
     // ignore
@@ -38,9 +44,9 @@ function load(): Partial<SettingsState> {
   return {};
 }
 
-function save(s: SettingsState): void {
+async function save(s: SettingsState): Promise<void> {
   try {
-    globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify({ theme: s.theme, accent: s.accent, language: s.language, currency: s.currency }));
+    await getSettingsStore().write(JSON.stringify({ theme: s.theme, accent: s.accent, language: s.language, currency: s.currency }));
   } catch {
     // ignore
   }
@@ -52,27 +58,29 @@ export const useSettings = create<SettingsState>((set, get) => ({
 
   setTheme: (theme) => {
     set({ theme });
-    save(get());
+    void save(get());
   },
   setAccent: (accent) => {
+    if (!isHexColor(accent)) return; // never accept an invalid color
     set({ accent });
-    save(get());
+    void save(get());
   },
   setLanguage: (language) => {
     set({ language });
-    save(get());
+    void save(get());
     setDisplayLanguage(language);
   },
   setCurrency: (currency) => {
     set({ currency });
-    save(get());
+    void save(get());
     setDefaultCurrency(currency);
   },
-  hydrate: () => {
-    const loaded = load();
+  hydrate: async () => {
+    const loaded = await load();
     const currency = (loaded.currency as Currency) || DEFAULTS.currency;
     const language = (loaded.language as Language) || DEFAULTS.language;
-    set({ ...DEFAULTS, ...loaded, currency, language, hydrated: true });
+    const accent = isHexColor(loaded.accent) ? loaded.accent : DEFAULTS.accent;
+    set({ ...DEFAULTS, ...loaded, accent, currency, language, hydrated: true });
     setDefaultCurrency(currency);
     setDisplayLanguage(language);
   },

@@ -14,12 +14,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
 import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../../src/core/time';
+import { AppData } from '../../src/core/types';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
 import { EventEditorModal } from '../../src/components/eventEditor';
 import { TKey, useDateNames, useT } from '../../src/i18n';
 
 type ViewMode = 'day' | 'week' | 'month' | 'year';
+
+const WEEK_TIME_COL = 46;
 
 export default function CalendarScreen() {
   styles = createStyles();
@@ -32,6 +35,7 @@ export default function CalendarScreen() {
   const [selected, setSelected] = useState<Date>(new Date());
   const [editingEvent, setEditingEvent] = useState<string | null | undefined>(undefined);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [gridW, setGridW] = useState(0);
 
   const monthDays = useMemo(() => monthGrid(selected.getFullYear(), selected.getMonth()), [selected]);
   const weekStart = startOfWeek(selected);
@@ -39,8 +43,89 @@ export default function CalendarScreen() {
   const selectedDay = useMemo(() => dayItems(data, selected), [data, selected]);
   const weekHasToday = weekDays.some((d) => dateKey(d.date) === todayKey());
   const nowHour = new Date().getHours();
-  const WEEK_TIME_COL = 46;
+  const WEEK_HEADER_H = 40;
   const colW = Math.max((windowWidth - spacing.lg * 2 - WEEK_TIME_COL) / 7, 40);
+
+  // All-day row: single-day events fill their whole day column; multi-day
+  // events become ONE connected bar across their day columns (stacked into
+  // lanes when several overlap), like the timed span bars below.
+  const allDaySingles: { it: CalendarItem; di: number }[] = [];
+  const allDaySpanMap = new Map<string, { item: CalendarItem; first: number; last: number }>();
+  weekDays.forEach((d, di) => {
+    for (const it of d.items) {
+      if (!it.allDay && it.timeLabel) continue; // timed items live in the hour rows
+      if (it.spanning && !it.recurring) {
+        const g = allDaySpanMap.get(it.entityId) || { item: it, first: di, last: di };
+        g.first = Math.min(g.first, di);
+        g.last = Math.max(g.last, di);
+        allDaySpanMap.set(it.entityId, g);
+      } else {
+        allDaySingles.push({ it, di });
+      }
+    }
+  });
+  const allDayLaneEnds: number[] = [];
+  const allDayLane = new Map<string, number>();
+  for (const g of [...allDaySpanMap.values()].sort((a, b) => a.first - b.first)) {
+    let lane = allDayLaneEnds.findIndex((end) => end < g.first);
+    if (lane === -1) {
+      lane = allDayLaneEnds.length;
+      allDayLaneEnds.push(-1);
+    }
+    allDayLaneEnds[lane] = g.last;
+    allDayLane.set(g.item.entityId, lane);
+  }
+  const singlesPerDay = new Map<number, number>();
+  for (const s of allDaySingles) singlesPerDay.set(s.di, (singlesPerDay.get(s.di) || 0) + 1);
+  const maxSingles = Math.max(0, ...singlesPerDay.values());
+  const allDayRowH = Math.max(30, maxSingles * 22 + 6, allDayLaneEnds.length * 22 + 8);
+
+  // Timed area: one hour row = ROW_H px; items are positioned by minutes and
+  // sized by duration, arranged side by side (lanes) instead of stacked.
+  const ROW_H = 54;
+  const toMin = (t: string) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(t);
+    return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0;
+  };
+  const timedDays = weekDays.map((d, di) => {
+    const timed = d.items.filter((it) => !!it.timeLabel && !it.allDay && !(it.spanning && !it.recurring));
+    const items = timed
+      .map((it) => {
+        const startMin = toMin(it.timeLabel);
+        let endMin = it.endTimeLabel ? toMin(it.endTimeLabel) : startMin + 60;
+        if (endMin <= startMin) endMin += 24 * 60; // crosses midnight
+        if (endMin - startMin > 24 * 60) endMin = startMin + 24 * 60;
+        return { it, startMin, endMin };
+      })
+      .sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+    // Greedy lane assignment: reuse a lane whose last item already ended.
+    const laneEnds: number[] = [];
+    const blocks = items.map((x) => {
+      let lane = laneEnds.findIndex((end) => end <= x.startMin);
+      if (lane === -1) {
+        lane = laneEnds.length;
+        laneEnds.push(-1);
+      }
+      laneEnds[lane] = x.endMin;
+      return { ...x, lane, laneTotal: 0 };
+    });
+    const laneTotal = Math.max(laneEnds.length, 1);
+    blocks.forEach((b) => {
+      b.laneTotal = laneTotal;
+    });
+    return { di, blocks };
+  });
+  // Multi-day timed events: ONE connected bar across their day columns.
+  const timedSpanMap = new Map<string, { item: CalendarItem; first: number; last: number }>();
+  weekDays.forEach((d, di) => {
+    for (const it of d.items) {
+      if (!it.timeLabel || it.allDay || !(it.spanning && !it.recurring)) continue;
+      const g = timedSpanMap.get(it.entityId) || { item: it, first: di, last: di };
+      g.first = Math.min(g.first, di);
+      g.last = Math.max(g.last, di);
+      timedSpanMap.set(it.entityId, g);
+    }
+  });
 
   const openEvent = (entityId: string) => {
     setEditingEvent(entityId);
@@ -105,9 +190,9 @@ export default function CalendarScreen() {
 
         {mode === 'week' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ width: WEEK_TIME_COL + colW * 7 }}>
+            <View style={{ width: WEEK_TIME_COL + colW * 7, position: 'relative' }}>
               {/* Day headers */}
-              <View style={styles.weekGridRow}>
+              <View style={[styles.weekGridRow, { height: WEEK_HEADER_H }]}>
                 <View style={{ width: WEEK_TIME_COL }} />
                 {weekDays.map((d, di) => (
                   <Pressable
@@ -130,80 +215,116 @@ export default function CalendarScreen() {
               </View>
 
               {/* All-day / no-time row */}
-              <View style={styles.weekGridRow}>
+              <View style={[styles.weekGridRow, { height: allDayRowH }]}>
                 <Text style={[styles.weekTimeCell, styles.weekTimeLabel]}>{t('allDay')}</Text>
                 {weekDays.map((d, di) => (
                   <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]}>
-                    {d.items.filter((it) => it.allDay || !it.timeLabel).map((it) => (
-                      <WeekBlock key={it.id} item={it} onOpen={openEvent} onDelete={deleteItem} />
+                    {allDaySingles.filter((x) => x.di === di).map((x) => (
+                      <WeekBlock key={x.it.id} item={x.it} onOpen={openEvent} onDelete={deleteItem} fullWidth />
                     ))}
                   </View>
                 ))}
+                {[...allDaySpanMap.values()].map((g) => (
+                  <Pressable
+                    key={g.item.id}
+                    onPress={() => openEvent(g.item.entityId)}
+                    onLongPress={() => deleteItem(g.item)}
+                    style={[
+                      styles.weekSpanBar,
+                      {
+                        left: WEEK_TIME_COL + g.first * colW,
+                        width: (g.last - g.first + 1) * colW,
+                        top: 6 + (allDayLane.get(g.item.entityId) ?? 0) * 22,
+                        backgroundColor: (g.item.color || colors.accent) + '22',
+                        borderLeftColor: g.item.color || colors.accent,
+                      },
+                    ]}
+                  >
+                    <Text numberOfLines={1} style={styles.weekSpanText}>
+                      {g.item.title}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
 
-              {/* Hour rows */}
+              {/* Hour rows (background gridlines only) */}
               {Array.from({ length: 24 }, (_, h) => {
                 const isNow = weekHasToday && h === nowHour;
-                // Collect every timed item at this hour, per day column.
-                const hourItems: { it: CalendarItem; di: number }[] = [];
-                weekDays.forEach((d, di) => {
-                  for (const it of d.items) {
-                    if (!it.allDay && it.timeLabel && parseInt(it.timeLabel.slice(0, 2), 10) === h) {
-                      hourItems.push({ it, di });
-                    }
-                  }
-                });
-                // Multi-day (spanning) events are drawn as ONE connected line
-                // across their day columns; everything else as per-day blocks.
-                const spans = new Map<string, { item: CalendarItem; first: number; last: number }>();
-                const singles: { it: CalendarItem; di: number }[] = [];
-                for (const { it, di } of hourItems) {
-                  // Only non-recurring multi-day events become one connected
-                  // line; recurring instances stay as per-day blocks.
-                  if (it.spanning && !it.recurring) {
-                    const g = spans.get(it.entityId) || { item: it, first: di, last: di };
-                    g.first = Math.min(g.first, di);
-                    g.last = Math.max(g.last, di);
-                    spans.set(it.entityId, g);
-                  } else {
-                    singles.push({ it, di });
-                  }
-                }
                 return (
-                  <View key={h} style={[styles.weekGridRow, { height: 54 }, isNow && styles.weekRowNow]}>
+                  <View key={h} style={[styles.weekGridRow, { height: ROW_H }, isNow && styles.weekRowNow]}>
                     <Text style={[styles.weekTimeCell, styles.weekTimeLabel, isNow && { color: colors.danger }]}>
                       {String(h).padStart(2, '0')}:00
                     </Text>
-                    {weekDays.map((d, di) => (
-                      <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]}>
-                        {singles.filter((x) => x.di === di).slice(0, 2).map((x) => (
-                          <WeekBlock key={x.it.id} item={x.it} onOpen={openEvent} onDelete={deleteItem} />
-                        ))}
-                      </View>
-                    ))}
-                    {[...spans.values()].map((g) => (
-                      <Pressable
-                        key={g.item.id}
-                        onPress={() => openEvent(g.item.entityId)}
-                        onLongPress={() => deleteItem(g.item)}
-                        style={[
-                          styles.weekSpanBar,
-                          {
-                            left: WEEK_TIME_COL + g.first * colW,
-                            width: (g.last - g.first + 1) * colW,
-                            backgroundColor: (g.item.color || colors.accent) + '22',
-                            borderLeftColor: g.item.color || colors.accent,
-                          },
-                        ]}
-                      >
-                        <Text numberOfLines={1} style={styles.weekSpanText}>
-                          {g.item.timeLabel} {g.item.title}
-                        </Text>
-                      </Pressable>
+                    {weekDays.map((d) => (
+                      <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]} />
                     ))}
                   </View>
                 );
               })}
+
+              {/* Timed overlay: duration-proportional blocks side by side
+                  (lanes), plus connected bars for multi-day events. */}
+              <View pointerEvents="box-none" style={[styles.timedOverlay, { top: WEEK_HEADER_H + allDayRowH, height: 24 * ROW_H }]}>
+                {timedDays.map(({ di, blocks }) => {
+                  const laneW = colW / Math.max(...blocks.map((b) => b.laneTotal), 1);
+                  return blocks.map((b) => {
+                    const top = (b.startMin / 60) * ROW_H;
+                    const height = Math.max(((b.endMin - b.startMin) / 60) * ROW_H, 16);
+                    return (
+                      <Pressable
+                        key={b.it.id}
+                        onPress={() => openEvent(b.it.entityId)}
+                        onLongPress={() => deleteItem(b.it)}
+                        style={[
+                          styles.weekBlockAbs,
+                          {
+                            left: di * colW + b.lane * laneW,
+                            width: laneW - 1,
+                            top,
+                            height,
+                            backgroundColor: (b.it.color || colors.accent) + '22',
+                            borderLeftColor: b.it.color || (b.it.kind === 'task' ? colors.textMuted : colors.accent),
+                          },
+                        ]}
+                      >
+                        {b.it.timeLabel ? <Text style={styles.weekBlockTime}>{b.it.timeLabel}</Text> : null}
+                        <Text numberOfLines={3} style={[styles.weekBlockTitle, b.it.done && { textDecorationLine: 'line-through', color: colors.textMuted }]}>
+                          {b.it.title}
+                        </Text>
+                      </Pressable>
+                    );
+                  });
+                })}
+                {[...timedSpanMap.values()].map((g) => {
+                  const startMin = toMin(g.item.timeLabel);
+                  const endT = g.item.endTimeLabel ? toMin(g.item.endTimeLabel) : startMin + 60;
+                  const daysSpan = g.last - g.first;
+                  let durMin = endT - startMin + daysSpan * 24 * 60;
+                  if (durMin <= 0) durMin = 60;
+                  return (
+                    <Pressable
+                      key={g.item.id}
+                      onPress={() => openEvent(g.item.entityId)}
+                      onLongPress={() => deleteItem(g.item)}
+                      style={[
+                        styles.weekSpanBar,
+                        {
+                          left: g.first * colW,
+                          width: (g.last - g.first + 1) * colW,
+                          top: (startMin / 60) * ROW_H,
+                          height: Math.max((durMin / 60) * ROW_H, 16),
+                          backgroundColor: (g.item.color || colors.accent) + '22',
+                          borderLeftColor: g.item.color || colors.accent,
+                        },
+                      ]}
+                    >
+                      <Text numberOfLines={1} style={styles.weekSpanText}>
+                        {g.item.timeLabel} {g.item.title}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
           </ScrollView>
         )}
@@ -215,14 +336,16 @@ export default function CalendarScreen() {
                 <Text key={w} style={styles.weekday}>{w}</Text>
               ))}
             </View>
-            <View style={styles.grid}>
+            <View style={styles.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
               {monthDays.map((day) => {
   styles = createStyles();
                 const inMonth = day.getMonth() === selected.getMonth();
                 const isToday = dateKey(day) === todayKey();
                 const isSelected = dateKey(day) === dateKey(selected);
                 const items = dayItems(data, day).items;
-                const events = items.filter((i) => i.kind === 'event');
+                // Multi-day events are drawn as spanning bars; everything else
+                // (single-day events, recurring instances) gets a dot.
+                const dotEvents = items.filter((i) => i.kind === 'event' && !(i.spanning && !i.recurring));
                 const hasDeadline = items.some((i) => i.kind === 'task' && !i.done);
                 return (
                   <Pressable
@@ -232,18 +355,15 @@ export default function CalendarScreen() {
                   >
                     <Text style={[styles.cellDay, !inMonth && styles.cellDim, isToday && styles.cellToday]}>{day.getDate()}</Text>
                     <View style={styles.cellDots}>
-                      {events.slice(0, 3).map((ev) =>
-                        ev.spanning ? (
-                          <View key={ev.id} style={[styles.cellLine, { backgroundColor: ev.color || colors.accent }]} />
-                        ) : (
-                          <View key={ev.id} style={[styles.cellLineShort, { backgroundColor: ev.color || colors.accent }]} />
-                        )
-                      )}
-                      {events.length > 3 ? <Text style={styles.cellMore}>+{events.length - 3}</Text> : null}
+                      {dotEvents.slice(0, 3).map((ev) => (
+                        <View key={ev.id} style={[styles.cellDot, { backgroundColor: ev.color || colors.accent }]} />
+                      ))}
+                      {dotEvents.length > 3 ? <Text style={styles.cellMore}>+{dotEvents.length - 3}</Text> : null}
                     </View>
                   </Pressable>
                 );
               })}
+              {gridW > 0 && <MonthSpanBars monthDays={monthDays} data={data} gridW={gridW} />}
             </View>
             <SectionTitle text={formatDateKeyDDMM(dateKey(selected))} />
             <DayTimeline items={selectedDay.items} date={selected} onOpen={openEvent} onDelete={deleteItem} />
@@ -280,13 +400,28 @@ function SectionTitle({ text }: { text: string }) {
   return <Text style={styles.sectionTitle}>{text}</Text>;
 }
 
-function WeekBlock({ item, onOpen, onDelete }: { item: CalendarItem; onOpen: (id: string) => void; onDelete: (it: CalendarItem) => void }) {
+function WeekBlock({
+  item,
+  onOpen,
+  onDelete,
+  fullWidth,
+}: {
+  item: CalendarItem;
+  onOpen: (id: string) => void;
+  onDelete: (it: CalendarItem) => void;
+  /** Fill the whole day column (all-day row). */
+  fullWidth?: boolean;
+}) {
   styles = createStyles();
   return (
     <Pressable
       onPress={() => onOpen(item.entityId)}
       onLongPress={() => onDelete(item)}
-      style={[styles.weekBlock, { backgroundColor: (item.color || colors.accent) + '22', borderLeftColor: item.color || (item.kind === 'task' ? colors.textMuted : colors.accent) }]}
+      style={[
+        styles.weekBlock,
+        fullWidth && styles.weekBlockFull,
+        { backgroundColor: (item.color || colors.accent) + '22', borderLeftColor: item.color || (item.kind === 'task' ? colors.textMuted : colors.accent) },
+      ]}
     >
       {item.timeLabel ? <Text style={styles.weekBlockTime}>{item.timeLabel}</Text> : null}
       <Text numberOfLines={1} style={[styles.weekBlockTitle, item.done && { textDecorationLine: 'line-through', color: colors.textMuted }]}>
@@ -377,6 +512,96 @@ function DayTimeline({
 }
 
 // ---------------------------------------------------------------------------
+// Multi-day span bars (month grid)
+// ---------------------------------------------------------------------------
+
+/**
+ * Multi-day events drawn as continuous bars along the bottom of the month-grid
+ * cells they cover. A bar crossing a week boundary continues on the next row.
+ * Single-day events are rendered as dots in the cell instead.
+ */
+function MonthSpanBars({ monthDays, data, gridW }: { monthDays: Date[]; data: AppData; gridW: number }) {
+  styles = createStyles();
+  type Seg = { row: number; c0: number; c1: number; color: string };
+  const rows = new Map<number, Seg[]>();
+  const pushSeg = (row: number, c0: number, c1: number, color: string) => {
+    const arr = rows.get(row) || [];
+    arr.push({ row, c0, c1, color });
+    rows.set(row, arr);
+  };
+
+  // Collect the grid-cell index of every day each multi-day event covers.
+  const map = new Map<string, { color?: string; indices: number[] }>();
+  monthDays.forEach((day, idx) => {
+    for (const it of dayItems(data, day).items) {
+      if (it.kind === 'event' && it.spanning && !it.recurring) {
+        let g = map.get(it.entityId);
+        if (!g) {
+          g = { color: it.color, indices: [] };
+          map.set(it.entityId, g);
+        }
+        g.indices.push(idx);
+      }
+    }
+  });
+
+  // Split each event's (contiguous) indices into per-row column segments.
+  for (const s of map.values()) {
+    const color = s.color || colors.accent;
+    let row = -1;
+    let c0 = 0;
+    let c1 = 0;
+    for (const idx of s.indices) {
+      const r = Math.floor(idx / 7);
+      const c = idx % 7;
+      if (r !== row) {
+        if (row >= 0) pushSeg(row, c0, c1, color);
+        row = r;
+        c0 = c;
+        c1 = c;
+      } else {
+        c1 = c;
+      }
+    }
+    if (row >= 0) pushSeg(row, c0, c1, color);
+  }
+
+  const cell = gridW / 7;
+  const barH = 3;
+  const gap = 1;
+  const bars: React.ReactNode[] = [];
+  for (const [row, segs] of rows) {
+    const sorted = [...segs].sort((a, b) => a.c0 - b.c0);
+    // Stack overlapping segments into lanes so they don't hide each other.
+    const laneEnds: number[] = [];
+    sorted.forEach((seg, i) => {
+      let lane = laneEnds.findIndex((end) => end < seg.c0);
+      if (lane === -1) {
+        lane = laneEnds.length;
+        laneEnds.push(-1);
+      }
+      laneEnds[lane] = seg.c1;
+      bars.push(
+        <View
+          key={`${row}-${seg.c0}-${i}`}
+          pointerEvents="none"
+          style={[
+            styles.monthSpanBar,
+            {
+              left: seg.c0 * cell,
+              top: (row + 1) * cell - barH - 7 - lane * (barH + gap),
+              width: (seg.c1 - seg.c0 + 1) * cell,
+              backgroundColor: seg.color,
+            },
+          ]}
+        />
+      );
+    });
+  }
+  return <>{bars}</>;
+}
+
+// ---------------------------------------------------------------------------
 // Year mini-months
 // ---------------------------------------------------------------------------
 
@@ -435,7 +660,7 @@ function createStyles() {
 
   // month grid
   weekday: { flex: 1, textAlign: 'center', color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', position: 'relative' },
   cell: {
     width: `${100 / 7}%`,
     aspectRatio: 1,
@@ -452,9 +677,11 @@ function createStyles() {
   cellDim: { color: colors.textMuted },
   cellToday: { color: colors.accent, fontWeight: '700' },
   cellDots: { flexDirection: 'row', gap: 2, marginTop: 2, minHeight: 5, alignItems: 'center' },
+  cellDot: { width: 5, height: 5, borderRadius: 2.5 },
   cellLineShort: { width: 9, height: 3, borderRadius: 1.5 },
   cellLine: { flex: 1, height: 3, borderRadius: 1.5, maxWidth: 18 },
   cellMore: { fontSize: 8, color: colors.textMuted, fontWeight: '700' },
+  monthSpanBar: { position: 'absolute', height: 3, borderRadius: 1.5 },
 
   sectionTitle: { ...typography.label, color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
 
@@ -506,6 +733,16 @@ function createStyles() {
     padding: 1,
   },
   weekRowNow: { backgroundColor: colors.danger + '0D' },
+  timedOverlay: { position: 'absolute', left: WEEK_TIME_COL, right: 0, overflow: 'hidden' },
+  weekBlockAbs: {
+    position: 'absolute',
+    borderRadius: 4,
+    paddingHorizontal: 3,
+    paddingVertical: 2,
+    overflow: 'hidden',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+  },
   weekSpanBar: {
     position: 'absolute',
     top: 5,
@@ -526,6 +763,7 @@ function createStyles() {
     borderLeftWidth: 3,
     borderLeftColor: colors.accent,
   },
+  weekBlockFull: { width: '100%', alignSelf: 'stretch' },
   weekBlockTime: { fontSize: 9, color: colors.textSecondary, fontWeight: '700' },
   weekBlockTitle: { fontSize: 10, color: colors.text, fontWeight: '500' },
   weekItemBar: { width: 3, height: 24, borderRadius: 1.5, alignSelf: 'stretch' },

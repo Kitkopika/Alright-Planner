@@ -117,3 +117,69 @@ export function getDocumentStore(): DocumentStore {
   }
   return instance;
 }
+
+// ---------------------------------------------------------------------------
+// Settings file — device preferences (theme, accent, language, currency).
+// Kept in its own small JSON file (settings.json on native, localStorage on
+// web) so exporting/importing personal data never touches device settings.
+// ---------------------------------------------------------------------------
+
+export interface SettingsStore {
+  read(): Promise<string | null>;
+  write(text: string): Promise<void>;
+}
+
+const SETTINGS_KEY = 'alright:settings';
+
+class WebSettingsStore implements SettingsStore {
+  async read(): Promise<string | null> {
+    try {
+      return globalThis.localStorage?.getItem(SETTINGS_KEY) ?? null;
+    } catch {
+      return null;
+    }
+  }
+  async write(text: string): Promise<void> {
+    try {
+      globalThis.localStorage?.setItem(SETTINGS_KEY, text);
+    } catch (e) {
+      console.warn('LifeOS: failed to write settings', e);
+    }
+  }
+}
+
+class NativeSettingsStore implements SettingsStore {
+  private file: File;
+
+  constructor() {
+    this.file = new File(Paths.document, 'settings.json');
+  }
+
+  async read(): Promise<string | null> {
+    try {
+      if (!this.file.exists) return null;
+      return await this.file.text();
+    } catch (e) {
+      console.warn('LifeOS: failed to read settings file', e);
+      return null;
+    }
+  }
+
+  async write(text: string): Promise<void> {
+    try {
+      this.file.write(text);
+    } catch (e) {
+      console.warn('LifeOS: failed to write settings file', e);
+    }
+  }
+}
+
+let settingsInstance: SettingsStore | null = null;
+
+/** Singleton settings store for the current platform. */
+export function getSettingsStore(): SettingsStore {
+  if (!settingsInstance) {
+    settingsInstance = Platform.OS === 'web' ? new WebSettingsStore() : new NativeSettingsStore();
+  }
+  return settingsInstance;
+}
