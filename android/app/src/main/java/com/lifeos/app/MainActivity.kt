@@ -1,7 +1,5 @@
 package com.lifeos.app
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.os.Build
 import android.os.Bundle
 
@@ -27,12 +25,10 @@ class MainActivity : ReactActivity() {
     refreshTodayWidget()
   }
 
-  /** Refreshes the "Alright — Today" home-screen widget if one is placed. */
+  /** Refreshes every placed "Alright" home-screen widget. */
   private fun refreshTodayWidget() {
     try {
-      val manager = AppWidgetManager.getInstance(this)
-      val ids = manager.getAppWidgetIds(ComponentName(this, TodayWidgetProvider::class.java))
-      for (id in ids) TodayWidgetProvider.updateWidget(this, manager, id)
+      WidgetData.refreshAll(this)
     } catch (e: Exception) {
       // Widget refresh must never crash the app.
     }

@@ -16,7 +16,7 @@
             android:id="@+id/widget_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Alright"
+            android:text="Habits"
             android:textColor="#1C1C22"
             android:textSize="15sp"
             android:textStyle="bold"
@@ -40,71 +40,71 @@
         android:textSize="12sp"
         android:textStyle="bold" />
 
-    <!-- 6 item rows; hidden ones are GONE. -->
-    <LinearLayout android:id="@+id/today_row0" android:layout_width="match_parent"
+    <!-- 6 rows: habit/routine status -->
+    <LinearLayout android:id="@+id/habit_row0" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row0_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row0_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row0_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row0_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row0_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row0_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/today_row1" android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/habit_row1" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row1_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row1_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row1_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row1_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row1_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row1_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/today_row2" android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/habit_row2" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row2_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row2_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row2_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row2_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row2_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row2_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/today_row3" android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/habit_row3" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row3_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row3_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row3_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row3_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row3_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row3_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/today_row4" android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/habit_row4" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row4_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row4_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row4_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row4_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row4_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row4_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <LinearLayout android:id="@+id/today_row5" android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/habit_row5" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/today_row5_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
-        <TextView android:id="@+id/today_row5_time" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:textColor="#6B6B76" android:textSize="11sp" android:paddingStart="6dp" />
-        <TextView android:id="@+id/today_row5_title" android:layout_width="0dp"
+        <View android:id="@+id/habit_row5_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:id="@+id/habit_row5_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/habit_row5_status" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 
     <TextView

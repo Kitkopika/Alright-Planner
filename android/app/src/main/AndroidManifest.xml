@@ -39,5 +39,38 @@
           android:name="android.appwidget.provider"
           android:resource="@xml/today_widget_info" />
     </receiver>
+    <receiver
+        android:name=".MoneyWidgetProvider"
+        android:exported="false"
+        android:label="Alright — Money">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/money_widget_info" />
+    </receiver>
+    <receiver
+        android:name=".HabitsWidgetProvider"
+        android:exported="false"
+        android:label="Alright — Habits">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/habits_widget_info" />
+    </receiver>
+    <receiver
+        android:name=".FocusWidgetProvider"
+        android:exported="false"
+        android:label="Alright — Focus">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/focus_widget_info" />
+    </receiver>
   </application>
 </manifest>

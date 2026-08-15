@@ -18,6 +18,7 @@ import {
 import { newId } from '../core/id';
 import { nowIso } from '../core/time';
 import { getDocumentStore } from './persistence';
+import { refreshWidgets } from '../widgets';
 import {
   ImportMode,
   ImportPlan,
@@ -105,6 +106,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
     try {
       await getDocumentStore().write(text);
       set({ lastSavedAt: nowIso(), saveError: null });
+      refreshWidgets();
     } catch (e) {
       set({ saveError: e instanceof Error ? e.message : String(e) });
     }

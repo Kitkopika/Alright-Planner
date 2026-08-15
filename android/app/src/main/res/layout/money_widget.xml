@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Money"
+            android:textColor="#1C1C22"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+        <TextView
+            android:id="@+id/widget_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textColor="#6B6B76"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Summary row: Spent / Earned / Net -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal">
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Spent" android:textColor="#6B6B76" android:textSize="11sp" />
+            <TextView android:id="@+id/money_spent" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="#DC2626"
+                android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Earned" android:textColor="#6B6B76" android:textSize="11sp" />
+            <TextView android:id="@+id/money_earned" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="#16A34A"
+                android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Net" android:textColor="#6B6B76" android:textSize="11sp" />
+            <TextView android:id="@+id/money_net" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="#1C1C22"
+                android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 3 recent transactions -->
+    <LinearLayout android:id="@+id/money_row0" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <TextView android:id="@+id/money_row0_time" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="11sp" />
+        <TextView android:id="@+id/money_row0_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/money_row0_amount" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#1C1C22"
+            android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/money_row1" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <TextView android:id="@+id/money_row1_time" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="11sp" />
+        <TextView android:id="@+id/money_row1_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/money_row1_amount" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#1C1C22"
+            android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/money_row2" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
+        <TextView android:id="@+id/money_row2_time" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#9A9AA5" android:textSize="11sp" />
+        <TextView android:id="@+id/money_row2_title" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
+            android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
+        <TextView android:id="@+id/money_row2_amount" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textColor="#1C1C22"
+            android:textSize="13sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="12dp"
+        android:textColor="#9A9AA5"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</LinearLayout>
