@@ -35,7 +35,7 @@
     <LinearLayout android:id="@+id/rem_row0" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row0_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row0_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row0_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
@@ -46,7 +46,7 @@
     <LinearLayout android:id="@+id/rem_row1" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row1_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row1_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row1_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
@@ -57,7 +57,7 @@
     <LinearLayout android:id="@+id/rem_row2" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row2_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row2_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row2_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
@@ -68,7 +68,7 @@
     <LinearLayout android:id="@+id/rem_row3" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row3_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row3_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row3_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
@@ -79,7 +79,7 @@
     <LinearLayout android:id="@+id/rem_row4" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row4_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row4_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row4_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
@@ -90,7 +90,7 @@
     <LinearLayout android:id="@+id/rem_row5" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="horizontal"
         android:gravity="center_vertical" android:layout_marginTop="5dp" android:visibility="gone">
-        <View android:id="@+id/rem_row5_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
+        <TextView android:text="" android:id="@+id/rem_row5_dot" android:layout_width="4dp" android:layout_height="16dp" android:background="#4F46E5" />
         <TextView android:id="@+id/rem_row5_title" android:layout_width="0dp"
             android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#1C1C22"
             android:textSize="13sp" android:singleLine="true" android:ellipsize="end" android:paddingStart="6dp" />
