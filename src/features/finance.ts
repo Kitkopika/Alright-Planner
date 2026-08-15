@@ -145,5 +145,7 @@ export function setDefaultCurrency(currency: string): void {
 export function formatMoney(cents: number, currency = defaultCurrency): string {
   const symbols: Record<string, string> = { USD: '$', THB: '฿', EUR: '€', GBP: '£', JPY: '¥', KRW: '₩', CNY: '¥' };
   const sym = symbols[currency] || `${currency} `;
+  // Thai Baht is written after the amount (0.00฿), other symbols precede it.
+  if (currency === 'THB') return `${formatCents(cents)}${sym}`;
   return `${sym}${formatCents(cents)}`;
 }

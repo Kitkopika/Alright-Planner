@@ -44,6 +44,9 @@ describe('finance summaries', () => {
     expect(formatCents(0)).toBe('0.00');
     expect(formatCents(-50)).toBe('-0.50');
     expect(formatMoney(123456, 'USD')).toBe('$1234.56');
+    // Thai Baht is written after the amount.
+    expect(formatMoney(123456, 'THB')).toBe('1234.56฿');
+    expect(formatMoney(50, 'THB')).toBe('0.50฿');
   });
 });
 

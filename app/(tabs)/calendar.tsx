@@ -36,6 +36,8 @@ export default function CalendarScreen() {
   const weekStart = startOfWeek(selected);
   const weekDays = useMemo(() => dayItemsRange(data, weekStart, addDays(weekStart, 6)), [data, weekStart]);
   const selectedDay = useMemo(() => dayItems(data, selected), [data, selected]);
+  const weekHasToday = weekDays.some((d) => dateKey(d.date) === todayKey());
+  const nowHour = new Date().getHours();
 
   const openEvent = (entityId: string) => {
     setEditingEvent(entityId);
@@ -99,36 +101,62 @@ export default function CalendarScreen() {
         {mode === 'day' && <DayTimeline items={selectedDay.items} date={selected} onOpen={openEvent} onDelete={deleteItem} />}
 
         {mode === 'week' && (
-          <View style={styles.weekRow}>
-            {weekDays.map((d) => (
-              <View key={dateKey(d.date)} style={styles.weekCol}>
-                <Pressable onPress={() => setSelected(d.date)} style={[styles.weekHead, dateKey(d.date) === todayKey() && styles.weekHeadToday]}>
-                  <Text style={[styles.weekDow, dateKey(d.date) === dateKey(selected) && { color: colors.accent, fontWeight: '700' }]}>
-                    {weekdaysShort[(d.date.getDay() + 6) % 7]}
-                  </Text>
-                  <Text style={[styles.weekDayNum, dateKey(d.date) === todayKey() && { color: colors.accent, fontWeight: '700' }]}>
-                    {d.date.getDate()}
-                  </Text>
-                </Pressable>
-                <View style={styles.weekItems}>
-                  {d.items.map((it) => (
-                    <Pressable
-                      key={it.id}
-                      onPress={() => openEvent(it.entityId)}
-                      onLongPress={() => deleteItem(it)}
-                      style={[styles.weekItem, { backgroundColor: (it.color || colors.accent) + '22' }]}
-                    >
-                      <View style={[styles.weekItemBar, { backgroundColor: it.color || (it.kind === 'task' ? colors.textMuted : colors.accent) }]} />
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        {it.timeLabel || it.allDay ? <Text style={styles.weekItemTime}>{it.timeLabel || t('allDay')}</Text> : null}
-                        <Text numberOfLines={1} style={styles.weekItemTitle}>{it.title}</Text>
-                      </View>
-                    </Pressable>
-                  ))}
-                </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ minWidth: '100%' }}>
+              {/* Day headers */}
+              <View style={styles.weekGridRow}>
+                <View style={styles.weekTimeCell} />
+                {weekDays.map((d) => (
+                  <Pressable
+                    key={dateKey(d.date)}
+                    onPress={() => setSelected(d.date)}
+                    style={[styles.weekDayHead, dateKey(d.date) === todayKey() && styles.weekHeadToday]}
+                  >
+                    <Text style={[styles.weekDow, dateKey(d.date) === dateKey(selected) && { color: colors.accent, fontWeight: '700' }]}>
+                      {weekdaysShort[(d.date.getDay() + 6) % 7]}
+                    </Text>
+                    <Text style={[styles.weekDayNum, dateKey(d.date) === todayKey() && { color: colors.accent, fontWeight: '700' }]}>
+                      {d.date.getDate()}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
-            ))}
-          </View>
+
+              {/* All-day / no-time row */}
+              <View style={styles.weekGridRow}>
+                <Text style={[styles.weekTimeCell, styles.weekTimeLabel]}>{t('allDay')}</Text>
+                {weekDays.map((d) => (
+                  <View key={dateKey(d.date)} style={styles.weekDayCell}>
+                    {d.items.filter((it) => it.allDay || !it.timeLabel).map((it) => (
+                      <WeekBlock key={it.id} item={it} onOpen={openEvent} onDelete={deleteItem} />
+                    ))}
+                  </View>
+                ))}
+              </View>
+
+              {/* Hour rows */}
+              {Array.from({ length: 24 }, (_, h) => {
+                const isNow = weekHasToday && h === nowHour;
+                return (
+                  <View key={h} style={[styles.weekGridRow, isNow && styles.weekRowNow]}>
+                    <Text style={[styles.weekTimeCell, styles.weekTimeLabel, isNow && { color: colors.danger }]}>
+                      {String(h).padStart(2, '0')}:00
+                    </Text>
+                    {weekDays.map((d) => {
+                      const items = d.items.filter((it) => !it.allDay && it.timeLabel && parseInt(it.timeLabel.slice(0, 2), 10) === h);
+                      return (
+                        <View key={dateKey(d.date)} style={styles.weekDayCell}>
+                          {items.map((it) => (
+                            <WeekBlock key={it.id} item={it} onOpen={openEvent} onDelete={deleteItem} />
+                          ))}
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })}
+            </View>
+          </ScrollView>
         )}
 
         {mode === 'month' && (
@@ -201,6 +229,22 @@ export default function CalendarScreen() {
 function SectionTitle({ text }: { text: string }) {
   styles = createStyles();
   return <Text style={styles.sectionTitle}>{text}</Text>;
+}
+
+function WeekBlock({ item, onOpen, onDelete }: { item: CalendarItem; onOpen: (id: string) => void; onDelete: (it: CalendarItem) => void }) {
+  styles = createStyles();
+  return (
+    <Pressable
+      onPress={() => onOpen(item.entityId)}
+      onLongPress={() => onDelete(item)}
+      style={[styles.weekBlock, { backgroundColor: (item.color || colors.accent) + '22', borderLeftColor: item.color || (item.kind === 'task' ? colors.textMuted : colors.accent) }]}
+    >
+      {item.timeLabel ? <Text style={styles.weekBlockTime}>{item.timeLabel}</Text> : null}
+      <Text numberOfLines={1} style={[styles.weekBlockTitle, item.done && { textDecorationLine: 'line-through', color: colors.textMuted }]}>
+        {item.title}
+      </Text>
+    </Pressable>
+  );
 }
 
 function DayTimeline({
@@ -398,25 +442,34 @@ function createStyles() {
   timelineTitle: { fontSize: 13, fontWeight: '600', color: colors.text },
   timelineTime: { fontSize: 11, color: colors.textSecondary },
 
-  // week
+  // week (time table)
   weekRow: { flexDirection: 'row', gap: spacing.xs },
-  weekCol: { flex: 1, minWidth: 0 },
-  weekHead: { alignItems: 'center', paddingVertical: spacing.xs, borderRadius: radius.sm },
+  weekGridRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, minHeight: 30, alignItems: 'stretch' },
+  weekTimeCell: { width: 46, justifyContent: 'center', paddingLeft: 4 },
+  weekTimeLabel: { fontSize: 10, color: colors.textMuted, fontVariant: ['tabular-nums'] },
+  weekDayHead: { flex: 1, minWidth: 54, alignItems: 'center', paddingVertical: 4 },
   weekHeadToday: { backgroundColor: colors.accentSoft },
   weekDow: { fontSize: 10, color: colors.textSecondary },
   weekDayNum: { fontSize: 15, fontWeight: '600', color: colors.text, marginTop: 2 },
-  weekItems: { gap: 2, marginTop: 2 },
-  weekItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    borderRadius: radius.sm,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
+  weekDayCell: {
+    flex: 1,
+    minWidth: 54,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: colors.border,
+    padding: 1,
   },
-  weekItemBar: { width: 3, height: 26, borderRadius: 1.5, alignSelf: 'stretch' },
-  weekItemTitle: { flex: 1, fontSize: 10, color: colors.text, fontWeight: '500' },
-  weekItemTime: { fontSize: 10, color: colors.textSecondary, fontWeight: '600' },
+  weekRowNow: { backgroundColor: colors.danger + '0D' },
+  weekBlock: {
+    borderRadius: 4,
+    paddingHorizontal: 3,
+    paddingVertical: 2,
+    marginBottom: 1,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+  },
+  weekBlockTime: { fontSize: 9, color: colors.textSecondary, fontWeight: '700' },
+  weekBlockTitle: { fontSize: 10, color: colors.text, fontWeight: '500' },
+  weekItemBar: { width: 3, height: 24, borderRadius: 1.5, alignSelf: 'stretch' },
 
   // year
   yearGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
