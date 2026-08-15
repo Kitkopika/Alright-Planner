@@ -396,7 +396,7 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
             </Field>
             <Field label={t('category')}>
               <ChipRow>
-                <Chip label="None" selected={!categoryId} onPress={() => setCategoryId(null)} />
+                <Chip label={t('none')} selected={!categoryId} onPress={() => setCategoryId(null)} />
                 {cats.map((c) => (
                   <Chip key={c.id} label={c.name} selected={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
                 ))}

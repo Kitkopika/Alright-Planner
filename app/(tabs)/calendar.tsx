@@ -45,7 +45,7 @@ export default function CalendarScreen() {
   };
 
   const deleteItem = (item: CalendarItem) => {
-    Alert.alert('Delete?', item.title, [
+    Alert.alert(t('deleteQ'), item.title, [
       { text: 'Delete', style: 'destructive', onPress: () => remove(item.kind === 'event' ? 'events' : 'tasks', item.entityId) },
       { text: 'Cancel', style: 'cancel' },
     ]);
@@ -122,7 +122,7 @@ export default function CalendarScreen() {
                     >
                       <View style={[styles.weekItemBar, { backgroundColor: it.color || (it.kind === 'task' ? colors.textMuted : colors.accent) }]} />
                       <View style={{ flex: 1, minWidth: 0 }}>
-                        {it.timeLabel || it.allDay ? <Text style={styles.weekItemTime}>{it.timeLabel || 'All day'}</Text> : null}
+                        {it.timeLabel || it.allDay ? <Text style={styles.weekItemTime}>{it.timeLabel || t('allDay')}</Text> : null}
                         <Text numberOfLines={1} style={styles.weekItemTitle}>{it.title}</Text>
                       </View>
                     </Pressable>
@@ -217,6 +217,7 @@ function DayTimeline({
   onDelete: (item: CalendarItem) => void;
 }) {
   styles = createStyles();
+  const t = useT();
   const allDay = items.filter((i) => i.allDay);
   const timed = items.filter((i) => !i.allDay);
   const byHour = new Map<number, CalendarItem[]>();
@@ -229,7 +230,7 @@ function DayTimeline({
   const nowHour = new Date().getHours();
 
   if (items.length === 0) {
-    return <EmptyState icon="calendar-clear-outline" title="Nothing scheduled" subtitle="Add an event or a task with a due time" />;
+    return <EmptyState icon="calendar-clear-outline" title={t('nothingScheduled')} subtitle={t('nothingScheduledSub')} />;
   }
 
   return (
@@ -272,7 +273,7 @@ function DayTimeline({
                     <Text style={[styles.timelineTitle, it.done && { textDecorationLine: 'line-through', color: colors.textMuted }]} numberOfLines={1}>
                       {it.title}
                     </Text>
-                    <Text style={styles.timelineTime}>{it.timeLabel}{it.kind === 'task' ? ' · Task' : ''}</Text>
+                    <Text style={styles.timelineTime}>{it.timeLabel}{it.kind === 'task' ? ` · ${t('typeTask')}` : ''}</Text>
                   </View>
                 </Pressable>
               ))}

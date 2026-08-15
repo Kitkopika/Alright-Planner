@@ -317,7 +317,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
               <TextBox value={title} onChangeText={setTitle} placeholder={t('whatNeedsDoing')} autoFocus={!editing} />
             </Field>
             <Field label={t('taskNotes')}>
-              <TextBox value={notes} onChangeText={setNotes} placeholder="Optional details" multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
+              <TextBox value={notes} onChangeText={setNotes} placeholder={t('optionalDetails')} multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
             </Field>
             <Field label={t('priority')}>
               <ChipRow>
@@ -369,7 +369,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
                 ))}
                 <View style={styles.subtaskAdd}>
                   <TextBox value={newSubtask} onChangeText={setNewSubtask} placeholder={t('addSubtask')} style={{ flex: 1 }} onSubmitEditing={addSubtask} returnKeyType="done" />
-                  <Button title="Add" small onPress={addSubtask} />
+                  <Button title={t('add')} small onPress={addSubtask} />
                 </View>
               </Field>
             )}

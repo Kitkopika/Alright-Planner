@@ -147,16 +147,16 @@ export default function TodayScreen() {
 
       {/* At-a-glance stats */}
       <View style={styles.statsRow}>
-        <StatTile icon="checkbox-outline" color={colors.accent} value={`${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} label="Tasks" />
-        <StatTile icon="repeat-outline" color={colors.success} value={`${today.habits.filter((h) => h.doneToday).length}/${today.habits.length}`} label="Habits" />
-        <StatTile icon="timer-outline" color={colors.warning} value={focusTodayLabel} label="Focus" />
-        <StatTile icon="wallet-outline" color={today.spending.netCents >= 0 ? colors.success : colors.danger} value={today.spending.label} label="Net" />
+        <StatTile icon="checkbox-outline" color={colors.accent} value={`${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} label={t('tasksToday')} />
+        <StatTile icon="repeat-outline" color={colors.success} value={`${today.habits.filter((h) => h.doneToday).length}/${today.habits.length}`} label={t('habits')} />
+        <StatTile icon="timer-outline" color={colors.warning} value={focusTodayLabel} label={t('focus')} />
+        <StatTile icon="wallet-outline" color={today.spending.netCents >= 0 ? colors.success : colors.danger} value={today.spending.label} label={t('netLabel')} />
       </View>
 
       {/* Schedule */}
       <SectionHeader title={t('schedule')} />
       {today.schedule.length === 0 ? (
-        <EmptyState icon="calendar-outline" title="Nothing scheduled today" subtitle="Add an event with +" />
+        <EmptyState icon="calendar-outline" title={t('nothingScheduledToday')} subtitle={t('addEventWithPlus')} />
       ) : (
         today.schedule.map((item) => (
           <Card key={item.id} style={styles.scheduleItem}>
@@ -164,9 +164,9 @@ export default function TodayScreen() {
             <View style={{ flex: 1 }}>
               <Text style={typography.body}>{item.title}</Text>
               {item.endAt ? (
-                <Text style={typography.caption}>{item.allDay ? 'All day' : `${timeHM(tryParseISO(item.startAt) || now)} – ${timeHM(tryParseISO(item.endAt) || now)}`}</Text>
+                <Text style={typography.caption}>{item.allDay ? t('allDay') : `${timeHM(tryParseISO(item.startAt) || now)} – ${timeHM(tryParseISO(item.endAt) || now)}`}</Text>
               ) : (
-                <Text style={typography.caption}>{item.allDay ? 'All day' : timeHM(tryParseISO(item.startAt) || now)}</Text>
+                <Text style={typography.caption}>{item.allDay ? t('allDay') : timeHM(tryParseISO(item.startAt) || now)}</Text>
               )}
             </View>
           </Card>
@@ -176,7 +176,7 @@ export default function TodayScreen() {
       {/* Tasks */}
       <SectionHeader title={`${t('tasks')} · ${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} />
       {today.tasks.length === 0 ? (
-        <EmptyState icon="checkbox-outline" title="No tasks due today" />
+        <EmptyState icon="checkbox-outline" title={t('noTasksDueToday')} />
       ) : (
         today.tasks.map(({ task, overdue }) => (
           <Card key={task.id} style={styles.taskItem}>
@@ -197,7 +197,7 @@ export default function TodayScreen() {
             >
               {task.title}
             </Text>
-            {overdue && <Badge text="overdue" color={colors.danger} bg={colors.dangerSoft} />}
+            {overdue && <Badge text={t('overdueBadge')} color={colors.danger} bg={colors.dangerSoft} />}
           </Card>
         ))
       )}
@@ -230,7 +230,7 @@ export default function TodayScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={typography.body}>{r.routine.name}</Text>
                 <Text style={typography.caption}>
-                  {r.doneSteps}/{r.totalSteps} steps
+                  {r.doneSteps}/{r.totalSteps} {t('stepsLabel')}
                 </Text>
               </View>
             </Card>
@@ -248,8 +248,8 @@ export default function TodayScreen() {
               style={styles.taskItem}
               onPress={() =>
                 Alert.alert('Reminder', r.title, [
-                  { text: 'Dismiss', onPress: () => dismissReminder(r) },
-                  { text: 'Snooze 1h', onPress: () => snoozeReminder(r) },
+                  { text: t('dismiss'), onPress: () => dismissReminder(r) },
+                  { text: t('snooze1h'), onPress: () => snoozeReminder(r) },
                   { text: 'Cancel', style: 'cancel' },
                 ])
               }
@@ -269,15 +269,15 @@ export default function TodayScreen() {
       <Card>
         <View style={styles.moneyRow}>
           <View style={{ flex: 1 }}>
-            <Text style={typography.caption}>Spent</Text>
+            <Text style={typography.caption}>{t('spentLabel')}</Text>
             <Text style={[typography.body, { fontWeight: '700', color: colors.danger }]}>{formatMoney(today.spending.expenseCents)}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={typography.caption}>Earned</Text>
+            <Text style={typography.caption}>{t('earnedLabel')}</Text>
             <Text style={[typography.body, { fontWeight: '700', color: colors.success }]}>{formatMoney(today.spending.incomeCents)}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={typography.caption}>Net</Text>
+            <Text style={typography.caption}>{t('netLabel')}</Text>
             <Text style={[typography.body, { fontWeight: '700' }]}>{today.spending.label}</Text>
           </View>
         </View>
@@ -305,7 +305,7 @@ export default function TodayScreen() {
         <TextBox
           value={quickNote}
           onChangeText={setQuickNote}
-          placeholder="Capture a thought… (first line becomes the title)"
+          placeholder={t('captureThought')}
           multiline
           style={{ minHeight: 72, textAlignVertical: 'top' }}
         />

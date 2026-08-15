@@ -255,28 +255,28 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
             <Field label={t('linkTo')}>
               <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4 }]}>Task</Text>
               <ChipRow>
-                <Chip label="None" selected={!taskId} onPress={() => setTaskId(null)} />
+                <Chip label={t('none')} selected={!taskId} onPress={() => setTaskId(null)} />
                 {tasks.slice(0, 6).map((t) => (
                   <Chip key={t.id} label={t.title.slice(0, 18)} selected={taskId === t.id} onPress={() => setTaskId(t.id)} />
                 ))}
               </ChipRow>
               <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Project</Text>
               <ChipRow>
-                <Chip label="None" selected={!projectId} onPress={() => setProjectId(null)} />
+                <Chip label={t('none')} selected={!projectId} onPress={() => setProjectId(null)} />
                 {projects.slice(0, 6).map((p) => (
                   <Chip key={p.id} label={p.name.slice(0, 18)} selected={projectId === p.id} onPress={() => setProjectId(p.id)} />
                 ))}
               </ChipRow>
               <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Goal</Text>
               <ChipRow>
-                <Chip label="None" selected={!goalId} onPress={() => setGoalId(null)} />
+                <Chip label={t('none')} selected={!goalId} onPress={() => setGoalId(null)} />
                 {goals.slice(0, 6).map((g) => (
                   <Chip key={g.id} label={g.title.slice(0, 18)} selected={goalId === g.id} onPress={() => setGoalId(g.id)} />
                 ))}
               </ChipRow>
               <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4, marginTop: 6 }]}>Event</Text>
               <ChipRow>
-                <Chip label="None" selected={!eventId} onPress={() => setEventId(null)} />
+                <Chip label={t('none')} selected={!eventId} onPress={() => setEventId(null)} />
                 {events.slice(0, 6).map((e) => (
                   <Chip key={e.id} label={e.title.slice(0, 18)} selected={eventId === e.id} onPress={() => setEventId(e.id)} />
                 ))}

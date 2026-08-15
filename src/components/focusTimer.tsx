@@ -10,6 +10,7 @@ import { useLifeOS } from '../data/store';
 import { isoDateTime } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { useT } from '../i18n';
 
 const PRESETS = [25, 50, 90];
 
@@ -33,6 +34,7 @@ function formatMinutes(min: number): string {
 
 export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const remove = useLifeOS((s) => s.remove);
@@ -128,11 +130,11 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>Focus</Text>
+          <Text style={styles.title}>{t('focus')}</Text>
 
           <View style={styles.timerWrap}>
             <Text style={styles.timer}>{timeLabel}</Text>
-            <Text style={styles.timerHint}>{running ? 'Focusing…' : minutes === 25 ? 'Pomodoro' : `${minutes} min`}</Text>
+            <Text style={styles.timerHint}>{running ? t('focusing') : minutes === 25 ? t('daily') : `${minutes} ${t('minSuffix')}`}</Text>
           </View>
 
           <ChipRow>
@@ -141,38 +143,38 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
             ))}
           </ChipRow>
           <View style={styles.customRow}>
-            <TextBox value={customMin} onChangeText={setCustomMin} placeholder="Custom min" keyboardType="number-pad" style={{ flex: 1 }} />
-            <Button title="Set" small onPress={applyCustom} />
+            <TextBox value={customMin} onChangeText={setCustomMin} placeholder={t('customMin')} keyboardType="number-pad" style={{ flex: 1 }} />
+            <Button title={t('setBtn')} small onPress={applyCustom} />
           </View>
 
-          <Field label="Linked task (optional)">
+          <Field label={t('linkedTask')}>
             <ChipRow>
-              <Chip label="None" selected={!taskId} onPress={() => setTaskId(null)} />
+              <Chip label={t('none')} selected={!taskId} onPress={() => setTaskId(null)} />
               {tasks.map((t) => (
                 <Chip key={t.id} label={t.title.slice(0, 20)} selected={taskId === t.id} onPress={() => setTaskId(t.id)} />
               ))}
             </ChipRow>
           </Field>
-          <Field label="Subject (optional)">
+          <Field label={t('subject')}>
             <TextBox value={subject} onChangeText={setSubject} placeholder="e.g. Math, reading…" />
           </Field>
 
           <View style={styles.actions}>
             {running ? (
-              <Button title="Stop & save" variant="danger" onPress={stop} style={{ flex: 1 }} />
+              <Button title={t('stopSave')} variant="danger" onPress={stop} style={{ flex: 1 }} />
             ) : (
-              <Button title="Start" onPress={start} style={{ flex: 1 }} />
+              <Button title={t('startBtn')} onPress={start} style={{ flex: 1 }} />
             )}
-            <Button title="Close" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+            <Button title={t('close')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
           </View>
 
           {sessions.length > 0 && (
             <View style={{ marginTop: spacing.md }}>
-              <Text style={[typography.label, { color: colors.textSecondary, marginBottom: 4 }]}>Recent sessions</Text>
+              <Text style={[typography.label, { color: colors.textSecondary, marginBottom: 4 }]}>{t('recentSessions')}</Text>
               {sessions.map((s) => (
                 <View key={s.id} style={styles.sessionRow}>
                   <Text style={[typography.body, { flex: 1, fontSize: 14 }]} numberOfLines={1}>
-                    {s.subject || tasks.find((t) => t.id === s.taskId)?.title || 'Focus'}
+                    {s.subject || tasks.find((t) => t.id === s.taskId)?.title || t('focus')}
                   </Text>
                   <Text style={typography.caption}>{formatMinutes(s.durationMin)}</Text>
                   <Pressable onPress={() => remove('focusSessions', s.id)} hitSlop={8}>

@@ -7,6 +7,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
+import { useT } from '../../src/i18n';
 import { computeInsights, RangeLabel } from '../../src/features/insights';
 import { formatMoney } from '../../src/features/finance';
 import { colors, radius, spacing, typography } from '../../src/theme';
@@ -15,6 +16,7 @@ import { HBars, VBars } from '../../src/components/charts';
 
 export default function InsightsScreen() {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const [range, setRange] = useState<RangeLabel>('week');
 
@@ -25,62 +27,62 @@ export default function InsightsScreen() {
       <View style={styles.header}>
         <Text style={typography.title}>Insights</Text>
         <ChipRow>
-          <Chip label="Week" selected={range === 'week'} onPress={() => setRange('week')} />
-          <Chip label="Month" selected={range === 'month'} onPress={() => setRange('month')} />
+          <Chip label={t('week')} selected={range === 'week'} onPress={() => setRange('week')} />
+          <Chip label={t('month')} selected={range === 'month'} onPress={() => setRange('month')} />
         </ChipRow>
       </View>
 
-      <SectionHeader title="Tasks" />
+      <SectionHeader title={t('tasks')} />
       <StatCard
         icon="checkbox-outline"
         color={colors.accent}
         value={`${insights.tasks.done}/${insights.tasks.due}`}
-        label={`${insights.tasks.rate}% completed${insights.tasks.overdue > 0 ? ` · ${insights.tasks.overdue} overdue` : ''}`}
+        label={`${insights.tasks.rate}% ${t('completed')}${insights.tasks.overdue > 0 ? ` · ${insights.tasks.overdue} ${t('overdue')}` : ''}`}
         pct={insights.tasks.rate}
-        empty="No tasks due in this range"
+        empty={t('noTasksDue')}
       />
 
-      <SectionHeader title="Habits" />
+      <SectionHeader title={t('habits')} />
       <StatCard
         icon="repeat-outline"
         color={colors.success}
         value={`${insights.habits.rate}%`}
-        label={`${insights.habits.done}/${insights.habits.scheduled} scheduled days done`}
+        label={`${insights.habits.done}/${insights.habits.scheduled} ${t('scheduledDaysDone')}`}
         pct={insights.habits.rate}
-        empty="No habits tracked"
-        extra={insights.habits.bestStreak > 0 ? `Best streak 🔥 ${insights.habits.bestStreak}` : undefined}
+        empty={t('noHabits')}
+        extra={insights.habits.bestStreak > 0 ? `${t('bestStreak')} 🔥 ${insights.habits.bestStreak}` : undefined}
       />
-      <ChartCard title="Daily habit completion">
+      <ChartCard title={t('dailyHabitChart')}>
         <VBars values={insights.habitByDay} max={1} color={colors.success} labels={dayLabels(insights.dayKeys)} />
       </ChartCard>
 
-      <SectionHeader title="Focus" />
+      <SectionHeader title={t('focus')} />
       <StatCard
         icon="timer-outline"
         color={colors.warning}
         value={`${Math.floor(insights.focus.minutes / 60)}h ${insights.focus.minutes % 60}m`}
-        label={`${insights.focus.sessions} sessions · ${insights.focus.avgMinutes} min avg`}
-        empty="No focus sessions yet"
+        label={`${insights.focus.sessions} ${t('sessionsAvg')} ${insights.focus.avgMinutes}m`}
+        empty={t('noFocus')}
       />
-      <ChartCard title="Focus minutes per day">
+      <ChartCard title={t('focusPerDay')}>
         <VBars values={insights.focusByDay} max={Math.max(1, ...insights.focusByDay)} color={colors.warning} labels={dayLabels(insights.dayKeys)} />
       </ChartCard>
 
-      <SectionHeader title="Money" />
+      <SectionHeader title={t('money')} />
       <StatCard
         icon="wallet-outline"
         color={colors.danger}
         value={formatMoney(insights.spending.expenseCents)}
-        label={`Spent this ${range} · earned ${formatMoney(insights.spending.incomeCents)}`}
-        empty="No transactions"
+        label={`${t('spentThis')} ${t(range)} · ${t('earned')} ${formatMoney(insights.spending.incomeCents)}`}
+        empty={t('noTransactions')}
         extra={
           insights.spending.topCategory
-            ? `Top category: ${insights.spending.topCategory.name} (${formatMoney(insights.spending.topCategory.cents)})`
+            ? `${t('topCategory')}: ${insights.spending.topCategory.name} (${formatMoney(insights.spending.topCategory.cents)})`
             : undefined
         }
       />
       {insights.spending.byCategory.length > 0 && (
-        <ChartCard title="Spending by category">
+        <ChartCard title={t('spendingByCategory')}>
           <HBars
             rows={insights.spending.byCategory.slice(0, 6).map((c) => ({
               label: c.name,
@@ -92,16 +94,16 @@ export default function InsightsScreen() {
         </ChartCard>
       )}
 
-      <SectionHeader title="Goals" />
+      <SectionHeader title={t('goals')} />
       <Card>
         {insights.goals.active === 0 && insights.goals.done === 0 ? (
-          <Text style={typography.caption}>No goals yet.</Text>
+          <Text style={typography.caption}>{t('noGoalsY')}</Text>
         ) : (
           <>
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
-                <Text style={typography.body}>{insights.goals.active} active · {insights.goals.done} done</Text>
-                <Text style={typography.caption}>Average progress across active goals</Text>
+                <Text style={typography.body}>{insights.goals.active} {t('active')} · {insights.goals.done} {t('doneLabel')}</Text>
+                <Text style={typography.caption}>{t('avgProgress')}</Text>
               </View>
               <Text style={[typography.body, { fontWeight: '700' }]}>{insights.goals.avgProgress}%</Text>
             </View>
@@ -112,7 +114,7 @@ export default function InsightsScreen() {
 
       <Card style={{ marginTop: spacing.lg }}>
         <Text style={[typography.caption, { color: colors.textMuted }]}>
-          All insights are computed locally from your data. Nothing leaves this device.
+          {t('computedLocally')}
         </Text>
       </Card>
     </ScrollView>

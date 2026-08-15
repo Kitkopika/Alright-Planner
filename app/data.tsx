@@ -12,12 +12,14 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import { useLifeOS } from '../src/data/store';
+import { useT } from '../src/i18n';
 import { ImportMode, ImportReport, parseDocument } from '../src/data/exchange';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { Button, Card, Chip, ChipRow, EmptyState, SectionHeader } from '../src/components/ui';
 
 export default function DataScreen() {
   styles = createStyles();
+  const t = useT();
   const exportJSON = useLifeOS((s) => s.exportJSON);
   const importJSON = useLifeOS((s) => s.importJSON);
   const previewImport = useLifeOS((s) => s.previewImport);
@@ -73,12 +75,12 @@ export default function DataScreen() {
       const result = await importJSON(text, importMode);
       setReport(result.report);
       Alert.alert(
-        'Import complete',
-        `Added ${result.report.added} · Updated ${result.report.updated} · Conflicts resolved ${result.report.conflicting} · Deleted ${result.report.deleted} · Skipped ${result.report.unchanged + result.report.dropped + result.report.duplicates}`,
-        [{ text: 'OK' }]
+        t('importComplete'),
+        `${t('added')} ${result.report.added} · ${t('updated')} ${result.report.updated} · ${t('conflicts')} ${result.report.conflicting} · ${t('deleted')} ${result.report.deleted} · ${t('invalid')} ${result.report.dropped + result.report.duplicates}`,
+        [{ text: t('ok') }]
       );
     } catch (e) {
-      Alert.alert('Import failed', e instanceof Error ? e.message : String(e));
+      Alert.alert(t('importFailed'), e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -95,7 +97,7 @@ export default function DataScreen() {
       const text = await readPickedText(picked.assets[0]);
       await doImport(text, mode);
     } catch (e) {
-      Alert.alert('Import failed', e instanceof Error ? e.message : String(e));
+      Alert.alert(t('importFailed'), e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -105,7 +107,7 @@ export default function DataScreen() {
       const { getDocumentStore } = await import('../src/data/persistence');
       const backup = await getDocumentStore().readBackup();
       if (!backup) {
-        Alert.alert('No backup found', 'There is no backup file on this device yet.');
+        Alert.alert(t('noBackup'), 'There is no backup file on this device yet.');
         return;
       }
       await doImport(backup, 'replace');
@@ -115,14 +117,14 @@ export default function DataScreen() {
   };
 
   const confirmReset = () => {
-    Alert.alert('Erase all data?', 'This deletes everything on this device (the JSON file and its backup). Consider exporting first.', [
+    Alert.alert(t('eraseConfirmTitle'), t('eraseConfirmMsg'), [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Erase',
         style: 'destructive',
         onPress: async () => {
           await resetAll();
-          Alert.alert('Erased', 'All local data has been removed.');
+          Alert.alert(t('erased'), t('erasedMsg'));
         },
       },
     ]);
@@ -131,59 +133,57 @@ export default function DataScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Card>
-        <Text style={typography.body}>Your data lives in a single portable JSON file on this device. Move it to another device by exporting and importing — IDs and relationships are preserved.</Text>
+        <Text style={typography.body}>{t('dataIntro')}</Text>
         <Text style={[typography.caption, { marginTop: spacing.sm }]}>
-          Device: {device.name} ({device.id}){lastSavedAt ? ` · Last saved ${lastSavedAt}` : ''}
+          {t('deviceLabel')}: {device.name} ({device.id}){lastSavedAt ? ` · ${t('lastSaved')} ${lastSavedAt}` : ''}
         </Text>
       </Card>
 
-      <SectionHeader title="Export" />
+      <SectionHeader title={t('exportAll')} />
       <Card>
-        <Button title="Export all data (JSON)" onPress={() => void doExport()} disabled={busy} />
-        <Text style={[typography.caption, { marginTop: spacing.sm }]}>Shares `personal-data.json` (or downloads it on web).</Text>
+        <Button title={t('exportAll')} onPress={() => void doExport()} disabled={busy} />
+        <Text style={[typography.caption, { marginTop: spacing.sm }]}>{t('exportHint')}</Text>
       </Card>
 
-      <SectionHeader title="Import" />
+      <SectionHeader title={t('importTitle')} />
       <Card>
         <ChipRow>
-          <Chip label="Merge" selected={mode === 'merge'} onPress={() => setMode('merge')} />
-          <Chip label="Replace" selected={mode === 'replace'} onPress={() => setMode('replace')} />
+          <Chip label={t('merge')} selected={mode === 'merge'} onPress={() => setMode('merge')} />
+          <Chip label={t('replace')} selected={mode === 'replace'} onPress={() => setMode('replace')} />
         </ChipRow>
         <Text style={[typography.caption, { marginTop: spacing.sm, marginBottom: spacing.md }]}>
-          {mode === 'merge'
-            ? 'Merge adds/updates entries by ID; newer data wins, nothing local is lost.'
-            : 'Replace wipes local data and loads the file as-is (restore).'}
+          {mode === 'merge' ? t('mergeHint') : t('replaceHint')}
         </Text>
-        <Button title="Pick a JSON file…" onPress={() => void pickAndImport()} disabled={busy} />
+        <Button title={t('pickFile')} onPress={() => void pickAndImport()} disabled={busy} />
       </Card>
 
-      <SectionHeader title="Paste JSON" />
+      <SectionHeader title={t('pasteTitle')} />
       <Card>
         <PasteImport onImport={(text) => void doImport(text, mode)} />
       </Card>
 
       {report && (
         <>
-          <SectionHeader title="Last import summary" />
+          <SectionHeader title={t('lastImport')} />
           <Card>
-            <SummaryRow label="Added" value={report.added} />
-            <SummaryRow label="Updated" value={report.updated} />
-            <SummaryRow label="Conflicts resolved (newer won)" value={report.conflicting} />
-            <SummaryRow label="Deleted (newer tombstone)" value={report.deleted} />
-            <SummaryRow label="Invalid entries dropped" value={report.dropped} />
-            <SummaryRow label="Duplicate IDs collapsed" value={report.duplicates} />
-            <SummaryRow label="Unchanged" value={report.unchanged} />
+            <SummaryRow label={t('added')} value={report.added} />
+            <SummaryRow label={t('updated')} value={report.updated} />
+            <SummaryRow label={t('conflicts')} value={report.conflicting} />
+            <SummaryRow label={t('deleted')} value={report.deleted} />
+            <SummaryRow label={t('invalid')} value={report.dropped} />
+            <SummaryRow label={t('duplicates')} value={report.duplicates} />
+            <SummaryRow label={t('unchanged')} value={report.unchanged} />
           </Card>
         </>
       )}
 
-      <SectionHeader title="Backup & danger zone" />
+      <SectionHeader title={t('backupDanger')} />
       <Card>
-        <Button title="Restore from backup file" variant="ghost" onPress={() => void restoreBackup()} disabled={busy} style={{ marginBottom: spacing.sm }} />
-        <Button title="Erase all data" variant="danger" onPress={confirmReset} disabled={busy} />
+        <Button title={t('restoreBackup')} variant="ghost" onPress={() => void restoreBackup()} disabled={busy} style={{ marginBottom: spacing.sm }} />
+        <Button title={t('eraseAll')} variant="danger" onPress={confirmReset} disabled={busy} />
       </Card>
 
-      <EmptyState icon="shield-checkmark-outline" title="Private by design" subtitle="Everything stays on your device. No cloud, no account." />
+      <EmptyState icon="shield-checkmark-outline" title={t('privateByDesign')} subtitle={t('privateSub')} />
     </ScrollView>
   );
 }
@@ -199,6 +199,7 @@ function SummaryRow({ label, value }: { label: string; value: number }) {
 }
 
 function PasteImport({ onImport }: { onImport: (text: string) => void }) {
+  const t = useT();
   const [text, setText] = useState('');
   const previewImport = useLifeOS((s) => s.previewImport);
   const [planText, setPlanText] = useState('');
@@ -220,13 +221,13 @@ function PasteImport({ onImport }: { onImport: (text: string) => void }) {
   return (
     <View>
       <ChipRow>
-        <Chip label="Merge" selected={mode === 'merge'} onPress={() => setMode('merge')} />
-        <Chip label="Replace" selected={mode === 'replace'} onPress={() => setMode('replace')} />
+        <Chip label={t('merge')} selected={mode === 'merge'} onPress={() => setMode('merge')} />
+        <Chip label={t('replace')} selected={mode === 'replace'} onPress={() => setMode('replace')} />
       </ChipRow>
-      <TextInputArea value={text} onChangeText={setText} placeholder="Paste the JSON here…" />
-      <Button title="Preview" variant="ghost" small onPress={preview} style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
+      <TextInputArea value={text} onChangeText={setText} placeholder={t('pastePlaceholder')} />
+      <Button title={t('previewBtn')} variant="ghost" small onPress={preview} style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
       {planText ? <Text style={[typography.caption, { marginTop: spacing.sm }]}>{planText}</Text> : null}
-      <Button title="Import pasted JSON" onPress={() => onImport(text)} disabled={!text.trim()} style={{ marginTop: spacing.sm }} />
+      <Button title={t('importPasted')} onPress={() => onImport(text)} disabled={!text.trim()} style={{ marginTop: spacing.sm }} />
     </View>
   );
 }
