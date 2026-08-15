@@ -19,6 +19,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useLifeOS } from '../../src/data/store';
 import { useSettings } from '../../src/data/settings';
+import { useT } from '../../src/i18n';
 import { Category, TransactionKind } from '../../src/core/types';
 import { buildSummaries, formatMoney } from '../../src/features/finance';
 import { transactionsToCSV } from '../../src/features/financeCsv';
@@ -31,12 +32,14 @@ import { DonutChart } from '../../src/components/charts';
 type Range = 'today' | 'week' | 'month' | 'year';
 
 export default function MoneyScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
 
   const [range, setRange] = useState<Range>('month');
+  const t = useT();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [editingTxn, setEditingTxn] = useState<string | null>(null);
   const [txnEditorOpen, setTxnEditorOpen] = useState(false);
@@ -86,10 +89,10 @@ export default function MoneyScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={typography.title}>Money</Text>
+        <Text style={typography.title}>{t('money')}</Text>
         <View style={styles.headerActions}>
           <Button title="CSV" small variant="ghost" onPress={exportCSV} />
-          <Button title="Categories" small variant="ghost" onPress={() => setCategoriesOpen(true)} />
+          <Button title={t('categories')} small variant="ghost" onPress={() => setCategoriesOpen(true)} />
         </View>
       </View>
 
@@ -114,9 +117,9 @@ export default function MoneyScreen() {
         {/* Summary */}
         <Card>
           <View style={styles.summaryRow3}>
-            <SummaryCol label="Income" value={formatMoney(summary.incomeCents)} color={colors.success} />
-            <SummaryCol label="Spent" value={formatMoney(summary.expenseCents)} color={colors.danger} />
-            <SummaryCol label="Net" value={formatMoney(summary.netCents)} color={summary.netCents >= 0 ? colors.text : colors.danger} />
+            <SummaryCol label={t('income')} value={formatMoney(summary.incomeCents)} color={colors.success} />
+            <SummaryCol label={t('spent')} value={formatMoney(summary.expenseCents)} color={colors.danger} />
+            <SummaryCol label={t('net')} value={formatMoney(summary.netCents)} color={summary.netCents >= 0 ? colors.text : colors.danger} />
           </View>
           {summary.count > 0 && (
             <Text style={[typography.caption, { marginTop: spacing.sm }]}>{summary.count} transactions</Text>
@@ -124,9 +127,9 @@ export default function MoneyScreen() {
         </Card>
 
         {/* Category breakdown */}
-        <SectionHeader title="Spending by category" />
+        <SectionHeader title={t('spendingByCategory')} />
         {summary.byCategory.length === 0 ? (
-          <EmptyState icon="pie-chart-outline" title="No spending in this range" />
+          <EmptyState icon="pie-chart-outline" title={t('noSpending')} />
         ) : (
           <Card>
             <View style={styles.donutWrap}>
@@ -149,21 +152,22 @@ export default function MoneyScreen() {
         )}
 
         {/* Quick entry */}
-        <SectionHeader title="Quick entry" />
+        <SectionHeader title={t('quickEntry')} />
         <QuickEntry
           categories={data.collections.categories.filter((c) => !c.deletedAt)}
           onSubmit={(payload) => create('transactions', payload)}
         />
 
         {/* Transactions */}
-        <SectionHeader title="Transactions" />
+        <SectionHeader title={t('transactions')} />
         {grouped.length === 0 ? (
-          <EmptyState icon="wallet-outline" title="No transactions yet" />
+          <EmptyState icon="wallet-outline" title={t('noTransactions')} />
         ) : (
           grouped.map(([day, items]) => (
             <View key={day}>
               <Text style={styles.dayLabel}>{formatDateKeyDDMM(day)}</Text>
               {items.map((t) => {
+  styles = createStyles();
                 const cat = data.collections.categories.find((c) => c.id === t.categoryId);
                 return (
                   <Card
@@ -211,6 +215,7 @@ function SummaryCol({ label, value, color }: { label: string; value: string; col
 }
 
 function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit: (p: Record<string, unknown>) => void }) {
+  styles = createStyles();
   const currency = useSettings((s) => s.currency);
   const [cents, setCents] = useState(0);
   const [kind2, setKind2] = useState<TransactionKind>('expense');
@@ -262,6 +267,7 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
 }
 
 function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -316,6 +322,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
 }
 
 function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -409,7 +416,10 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
@@ -438,4 +448,6 @@ const styles = StyleSheet.create({
   sheetTitle: { ...typography.title, marginBottom: spacing.lg },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   catAdd: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
-});
+  });
+}
+

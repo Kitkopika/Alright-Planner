@@ -14,6 +14,7 @@ import { Card, Chip, ChipRow, ProgressBar, SectionHeader } from '../../src/compo
 import { HBars, VBars } from '../../src/components/charts';
 
 export default function InsightsScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const [range, setRange] = useState<RangeLabel>('week');
 
@@ -149,6 +150,7 @@ function StatCard({
   empty: string;
   extra?: string;
 }) {
+  styles = createStyles();
   return (
     <Card>
       <View style={styles.row}>
@@ -167,10 +169,15 @@ function StatCard({
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 120 },
   header: { marginBottom: spacing.sm, gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconWrap: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-});
+  });
+}
+

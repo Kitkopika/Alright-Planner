@@ -25,6 +25,7 @@ import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, Sec
 import { DateField } from '../../src/components/form';
 
 export default function GoalsScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -63,6 +64,7 @@ export default function GoalsScreen() {
 }
 
 function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const progress = goalProgress(goal.id, data);
@@ -107,6 +109,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
 // ---------------------------------------------------------------------------
 
 function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -188,6 +191,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
 // ---------------------------------------------------------------------------
 
 function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -280,6 +284,7 @@ function ProjectBlock({
   addTask: (projectId: string) => void;
   onEdit: () => void;
 }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -318,7 +323,10 @@ function ProjectBlock({
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
@@ -342,4 +350,6 @@ const styles = StyleSheet.create({
   projectTask: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 5 },
   addRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', marginTop: spacing.sm },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-});
+  });
+}
+

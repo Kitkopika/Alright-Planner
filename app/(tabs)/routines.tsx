@@ -30,6 +30,7 @@ const PALETTE = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED
 type Tab = 'routines' | 'habits';
 
 export default function RoutinesScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const [tab, setTab] = useState<Tab>('routines');
   const [routineEditor, setRoutineEditor] = useState<string | null>(null);
@@ -87,6 +88,7 @@ export default function RoutinesScreen() {
 // ---------------------------------------------------------------------------
 
 function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -131,6 +133,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
       {scheduledToday && routine.steps.length > 0 ? (
         <View style={{ marginTop: spacing.sm }}>
           {routine.steps.map((step) => {
+  styles = createStyles();
             const done = doneStepIds.includes(step.id);
             return (
               <Pressable key={step.id} style={styles.stepRow} onPress={() => toggleStep(step)}>
@@ -152,6 +155,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
 // ---------------------------------------------------------------------------
 
 function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
+  styles = createStyles();
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const today = todayKey();
@@ -199,6 +203,7 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
       </View>
       <View style={styles.historyRow}>
         {history.map((d) => {
+  styles = createStyles();
           const on = habit.completions.includes(d);
           return <View key={d} style={[styles.historyDot, on && { backgroundColor: colors.success }, !on && scheduled && { borderColor: colors.border, borderWidth: 1 }]} />;
         })}
@@ -230,6 +235,7 @@ function useCompletionRate(habit: Habit, days: number): number | null {
 // ---------------------------------------------------------------------------
 
 export function RoutineEditorModal({ routineId, visible, onClose }: { routineId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -346,6 +352,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
 // ---------------------------------------------------------------------------
 
 export function HabitEditorModal({ habitId, visible, onClose }: { habitId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -453,7 +460,10 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
@@ -488,4 +498,6 @@ const styles = StyleSheet.create({
   stepIndex: { width: 18, color: colors.textMuted, fontSize: 14 },
   stepAdd: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-});
+  });
+}
+

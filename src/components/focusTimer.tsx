@@ -32,6 +32,7 @@ function formatMinutes(min: number): string {
 }
 
 export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const remove = useLifeOS((s) => s.remove);
@@ -187,7 +188,10 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.background,
@@ -204,4 +208,6 @@ const styles = StyleSheet.create({
   customRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.md, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   sessionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-});
+  });
+}
+

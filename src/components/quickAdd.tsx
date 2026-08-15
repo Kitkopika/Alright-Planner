@@ -39,6 +39,7 @@ const TYPES: { type: QuickType; label: string; icon: keyof typeof Ionicons.glyph
 ];
 
 export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const create = useLifeOS((s) => s.create);
   const categories = useLifeOS((s) => s.data.collections.categories);
   const insets = useSafeAreaInsets();
@@ -114,6 +115,7 @@ function PressableTile({
   color: string;
   onPress: () => void;
 }) {
+  styles = createStyles();
   return (
     <PressableTileInner onPress={onPress}>
       <View style={[styles.tileIcon, { backgroundColor: color + '22' }]}>
@@ -124,7 +126,8 @@ function PressableTile({
   );
 }
 
-function PressableTileInner({ children, onPress }: { children: React.ReactNode; onPress: () => void }) {  return (
+function PressableTileInner({ children, onPress }: { children: React.ReactNode; onPress: () => void }) {
+  styles = createStyles();  return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && { opacity: 0.7 }]}>
       {children}
     </Pressable>
@@ -159,6 +162,7 @@ function FormFor({
 }
 
 function FormShell({ onBack, children, onSave, saveLabel = 'Save' }: { onBack: () => void; children: React.ReactNode; onSave: () => void; saveLabel?: string }) {
+  styles = createStyles();
   return (
     <View>
       {children}
@@ -354,7 +358,10 @@ function GoalForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -420,4 +427,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.md,
   },
-});
+  });
+}
+

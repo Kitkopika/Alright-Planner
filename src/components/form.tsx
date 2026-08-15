@@ -44,6 +44,7 @@ export function DatePickerModal({
   onSelect: (dk: string) => void;
   onClose: () => void;
 }) {
+  styles = createStyles();
   const initial = value && tryParseISO(value) ? parseDateKey(value) : new Date();
   const [view, setView] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
   const cells = monthCells(view.getFullYear(), view.getMonth());
@@ -73,6 +74,7 @@ export function DatePickerModal({
           </View>
           <View style={styles.pickerGrid}>
             {cells.map((d, i) => {
+  styles = createStyles();
               if (!d) return <View key={i} style={styles.pickerCell} />;
               const dk = dateKey(d);
               const selected = dk === value;
@@ -107,6 +109,7 @@ export function DateField({
   onChange: (value: string) => void;
   allowClear?: boolean;
 }) {
+  styles = createStyles();
   const [open, setOpen] = useState(false);
   const quick = (d: Date) => onChange(dateKey(d));
 
@@ -144,6 +147,7 @@ export function TimePickerModal({
   onSelect: (time: string) => void;
   onClose: () => void;
 }) {
+  styles = createStyles();
   const [hh, setHh] = useState(value ? parseInt(value.slice(0, 2), 10) || 0 : 9);
   const [mm, setMm] = useState(value ? parseInt(value.slice(3, 5), 10) || 0 : 0);
   const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -196,6 +200,7 @@ export function TimeField({
   onChange: (value: string) => void;
   allowClear?: boolean;
 }) {
+  styles = createStyles();
   const [open, setOpen] = useState(false);
 
   return (
@@ -365,7 +370,10 @@ export function splitDateTime(iso: string | null | undefined): { date: string; t
 
 export { todayKey };
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   pickerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   pickerCard: {
     width: '100%',
@@ -407,5 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   pickerInputText: { flex: 1, fontSize: 15, color: colors.text },
-});
+  });
+}
+
 

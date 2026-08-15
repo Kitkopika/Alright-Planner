@@ -9,6 +9,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLifeOS } from '../../src/data/store';
+import { useT } from '../../src/i18n';
 import { computeToday } from '../../src/features/today';
 import { dateKey, isoDateTime, timeHM, tryParseISO, weekdayNames } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
@@ -18,6 +19,7 @@ import { formatMoney } from '../../src/features/finance';
 import { Reminder } from '../../src/core/types';
 
 export default function TodayScreen() {
+  styles = createStyles();
   const router = useRouter();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
@@ -26,6 +28,7 @@ export default function TodayScreen() {
 
   const [quickNote, setQuickNote] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const t = useT();
 
   const today = useMemo(() => computeToday(data, new Date()), [data]);
   const now = new Date();
@@ -130,7 +133,7 @@ export default function TodayScreen() {
       <Card style={styles.progressCard}>
         <View style={styles.progressRow}>
           <View style={{ flex: 1 }}>
-            <Text style={typography.section}>Daily progress</Text>
+            <Text style={typography.section}>{t('dailyProgress')}</Text>
             <Text style={typography.caption}>
               {today.progress.done} of {today.progress.total} done{today.progress.total > 0 ? ` · ${today.progress.pct}%` : ''}
             </Text>
@@ -151,7 +154,7 @@ export default function TodayScreen() {
       </View>
 
       {/* Schedule */}
-      <SectionHeader title="Schedule" />
+      <SectionHeader title={t('schedule')} />
       {today.schedule.length === 0 ? (
         <EmptyState icon="calendar-outline" title="Nothing scheduled today" subtitle="Add an event with +" />
       ) : (
@@ -171,7 +174,7 @@ export default function TodayScreen() {
       )}
 
       {/* Tasks */}
-      <SectionHeader title={`Tasks · ${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} />
+      <SectionHeader title={`${t('tasks')} · ${today.tasks.filter((t) => t.task.status === 'done').length}/${today.tasks.length}`} />
       {today.tasks.length === 0 ? (
         <EmptyState icon="checkbox-outline" title="No tasks due today" />
       ) : (
@@ -202,7 +205,7 @@ export default function TodayScreen() {
       {/* Habits */}
       {today.habits.length > 0 && (
         <>
-          <SectionHeader title="Habits" />
+          <SectionHeader title={t('habits')} />
           {today.habits.map(({ habit, doneToday, streak }) => (
             <Card key={habit.id} style={styles.taskItem} onPress={() => toggleHabit(habit.id)}>
               <Pressable onPress={() => toggleHabit(habit.id)} hitSlop={8}>
@@ -218,7 +221,7 @@ export default function TodayScreen() {
       {/* Routines */}
       {today.routines.length > 0 && (
         <>
-          <SectionHeader title="Routines" />
+          <SectionHeader title={t('routines')} />
           {today.routines.map((r) => (
             <Card key={r.routine.id} style={styles.taskItem} onPress={() => toggleRoutine(r.routine.id)}>
               <Pressable onPress={() => toggleRoutine(r.routine.id)} hitSlop={8}>
@@ -238,7 +241,7 @@ export default function TodayScreen() {
       {/* Reminders */}
       {today.reminders.length > 0 && (
         <>
-          <SectionHeader title="Reminders" />
+          <SectionHeader title={t('reminders')} />
           {today.reminders.map((r) => (
             <Card
               key={r.id}
@@ -262,7 +265,7 @@ export default function TodayScreen() {
       )}
 
       {/* Spending */}
-      <SectionHeader title="Money today" />
+      <SectionHeader title={t('moneyToday')} />
       <Card>
         <View style={styles.moneyRow}>
           <View style={{ flex: 1 }}>
@@ -283,7 +286,7 @@ export default function TodayScreen() {
       {/* Goals */}
       {today.goals.length > 0 && (
         <>
-          <SectionHeader title="Goals" />
+          <SectionHeader title={t('goals')} />
           {today.goals.map((g) => (
             <Card key={g.id} style={{ marginBottom: spacing.sm }}>
               <View style={styles.goalRow}>
@@ -297,7 +300,7 @@ export default function TodayScreen() {
       )}
 
       {/* Quick note */}
-      <SectionHeader title="Quick note" />
+      <SectionHeader title={t('quickNote')} />
       <Card>
         <TextBox
           value={quickNote}
@@ -306,7 +309,7 @@ export default function TodayScreen() {
           multiline
           style={{ minHeight: 72, textAlignVertical: 'top' }}
         />
-        <Button title="Save note" onPress={saveQuickNote} disabled={!quickNote.trim()} small style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
+        <Button title={t('saveNote')} onPress={saveQuickNote} disabled={!quickNote.trim()} small style={{ marginTop: spacing.sm, alignSelf: 'flex-start' }} />
         {recentQuickNotes.length > 0 && (
           <View style={{ marginTop: spacing.md }}>
             {recentQuickNotes.map((n) => (
@@ -335,6 +338,7 @@ function formatLongDate(d: Date): string {
 }
 
 function StatTile({ icon, color, value, label }: { icon: keyof typeof Ionicons.glyphMap; color: string; value: string; label: string }) {
+  styles = createStyles();
   return (
     <View style={styles.statTile}>
       <Ionicons name={icon} size={16} color={color} />
@@ -344,7 +348,10 @@ function StatTile({ icon, color, value, label }: { icon: keyof typeof Ionicons.g
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 120 },
   header: {
@@ -421,4 +428,6 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 10,
   },
-});
+  });
+}
+

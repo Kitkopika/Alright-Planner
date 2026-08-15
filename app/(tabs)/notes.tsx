@@ -33,6 +33,7 @@ interface SearchHit {
 }
 
 export default function NotesScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
@@ -150,6 +151,7 @@ export default function NotesScreen() {
 // ---------------------------------------------------------------------------
 
 function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -289,7 +291,10 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   searchWrap: { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginTop: spacing.md },
@@ -311,4 +316,6 @@ const styles = StyleSheet.create({
   },
   sheetTitle: { ...typography.title, marginBottom: spacing.lg },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-});
+  });
+}
+

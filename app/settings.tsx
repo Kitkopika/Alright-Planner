@@ -14,6 +14,7 @@ import { Button, Card, Chip, ChipRow, SectionHeader } from '../src/components/ui
 const ACCENTS = ['#4F46E5', '#7C3AED', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#DB2777', '#0F766E'];
 
 export default function SettingsScreen() {
+  styles = createStyles();
   const router = useRouter();
   const t = useT();
   const settings = useSettings();
@@ -85,6 +86,7 @@ export default function SettingsScreen() {
 }
 
 function PressableDot({ color, selected, onPress }: { color: string; selected: boolean; onPress: () => void }) {
+  styles = createStyles();
   return (
     <Pressable onPress={onPress} style={[styles.dotWrap, selected && { borderColor: colors.text }]}>
       <View style={[styles.dot, { backgroundColor: color }]} />
@@ -92,7 +94,10 @@ function PressableDot({ color, selected, onPress }: { color: string; selected: b
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 120 },
   cardLabel: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.sm },
@@ -107,4 +112,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dot: { width: 24, height: 24, borderRadius: 12 },
-});
+  });
+}
+

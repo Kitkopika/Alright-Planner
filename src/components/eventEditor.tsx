@@ -35,6 +35,7 @@ export function EventEditorModal({
   /** Default date for new events (YYYY-MM-DD), e.g. the calendar day in view. */
   initialDate?: string;
 }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -165,6 +166,7 @@ export function EventEditorModal({
 }
 
 function PressableDot({ color, selected, onPress }: { color: string; selected: boolean; onPress: () => void }) {
+  styles = createStyles();
   return (
     <PressableDotInner selected={selected} onPress={onPress}>
       <View style={[styles.dot, { backgroundColor: color }, selected && styles.dotSelected]} />
@@ -173,6 +175,7 @@ function PressableDot({ color, selected, onPress }: { color: string; selected: b
 }
 
 function PressableDotInner({ children, selected, onPress }: { children: React.ReactNode; selected: boolean; onPress: () => void }) {
+  styles = createStyles();
   return (
     <Pressable onPress={onPress} style={[styles.dotWrap, selected && { borderColor: colors.text }]}>
       {children}
@@ -180,7 +183,10 @@ function PressableDotInner({ children, selected, onPress }: { children: React.Re
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.background,
@@ -203,4 +209,6 @@ const styles = StyleSheet.create({
   dot: { width: 24, height: 24, borderRadius: 12 },
   dotSelected: { transform: [{ scale: 0.85 }] },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-});
+  });
+}
+

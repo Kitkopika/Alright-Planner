@@ -17,6 +17,7 @@ import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../.
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
 import { EventEditorModal } from '../../src/components/eventEditor';
+import { useT } from '../../src/i18n';
 
 type ViewMode = 'day' | 'week' | 'month' | 'year';
 
@@ -24,8 +25,10 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'Ju
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function CalendarScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
+  const t = useT();
   const [mode, setMode] = useState<ViewMode>('month');
   const [selected, setSelected] = useState<Date>(new Date());
   const [editingEvent, setEditingEvent] = useState<string | null | undefined>(undefined);
@@ -79,7 +82,7 @@ export default function CalendarScreen() {
         <View style={styles.modeRow}>
           <ChipRow style={{ flex: 1 }}>
             {(['day', 'week', 'month', 'year'] as ViewMode[]).map((m) => (
-              <Chip key={m} label={m[0].toUpperCase() + m.slice(1)} selected={mode === m} onPress={() => setMode(m)} />
+              <Chip key={m} label={t(m)} selected={mode === m} onPress={() => setMode(m)} />
             ))}
           </ChipRow>
           <IconButton name="add-circle-outline" size={26} color={colors.accent} onPress={newEvent} />
@@ -89,7 +92,7 @@ export default function CalendarScreen() {
           <Text style={styles.monthLabel}>{label}</Text>
           <IconButton name="chevron-forward" onPress={() => shift(1)} />
           <Pressable onPress={() => { setSelected(new Date()); setMode('day'); }} hitSlop={8}>
-            <Text style={styles.todayLink}>Today</Text>
+            <Text style={styles.todayLink}>{t('todayLabel')}</Text>
           </Pressable>
         </View>
       </View>
@@ -118,8 +121,10 @@ export default function CalendarScreen() {
                       style={[styles.weekItem, { backgroundColor: (it.color || colors.accent) + '22' }]}
                     >
                       <View style={[styles.weekItemBar, { backgroundColor: it.color || (it.kind === 'task' ? colors.textMuted : colors.accent) }]} />
-                      <Text numberOfLines={1} style={styles.weekItemTitle}>{it.title}</Text>
-                      {it.timeLabel ? <Text style={styles.weekItemTime}>{it.timeLabel}</Text> : null}
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={styles.weekItemTime}>{it.timeLabel || 'All day'}</Text>
+                        <Text numberOfLines={1} style={styles.weekItemTitle}>{it.title}</Text>
+                      </View>
                     </Pressable>
                   ))}
                 </View>
@@ -137,18 +142,29 @@ export default function CalendarScreen() {
             </View>
             <View style={styles.grid}>
               {monthDays.map((day) => {
+  styles = createStyles();
                 const inMonth = day.getMonth() === selected.getMonth();
                 const isToday = dateKey(day) === todayKey();
                 const isSelected = dateKey(day) === dateKey(selected);
                 const items = dayItems(data, day).items;
-                const hasEvents = items.some((i) => i.kind === 'event');
-                const hasTasks = items.some((i) => i.kind === 'task');
+                const events = items.filter((i) => i.kind === 'event');
+                const hasDeadline = items.some((i) => i.kind === 'task');
                 return (
-                  <Pressable key={dateKey(day)} onPress={() => setSelected(day)} style={[styles.cell, isSelected && styles.cellSelected]}>
+                  <Pressable
+                    key={dateKey(day)}
+                    onPress={() => setSelected(day)}
+                    style={[styles.cell, isSelected ? styles.cellSelected : hasDeadline ? styles.cellDeadline : null]}
+                  >
                     <Text style={[styles.cellDay, !inMonth && styles.cellDim, isToday && styles.cellToday]}>{day.getDate()}</Text>
                     <View style={styles.cellDots}>
-                      {hasEvents ? <View style={[styles.cellDot, { backgroundColor: colors.accent }]} /> : null}
-                      {hasTasks ? <View style={[styles.cellDot, { backgroundColor: colors.danger }]} /> : null}
+                      {events.slice(0, 3).map((ev) =>
+                        ev.spanning ? (
+                          <View key={ev.id} style={[styles.cellLine, { backgroundColor: ev.color || colors.accent }]} />
+                        ) : (
+                          <View key={ev.id} style={[styles.cellDot, { backgroundColor: ev.color || colors.accent }]} />
+                        )
+                      )}
+                      {events.length > 3 ? <Text style={styles.cellMore}>+{events.length - 3}</Text> : null}
                     </View>
                   </Pressable>
                 );
@@ -185,6 +201,7 @@ export default function CalendarScreen() {
 // ---------------------------------------------------------------------------
 
 function SectionTitle({ text }: { text: string }) {
+  styles = createStyles();
   return <Text style={styles.sectionTitle}>{text}</Text>;
 }
 
@@ -199,6 +216,7 @@ function DayTimeline({
   onOpen: (entityId: string) => void;
   onDelete: (item: CalendarItem) => void;
 }) {
+  styles = createStyles();
   const allDay = items.filter((i) => i.allDay);
   const timed = items.filter((i) => !i.allDay);
   const byHour = new Map<number, CalendarItem[]>();
@@ -234,6 +252,7 @@ function DayTimeline({
       )}
 
       {Array.from({ length: 24 }, (_, h) => {
+  styles = createStyles();
         const hourItems = byHour.get(h) || [];
         const isNow = isToday && h === nowHour;
         return (
@@ -270,6 +289,7 @@ function DayTimeline({
 // ---------------------------------------------------------------------------
 
 function MiniMonth({ year, month, data }: { year: number; month: number; data: ReturnType<typeof useLifeOS.getState>['data'] }) {
+  styles = createStyles();
   const first = new Date(year, month, 1);
   const offset = (first.getDay() + 6) % 7;
   const days = new Date(year, month + 1, 0).getDate();
@@ -282,18 +302,24 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
   return (
     <View style={styles.miniGrid}>
       {cells.map((d, i) => {
+  styles = createStyles();
         if (d == null) return <View key={`e${i}`} style={styles.miniCell} />;
         const day = new Date(year, month, d);
         const items = dayItems(data, day).items;
-        const hasEvents = items.some((it) => it.kind === 'event');
-        const hasTasks = items.some((it) => it.kind === 'task');
+        const events = items.filter((it) => it.kind === 'event');
+        const hasDeadline = items.some((it) => it.kind === 'task');
         const isToday = dateKey(day) === todayK;
         return (
-          <View key={i} style={[styles.miniCell, isToday && styles.miniCellToday]}>
+          <View key={i} style={[styles.miniCell, isToday ? styles.miniCellToday : hasDeadline ? styles.miniCellDeadline : null]}>
             <Text style={styles.miniDayNum}>{d}</Text>
             <View style={styles.cellDots}>
-              {hasEvents ? <View style={[styles.cellDot, { backgroundColor: colors.accent }]} /> : null}
-              {hasTasks ? <View style={[styles.cellDot, { backgroundColor: colors.danger }]} /> : null}
+              {events.slice(0, 2).map((ev) =>
+                ev.spanning ? (
+                  <View key={ev.id} style={[styles.cellLine, { backgroundColor: ev.color || colors.accent }]} />
+                ) : (
+                  <View key={ev.id} style={[styles.cellDot, { backgroundColor: ev.color || colors.accent }]} />
+                )
+              )}
             </View>
           </View>
         );
@@ -302,7 +328,10 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   controls: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   modeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -325,11 +354,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   cellSelected: { backgroundColor: colors.accentSoft },
+  cellDeadline: { backgroundColor: colors.danger + '1A' },
   cellDay: { fontSize: 14, color: colors.text },
   cellDim: { color: colors.textMuted },
   cellToday: { color: colors.accent, fontWeight: '700' },
-  cellDots: { flexDirection: 'row', gap: 2, marginTop: 2, minHeight: 5 },
+  cellDots: { flexDirection: 'row', gap: 2, marginTop: 2, minHeight: 5, alignItems: 'center' },
   cellDot: { width: 5, height: 5, borderRadius: 2.5 },
+  cellLine: { flex: 1, height: 3, borderRadius: 1.5, maxWidth: 18 },
+  cellMore: { fontSize: 8, color: colors.textMuted, fontWeight: '700' },
 
   sectionTitle: { ...typography.label, color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
 
@@ -393,5 +425,8 @@ const styles = StyleSheet.create({
   miniGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   miniCell: { width: `${100 / 7}%`, aspectRatio: 1.6, alignItems: 'center', justifyContent: 'center' },
   miniCellToday: { backgroundColor: colors.accentSoft, borderRadius: 4 },
+  miniCellDeadline: { backgroundColor: colors.danger + '1A', borderRadius: 4 },
   miniDayNum: { fontSize: 9, color: colors.textSecondary },
-});
+  });
+}
+

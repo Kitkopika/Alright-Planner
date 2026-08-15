@@ -30,6 +30,7 @@ export function Card({
   onPress?: () => void;
   onLongPress?: () => void;
 }) {
+  styles = createStyles();
   const inner = <View style={[styles.card, style]}>{children}</View>;
   if (onPress || onLongPress) {
     return (
@@ -42,6 +43,7 @@ export function Card({
 }
 
 export function SectionHeader({ title, right, style }: { title: string; right?: React.ReactNode; style?: ViewStyle }) {
+  styles = createStyles();
   return (
     <View style={[styles.sectionHeader, style]}>
       <Text style={typography.section}>{title}</Text>
@@ -63,6 +65,7 @@ export function Chip({
   color?: string;
   style?: ViewStyle;
 }) {
+  styles = createStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -79,6 +82,7 @@ export function Chip({
 }
 
 export function ChipRow({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  styles = createStyles();
   return <View style={[styles.chipRow, style]}>{children}</View>;
 }
 
@@ -91,6 +95,7 @@ export function Field({
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
+  styles = createStyles();
   return (
     <View style={[styles.field, style]}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -100,6 +105,7 @@ export function Field({
 }
 
 export function TextBox(props: TextInputProps) {
+  styles = createStyles();
   return <TextInput placeholderTextColor={colors.textMuted} {...props} style={[styles.input, props.style]} />;
 }
 
@@ -118,6 +124,7 @@ export function Button({
   small?: boolean;
   style?: ViewStyle;
 }) {
+  styles = createStyles();
   const bg =
     variant === 'primary' ? colors.accent
     : variant === 'danger' ? colors.danger
@@ -158,6 +165,7 @@ export function IconButton({
   size?: number;
   style?: ViewStyle;
 }) {
+  styles = createStyles();
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.6 }, style]}>
       <Ionicons name={name} size={size} color={color} />
@@ -166,6 +174,7 @@ export function IconButton({
 }
 
 export function ProgressBar({ pct, color, height = 6, style }: { pct: number; color?: string; height?: number; style?: ViewStyle }) {
+  styles = createStyles();
   const clamped = Math.max(0, Math.min(100, pct));
   return (
     <View style={[styles.progressTrack, { height }, style]}>
@@ -184,6 +193,7 @@ export function ProgressBar({ pct, color, height = 6, style }: { pct: number; co
 }
 
 export function EmptyState({ icon, title, subtitle }: { icon: keyof typeof Ionicons.glyphMap; title: string; subtitle?: string }) {
+  styles = createStyles();
   return (
     <View style={styles.empty}>
       <Ionicons name={icon} size={36} color={colors.textMuted} />
@@ -194,6 +204,7 @@ export function EmptyState({ icon, title, subtitle }: { icon: keyof typeof Ionic
 }
 
 export function Spinner({ label }: { label?: string }) {
+  styles = createStyles();
   return (
     <View style={styles.spinner}>
       <ActivityIndicator color={colors.accent} />
@@ -203,6 +214,7 @@ export function Spinner({ label }: { label?: string }) {
 }
 
 export function Badge({ text, color, bg }: { text: string; color?: string; bg?: string }) {
+  styles = createStyles();
   return (
     <View style={[styles.badge, { backgroundColor: bg || colors.surfaceAlt }]}>
       <Text style={[typography.caption, { color: color || colors.textSecondary, fontWeight: '600' }]}>{text}</Text>
@@ -212,7 +224,10 @@ export function Badge({ text, color, bg }: { text: string; color?: string; bg?: 
 
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -306,4 +321,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: radius.sm,
   },
-});
+  });
+}
+

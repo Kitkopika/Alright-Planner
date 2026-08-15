@@ -17,6 +17,7 @@ import { colors, radius, spacing, typography } from '../src/theme';
 import { Button, Card, Chip, ChipRow, EmptyState, SectionHeader } from '../src/components/ui';
 
 export default function DataScreen() {
+  styles = createStyles();
   const exportJSON = useLifeOS((s) => s.exportJSON);
   const importJSON = useLifeOS((s) => s.importJSON);
   const previewImport = useLifeOS((s) => s.previewImport);
@@ -188,6 +189,7 @@ export default function DataScreen() {
 }
 
 function SummaryRow({ label, value }: { label: string; value: number }) {
+  styles = createStyles();
   return (
     <View style={styles.summaryRow}>
       <Text style={typography.body}>{label}</Text>
@@ -230,6 +232,7 @@ function PasteImport({ onImport }: { onImport: (text: string) => void }) {
 }
 
 function TextInputArea({ value, onChangeText, placeholder }: { value: string; onChangeText: (t: string) => void; placeholder: string }) {
+  styles = createStyles();
   return (
     <TextInput
       value={value}
@@ -244,7 +247,10 @@ function TextInputArea({ value, onChangeText, placeholder }: { value: string; on
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 80 },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
@@ -261,4 +267,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     textAlignVertical: 'top',
   },
-});
+  });
+}
+

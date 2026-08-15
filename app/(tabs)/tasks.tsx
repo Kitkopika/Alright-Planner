@@ -24,6 +24,7 @@ import { colors, priorityColors, radius, spacing, typography } from '../../src/t
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/components/form';
 import { FocusTimerModal } from '../../src/components/focusTimer';
+import { useT } from '../../src/i18n';
 
 type Filter = 'all' | 'today' | 'overdue' | 'upcoming' | 'done' | 'projects';
 
@@ -36,6 +37,7 @@ function dueDiff(t: Task, now: Date): number | null {
 }
 
 export default function TasksScreen() {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -44,6 +46,7 @@ export default function TasksScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
+  const t = useT();
 
   const now = new Date();
   const allTasks = data.collections.tasks.filter((t) => !t.deletedAt && t.status !== 'cancelled');
@@ -121,14 +124,14 @@ export default function TasksScreen() {
     <View style={styles.screen}>
       <View style={styles.header}>
         <View>
-          <Text style={typography.title}>Tasks</Text>
+          <Text style={typography.title}>{t('tasks')}</Text>
           <Text style={typography.caption}>
             {counts.overdue > 0 ? `${counts.overdue} overdue · ` : ''}
             {counts.today} due today
           </Text>
         </View>
         <View style={styles.headerActions}>
-          <Button title="Focus" small variant="ghost" onPress={() => setFocusOpen(true)} />
+          <Button title={t('focus')} small variant="ghost" onPress={() => setFocusOpen(true)} />
           <Button title="+ Task" small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
         </View>
       </View>
@@ -173,6 +176,7 @@ export default function TasksScreen() {
 }
 
 function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: Task; projectName?: string; onToggle: () => void; onOpen: () => void; onLongPress?: () => void }) {
+  styles = createStyles();
   const tasks = useLifeOS((s) => s.data.collections.tasks); // stable reference
   const subtasks = tasks.filter((t) => !t.deletedAt && t.parentTaskId === task.id && t.status !== 'cancelled');
   const due = task.dueAt ? tryParseISO(task.dueAt) : null;
@@ -215,6 +219,7 @@ function dueLabel(iso: string): string {
 // ---------------------------------------------------------------------------
 
 export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string | null; visible: boolean; onClose: () => void }) {
+  styles = createStyles();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -378,7 +383,10 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
@@ -401,4 +409,6 @@ const styles = StyleSheet.create({
   subtaskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 6 },
   subtaskAdd: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-});
+  });
+}
+

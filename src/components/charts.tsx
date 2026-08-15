@@ -20,6 +20,7 @@ export function DonutChart({
   strokeWidth?: number;
   centerLabel?: string;
 }) {
+  styles = createStyles();
   const total = data.reduce((a, b) => a + b.value, 0);
   const r = (size - strokeWidth) / 2;
   const C = 2 * Math.PI * r;
@@ -75,10 +76,12 @@ export function VBars({
   /** Optional short label under each bar (e.g. day-of-month). */
   labels?: string[];
 }) {
+  styles = createStyles();
   return (
     <View style={styles.vWrap}>
       <View style={[styles.vRow, { height }]}>
         {values.map((v, i) => {
+  styles = createStyles();
           const h = max > 0 ? Math.max(2, (v / max) * height) : 2;
           return <View key={i} style={[styles.vBar, { height: h, backgroundColor: v > 0 ? color : colors.surfaceAlt }]} />;
         })}
@@ -100,6 +103,7 @@ export function HBars({
 }: {
   rows: { label: string; value: number; color?: string; valueText?: string }[];
 }) {
+  styles = createStyles();
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
     <View style={styles.hWrap}>
@@ -118,7 +122,10 @@ export function HBars({
   );
 }
 
-const styles = StyleSheet.create({
+let styles = createStyles();
+
+function createStyles() {
+  return StyleSheet.create({
   vWrap: { marginTop: spacing.sm },
   vRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2 },
   vBar: { flex: 1, borderRadius: radius.sm, minHeight: 2 },
@@ -133,4 +140,6 @@ const styles = StyleSheet.create({
   hFill: { height: 6, borderRadius: radius.pill },
   donutCenter: { alignItems: 'center', justifyContent: 'center' },
   donutLabel: { ...typography.label, color: colors.text, textAlign: 'center' },
-});
+  });
+}
+

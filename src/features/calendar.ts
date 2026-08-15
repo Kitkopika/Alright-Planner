@@ -18,6 +18,8 @@ export interface CalendarItem {
   entityId: string;
   done?: boolean;
   overdue?: boolean;
+  /** True for events that span more than one day (long/multi-day). */
+  spanning?: boolean;
 }
 
 export interface DayItems {
@@ -42,6 +44,14 @@ function hasTime(iso: string | null | undefined): boolean {
   return !!iso && /T\d{2}:\d{2}/.test(iso);
 }
 
+/** True when the event's end date is later than its start date (multi-day). */
+function eventSpanning(ev: Event, start: Date): boolean {
+  if (!ev.endAt) return false;
+  const end = tryParseISO(ev.endAt);
+  if (!end) return false;
+  return dayDiff(startOfDay(start), startOfDay(end)) > 0;
+}
+
 function eventOnDay(ev: Event, day: Date): CalendarItem | null {
   if (ev.deletedAt) return null; // tombstoned events must not ghost in the calendar
   const start = tryParseISO(ev.startAt);
@@ -57,6 +67,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
       color: ev.color,
       kind: 'event',
       entityId: ev.id,
+      spanning: eventSpanning(ev, start),
     };
   }
   if (dayDiff(startOfDay(start), day) !== 0) return null;
@@ -68,6 +79,7 @@ function eventOnDay(ev: Event, day: Date): CalendarItem | null {
     color: ev.color,
     kind: 'event',
     entityId: ev.id,
+    spanning: eventSpanning(ev, start),
   };
 }
 
