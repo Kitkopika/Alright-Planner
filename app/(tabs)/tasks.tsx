@@ -24,7 +24,7 @@ import { colors, priorityColors, radius, spacing, typography } from '../../src/t
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/components/form';
 import { FocusTimerModal } from '../../src/components/focusTimer';
-import { useT } from '../../src/i18n';
+import { TKey, useT } from '../../src/i18n';
 
 type Filter = 'all' | 'today' | 'overdue' | 'upcoming' | 'done' | 'projects';
 
@@ -62,28 +62,28 @@ export default function TasksScreen() {
         if (!buckets.has(key)) buckets.set(key, []);
         buckets.get(key)!.push(t);
       };
-      for (const t of list) {
-        const due = t.dueAt ? tryParseISO(t.dueAt) : null;
-        if (!due || t.recurrence) push('No date / recurring', t);
+      for (const tk of list) {
+        const due = tk.dueAt ? tryParseISO(tk.dueAt) : null;
+        if (!due || tk.recurrence) push(t('noDateRecurring'), tk);
         else {
           const diff = dayDiff(now, due);
-          if (diff < 0) push('Overdue', t);
-          else if (diff === 0) push('Today', t);
-          else if (diff <= 7) push('This week', t);
-          else push('Later', t);
+          if (diff < 0) push(t('overdue'), tk);
+          else if (diff === 0) push(t('today'), tk);
+          else if (diff <= 7) push(t('thisWeek'), tk);
+          else push(t('later'), tk);
         }
       }
       return [...buckets.entries()].map(([bucket, items]) => ({ bucket, items }));
     };
     switch (filter) {
       case 'today':
-        return [{ bucket: 'Today', items: todo.filter((t) => dueDiff(t, now) === 0) }];
+        return [{ bucket: t('today'), items: todo.filter((tt) => dueDiff(tt, now) === 0) }];
       case 'overdue':
-        return [{ bucket: 'Overdue', items: todo.filter((t) => (dueDiff(t, now) ?? 0) < 0) }];
+        return [{ bucket: t('overdue'), items: todo.filter((tt) => (dueDiff(tt, now) ?? 0) < 0) }];
       case 'upcoming':
-        return [{ bucket: 'Upcoming', items: todo.filter((t) => (dueDiff(t, now) ?? 0) > 0) }];
+        return [{ bucket: 'Upcoming', items: todo.filter((tt) => (dueDiff(tt, now) ?? 0) > 0) }];
       case 'done':
-        return [{ bucket: 'Done', items: done }];
+        return [{ bucket: t('doneLabel'), items: done }];
       case 'projects':
         return projects
           .map((p) => ({ bucket: p.name, items: todo.filter((t) => t.projectId === p.id) }))
@@ -91,7 +91,7 @@ export default function TasksScreen() {
       default:
         return [...byBucket(todo), ...(done.length ? [{ bucket: 'Done', items: done }] : [])];
     }
-  }, [tasks, filter, projects, now]);
+  }, [tasks, filter, projects, now, t]);
 
   const toggle = (t: Task) => {
     const isDone = t.status === 'done';
@@ -106,12 +106,12 @@ export default function TasksScreen() {
     setEditorOpen(true);
   };
 
-  const onTaskLongPress = (t: Task) => {
-    Alert.alert(t.title, undefined, [
-      { text: t.status === 'done' ? 'Mark as todo' : 'Mark done', onPress: () => toggle(t) },
-      { text: 'Edit', onPress: () => openEditor(t.id) },
-      { text: 'Delete', style: 'destructive', onPress: () => remove('tasks', t.id) },
-      { text: 'Cancel', style: 'cancel' },
+  const onTaskLongPress = (task: Task) => {
+    Alert.alert(task.title, undefined, [
+      { text: task.status === 'done' ? t('markTodo') : t('markDone'), onPress: () => toggle(task) },
+      { text: t('edit'), onPress: () => openEditor(task.id) },
+      { text: t('delete'), style: 'destructive', onPress: () => remove('tasks', task.id) },
+      { text: t('cancel'), style: 'cancel' },
     ]);
   };
 
@@ -126,28 +126,29 @@ export default function TasksScreen() {
         <View>
           <Text style={typography.title}>{t('tasks')}</Text>
           <Text style={typography.caption}>
-            {counts.overdue > 0 ? `${counts.overdue} overdue · ` : ''}
-            {counts.today} due today
+            {counts.overdue > 0 ? `${counts.overdue} ${t('overdue')} · ` : ''}
+            {counts.today} {t('dueTodayCount')}
           </Text>
         </View>
         <View style={styles.headerActions}>
           <Button title={t('focus')} small variant="ghost" onPress={() => setFocusOpen(true)} />
-          <Button title="+ Task" small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
+          <Button title={t('addTaskBtn')} small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
         </View>
       </View>
       <ChipRow style={styles.filters}>
-        {(['all', 'today', 'overdue', 'upcoming', 'done', 'projects'] as Filter[]).map((f) => (
-          <Chip key={f} label={f[0].toUpperCase() + f.slice(1)} selected={filter === f} onPress={() => setFilter(f)} />
-        ))}
+        {(['all', 'today', 'overdue', 'upcoming', 'done', 'projects'] as Filter[]).map((f) => {
+          const labelMap: Record<Filter, TKey> = { all: 'all', today: 'today', overdue: 'overdue', upcoming: 'upcoming', done: 'doneLabel', projects: 'projectsLabel' };
+          return <Chip key={f} label={t(labelMap[f])} selected={filter === f} onPress={() => setFilter(f)} />;
+        })}
       </ChipRow>
       <ChipRow style={styles.filters}>
         {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((p) => (
-          <Chip key={p} label={p === 'all' ? 'All priority' : p} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
+          <Chip key={p} label={p === 'all' ? t('allPriority') : p} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
         ))}
       </ChipRow>
       <ScrollView contentContainerStyle={styles.content}>
         {visible.every((g) => g.items.length === 0) ? (
-          <EmptyState icon="checkbox-outline" title="No tasks here" subtitle="Use + → Task to add one" />
+          <EmptyState icon="checkbox-outline" title={t('noTasksHere')} subtitle={t('usePlusTask')} />
         ) : (
           visible.map((group) =>
             group.items.length === 0 ? null : (
@@ -177,6 +178,7 @@ export default function TasksScreen() {
 
 function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: Task; projectName?: string; onToggle: () => void; onOpen: () => void; onLongPress?: () => void }) {
   styles = createStyles();
+  const t = useT();
   const tasks = useLifeOS((s) => s.data.collections.tasks); // stable reference
   const subtasks = tasks.filter((t) => !t.deletedAt && t.parentTaskId === task.id && t.status !== 'cancelled');
   const due = task.dueAt ? tryParseISO(task.dueAt) : null;
@@ -195,7 +197,7 @@ function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: T
           </Text>
         </View>
         <View style={styles.taskMeta}>
-          {task.dueAt ? <Badge text={dueLabel(task.dueAt)} color={isOverdue ? colors.danger : colors.textSecondary} bg={isOverdue ? colors.dangerSoft : colors.surfaceAlt} /> : null}
+          {task.dueAt ? <Badge text={dueLabel(task.dueAt, t)} color={isOverdue ? colors.danger : colors.textSecondary} bg={isOverdue ? colors.dangerSoft : colors.surfaceAlt} /> : null}
           {task.recurrence ? <Badge text="repeat" color={colors.info} bg={colors.infoSoft} /> : null}
           {projectName ? <Badge text={projectName} color={colors.accent} bg={colors.accentSoft} /> : null}
           {subtasks.length > 0 ? <Badge text={`${subtasks.length} subtask${subtasks.length > 1 ? 's' : ''}`} /> : null}
@@ -206,11 +208,11 @@ function TaskRow({ task, projectName, onToggle, onOpen, onLongPress }: { task: T
   );
 }
 
-function dueLabel(iso: string): string {
+function dueLabel(iso: string, tt: (k: TKey) => string): string {
   const d = tryParseISO(iso);
   if (!d) return iso;
   const diff = dayDiff(new Date(), d);
-  const base = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff === -1 ? 'Yesterday' : `${dateKey(d)}`;
+  const base = diff === 0 ? tt('todayLabel') : diff === 1 ? tt('tomorrow') : diff === -1 ? tt('yesterday') : `${dateKey(d)}`;
   return /T\d{2}:\d{2}/.test(iso) ? `${base} ${iso.slice(11, 16)}` : base;
 }
 
@@ -220,6 +222,7 @@ function dueLabel(iso: string): string {
 
 export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -308,48 +311,48 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>{editing ? 'Edit task' : 'New task'}</Text>
+          <Text style={styles.sheetTitle}>{editing ? t('editTask') : t('newTask')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Title">
-              <TextBox value={title} onChangeText={setTitle} placeholder="What needs doing?" autoFocus={!editing} />
+            <Field label={t('title')}>
+              <TextBox value={title} onChangeText={setTitle} placeholder={t('whatNeedsDoing')} autoFocus={!editing} />
             </Field>
-            <Field label="Notes">
+            <Field label={t('taskNotes')}>
               <TextBox value={notes} onChangeText={setNotes} placeholder="Optional details" multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
             </Field>
-            <Field label="Priority">
+            <Field label={t('priority')}>
               <ChipRow>
                 {(['low', 'medium', 'high', 'urgent'] as const).map((p) => (
                   <Chip key={p} label={p} selected={priority === p} onPress={() => setPriority(p)} />
                 ))}
               </ChipRow>
             </Field>
-            <Field label="Status">
+            <Field label={t('status')}>
               <ChipRow>
                 {(['todo', 'doing', 'done', 'cancelled'] as const).map((s) => (
                   <Chip key={s} label={s} selected={status === s} onPress={() => setStatus(s)} />
                 ))}
               </ChipRow>
             </Field>
-            <DateField label="Due date" value={dueDate} onChange={setDueDate} />
-            <TimeField label="Due time (optional)" value={dueTime} onChange={setDueTime} />
+            <DateField label={t('dueDate')} value={dueDate} onChange={setDueDate} />
+            <TimeField label={t('dueTime')} value={dueTime} onChange={setDueTime} />
             <RecurrenceField value={recurrence} onChange={setRecurrence} />
-            <Field label="Project">
+            <Field label={t('project')}>
               <ChipRow>
-                <Chip label="None" selected={!projectId} onPress={() => setProjectId(null)} />
+                <Chip label={t('none')} selected={!projectId} onPress={() => setProjectId(null)} />
                 {projects.map((p) => (
                   <Chip key={p.id} label={p.name} selected={projectId === p.id} onPress={() => setProjectId(p.id)} />
                 ))}
               </ChipRow>
             </Field>
-            <Field label="Tags (comma separated)">
+            <Field label={t('tagsComma')}>
               <TextBox value={tags} onChangeText={setTags} placeholder="work, errand" />
             </Field>
-            <Field label="Estimated minutes">
+            <Field label={t('estimatedMinutes')}>
               <TextBox value={minutes} onChangeText={setMinutes} placeholder="e.g. 45" keyboardType="number-pad" />
             </Field>
 
             {editing && (
-              <Field label={`Subtasks (${subtasks.length})`}>
+              <Field label={`${t('subtasks')} (${subtasks.length})`}>
                 {subtasks.map((st) => (
                   <View key={st.id} style={styles.subtaskRow}>
                     <Pressable
@@ -365,16 +368,16 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
                   </View>
                 ))}
                 <View style={styles.subtaskAdd}>
-                  <TextBox value={newSubtask} onChangeText={setNewSubtask} placeholder="Add subtask…" style={{ flex: 1 }} onSubmitEditing={addSubtask} returnKeyType="done" />
+                  <TextBox value={newSubtask} onChangeText={setNewSubtask} placeholder={t('addSubtask')} style={{ flex: 1 }} onSubmitEditing={addSubtask} returnKeyType="done" />
                   <Button title="Add" small onPress={addSubtask} />
                 </View>
               </Field>
             )}
 
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>

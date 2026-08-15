@@ -18,24 +18,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
 import { useSettings } from '../data/settings';
+import { useT } from '../i18n';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button } from './ui';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
 import { addDays, dateKey, todayKey, timeHM, isoDateTime } from '../core/time';
 import { Priority, Recurrence, TransactionKind } from '../core/types';
 import { QUICK_ADD_KIND } from '../core/kinds';
+import { TKey } from '../i18n';
 
 type QuickType = 'task' | 'reminder' | 'event' | 'expense' | 'income' | 'note' | 'habit' | 'goal';
 
-const TYPES: { type: QuickType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
-  { type: 'task', label: 'Task', icon: 'checkbox-outline', color: colors.accent },
-  { type: 'reminder', label: 'Reminder', icon: 'alarm-outline', color: colors.warning },
-  { type: 'event', label: 'Event', icon: 'calendar-outline', color: colors.info },
-  { type: 'expense', label: 'Expense', icon: 'remove-circle-outline', color: colors.danger },
-  { type: 'income', label: 'Income', icon: 'add-circle-outline', color: colors.success },
-  { type: 'note', label: 'Note', icon: 'document-text-outline', color: colors.textSecondary },
-  { type: 'habit', label: 'Habit', icon: 'repeat-outline', color: '#7C3AED' },
-  { type: 'goal', label: 'Goal', icon: 'flag-outline', color: colors.warning },
+const TYPES: { type: QuickType; tKey: TKey; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
+  { type: 'task', tKey: 'typeTask', icon: 'checkbox-outline', color: colors.accent },
+  { type: 'reminder', tKey: 'typeReminder', icon: 'alarm-outline', color: colors.warning },
+  { type: 'event', tKey: 'typeEvent', icon: 'calendar-outline', color: colors.info },
+  { type: 'expense', tKey: 'typeExpense', icon: 'remove-circle-outline', color: colors.danger },
+  { type: 'income', tKey: 'typeIncome', icon: 'add-circle-outline', color: colors.success },
+  { type: 'note', tKey: 'typeNote', icon: 'document-text-outline', color: colors.textSecondary },
+  { type: 'habit', tKey: 'typeHabit', icon: 'repeat-outline', color: '#7C3AED' },
+  { type: 'goal', tKey: 'typeGoal', icon: 'flag-outline', color: colors.warning },
 ];
 
 export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
@@ -43,6 +45,7 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
   const create = useLifeOS((s) => s.create);
   const categories = useLifeOS((s) => s.data.collections.categories);
   const insets = useSafeAreaInsets();
+  const t = useT();
   const [type, setType] = useState<QuickType | null>(null);
 
   // Reset form when opened.
@@ -70,7 +73,7 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
           <Pressable style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]} onPress={() => {}}>
             <View style={styles.handle} />
             <View style={styles.titleRow}>
-              <Text style={styles.title}>{type ? TYPES.find((t) => t.type === type)?.label : 'Quick add'}</Text>
+              <Text style={styles.title}>{type ? t(TYPES.find((x) => x.type === type)?.tKey ?? 'typeTask') : t('quickAddTitle')}</Text>
               <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">
                 <Ionicons name="close" size={22} color={colors.textSecondary} />
               </Pressable>
@@ -78,8 +81,8 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
 
             {!type ? (
               <View style={styles.grid}>
-                {TYPES.map((t) => (
-                  <PressableTile key={t.type} icon={t.icon} label={t.label} color={t.color} onPress={() => setType(t.type)} />
+                {TYPES.map((x) => (
+                  <PressableTile key={x.type} icon={x.icon} label={t(x.tKey)} color={x.color} onPress={() => setType(x.type)} />
                 ))}
               </View>
             ) : (
@@ -161,20 +164,22 @@ function FormFor({
   return <GoalForm onCreate={onCreate} onBack={onBack} />;
 }
 
-function FormShell({ onBack, children, onSave, saveLabel = 'Save' }: { onBack: () => void; children: React.ReactNode; onSave: () => void; saveLabel?: string }) {
+function FormShell({ onBack, children, onSave, saveLabel }: { onBack: () => void; children: React.ReactNode; onSave: () => void; saveLabel?: string }) {
   styles = createStyles();
+  const t = useT();
   return (
     <View>
       {children}
       <View style={styles.formActions}>
-        <Button title="Back" variant="ghost" onPress={onBack} style={{ flex: 1 }} />
-        <Button title={saveLabel} onPress={onSave} style={{ flex: 2 }} />
+        <Button title={t('back')} variant="ghost" onPress={onBack} style={{ flex: 1 }} />
+        <Button title={saveLabel ?? t('save')} onPress={onSave} style={{ flex: 2 }} />
       </View>
     </View>
   );
 }
 
 function TaskForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [due, setDue] = useState(todayKey());
   const [time, setTime] = useState('');
@@ -182,12 +187,12 @@ function TaskForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null);
   return (
     <FormShell onBack={onBack} onSave={() => onCreate({ title: title.trim(), dueAt: combineDateTime(due, time) || null, priority, recurrence, status: 'todo' })}>
-      <Field label="Title">
-        <TextBox value={title} onChangeText={setTitle} placeholder="What needs doing?" autoFocus />
+      <Field label={t('title')}>
+        <TextBox value={title} onChangeText={setTitle} placeholder={t('whatNeedsDoing')} autoFocus />
       </Field>
       <DateField value={due} onChange={setDue} />
       <TimeField value={time} onChange={setTime} />
-      <Field label="Priority">
+      <Field label={t('priority')}>
         <ChipRow>
           {(['low', 'medium', 'high', 'urgent'] as Priority[]).map((p) => (
             <Chip key={p} label={p} selected={priority === p} onPress={() => setPriority(p)} />
@@ -200,14 +205,15 @@ function TaskForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
 }
 
 function ReminderForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(todayKey());
   const [time, setTime] = useState(timeHM(new Date(Date.now() + 60 * 60 * 1000)));
   const [recurrence, setRecurrence] = useState<Recurrence | null>(null);
   return (
     <FormShell onBack={onBack} onSave={() => onCreate({ title: title.trim(), remindAt: combineDateTime(date, time), recurrence, status: 'pending' })}>
-      <Field label="Title">
-        <TextBox value={title} onChangeText={setTitle} placeholder="Remind me to…" autoFocus />
+      <Field label={t('title')}>
+        <TextBox value={title} onChangeText={setTitle} placeholder={t('remindMeTo')} autoFocus />
       </Field>
       <DateField value={date} onChange={setDate} />
       <TimeField value={time} onChange={setTime} />
@@ -217,19 +223,20 @@ function ReminderForm({ onCreate, onBack }: { onCreate: (p: Record<string, unkno
 }
 
 function EventForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(todayKey());
   const [start, setStart] = useState(timeHM(new Date(Date.now() + 60 * 60 * 1000)));
   const [allDay, setAllDay] = useState(false);
   return (
     <FormShell onBack={onBack} onSave={() => onCreate({ title: title.trim(), startAt: combineDateTime(date, allDay ? '' : start), allDay, endAt: null })}>
-      <Field label="Title">
-        <TextBox value={title} onChangeText={setTitle} placeholder="Event title" autoFocus />
+      <Field label={t('title')}>
+        <TextBox value={title} onChangeText={setTitle} placeholder={t('eventTitle')} autoFocus />
       </Field>
       <DateField value={date} onChange={setDate} />
-      <Field label="All day">
+      <Field label={t('allDay')}>
         <ChipRow>
-          <Chip label="All day" selected={allDay} onPress={() => setAllDay((v) => !v)} />
+          <Chip label={t('allDay')} selected={allDay} onPress={() => setAllDay((v) => !v)} />
         </ChipRow>
       </Field>
       {!allDay && <TimeField value={start} onChange={setStart} />}
@@ -239,6 +246,7 @@ function EventForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>
 
 function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | 'income'; categories: { id: string; name: string; kind2: TransactionKind }[]; onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
   const currency = useSettings((s) => s.currency);
+  const t = useT();
   const [cents, setCents] = useState(0);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -246,7 +254,6 @@ function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | '
   return (
     <FormShell
       onBack={onBack}
-      saveLabel="Save"
       onSave={() =>
         onCreate({
           kind2: kind,
@@ -258,10 +265,10 @@ function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | '
         })
       }
     >
-      <MoneyField cents={cents} onChange={setCents} label={kind === 'expense' ? 'Amount spent' : 'Amount received'} />
-      <Field label="Category">
+      <MoneyField cents={cents} onChange={setCents} label={kind === 'expense' ? t('amountSpent') : t('amountReceived')} />
+      <Field label={t('category')}>
         {expenseCats.length === 0 ? (
-          <Text style={typography.caption}>No {kind} categories yet — add them in Money.</Text>
+          <Text style={typography.caption}>{t('noCatsYet')}</Text>
         ) : (
           <ChipRow>
             {expenseCats.map((c) => (
@@ -270,29 +277,31 @@ function MoneyForm({ kind, categories, onCreate, onBack }: { kind: 'expense' | '
           </ChipRow>
         )}
       </Field>
-      <Field label="Note">
-        <TextBox value={note} onChangeText={setNote} placeholder="Optional note" />
+      <Field label={t('note')}>
+        <TextBox value={note} onChangeText={setNote} placeholder={t('optionalNote')} />
       </Field>
     </FormShell>
   );
 }
 
 function NoteForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   return (
     <FormShell onBack={onBack} onSave={() => onCreate({ title: title.trim(), body: body.trim(), kind2: 'note' })}>
-      <Field label="Title">
-        <TextBox value={title} onChangeText={setTitle} placeholder="Note title" autoFocus />
+      <Field label={t('title')}>
+        <TextBox value={title} onChangeText={setTitle} placeholder={t('noteTitle')} autoFocus />
       </Field>
-      <Field label="Body">
-        <TextBox value={body} onChangeText={setBody} placeholder="Write something…" multiline style={{ minHeight: 100, textAlignVertical: 'top' }} />
+      <Field label={t('noteBody')}>
+        <TextBox value={body} onChangeText={setBody} placeholder={t('writeSomething')} multiline style={{ minHeight: 100, textAlignVertical: 'top' }} />
       </Field>
     </FormShell>
   );
 }
 
 function HabitForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [name, setName] = useState('');
   const [freqType, setFreqType] = useState<'daily' | 'weekly' | 'custom'>('daily');
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -311,14 +320,14 @@ function HabitForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>
         })
       }
     >
-      <Field label="Habit name">
+      <Field label={t('habitName')}>
         <TextBox value={name} onChangeText={setName} placeholder="e.g. Read 20 pages" autoFocus />
       </Field>
-      <Field label="Frequency">
+      <Field label={t('frequency')}>
         <ChipRow>
-          <Chip label="Daily" selected={freqType === 'daily'} onPress={() => setFreqType('daily')} />
-          <Chip label="Weekly" selected={freqType === 'weekly'} onPress={() => setFreqType('weekly')} />
-          <Chip label="Custom days" selected={freqType === 'custom'} onPress={() => setFreqType('custom')} />
+          <Chip label={t('daily')} selected={freqType === 'daily'} onPress={() => setFreqType('daily')} />
+          <Chip label={t('weekly')} selected={freqType === 'weekly'} onPress={() => setFreqType('weekly')} />
+          <Chip label={t('customDays')} selected={freqType === 'custom'} onPress={() => setFreqType('custom')} />
         </ChipRow>
       </Field>
       {freqType === 'custom' && (
@@ -336,6 +345,7 @@ function HabitForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>
 }
 
 function GoalForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>) => void; onBack: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [deadline, setDeadline] = useState(addDays(new Date(), 30));
   const [hasDeadline, setHasDeadline] = useState(true);
@@ -344,13 +354,13 @@ function GoalForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
       onBack={onBack}
       onSave={() => onCreate({ title: title.trim(), status: 'active', deadline: hasDeadline ? dateKey(deadline) : null })}
     >
-      <Field label="Goal">
-        <TextBox value={title} onChangeText={setTitle} placeholder="e.g. Run a half marathon" autoFocus />
+      <Field label={t('typeGoal')}>
+        <TextBox value={title} onChangeText={setTitle} placeholder={t('goalExample')} autoFocus />
       </Field>
-      <Field label="Deadline">
+      <Field label={t('deadline')}>
         <ChipRow>
-          <Chip label="Set" selected={hasDeadline} onPress={() => setHasDeadline(true)} />
-          <Chip label="None" selected={!hasDeadline} onPress={() => setHasDeadline(false)} />
+          <Chip label={t('set')} selected={hasDeadline} onPress={() => setHasDeadline(true)} />
+          <Chip label={t('none')} selected={!hasDeadline} onPress={() => setHasDeadline(false)} />
         </ChipRow>
       </Field>
       {hasDeadline && <DateField value={dateKey(deadline)} onChange={(v) => v && setDeadline(new Date(v + 'T00:00'))} />}

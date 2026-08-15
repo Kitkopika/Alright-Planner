@@ -13,6 +13,7 @@ import { Recurrence, RecurrenceFreq } from '../core/types';
 import { addDays, dateKey, formatDateKeyDDMM, todayKey, tryParseISO, parseDateKey } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { TKey, useT } from '../i18n';
 
 export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -48,6 +49,7 @@ export function DatePickerModal({
   const initial = value && tryParseISO(value) ? parseDateKey(value) : new Date();
   const [view, setView] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
   const cells = monthCells(view.getFullYear(), view.getMonth());
+  const t = useT();
   const pick = (dk: string) => {
     onSelect(dk);
     onClose();
@@ -89,8 +91,8 @@ export function DatePickerModal({
             })}
           </View>
           <View style={styles.pickerFooter}>
-            <Button title="Today" variant="ghost" small onPress={() => pick(todayKey())} />
-            <Button title="Cancel" variant="ghost" small onPress={onClose} />
+            <Button title={t('todayLabel')} variant="ghost" small onPress={() => pick(todayKey())} />
+            <Button title={t('cancel')} variant="ghost" small onPress={onClose} />
           </View>
         </Pressable>
       </Pressable>
@@ -111,21 +113,22 @@ export function DateField({
 }) {
   styles = createStyles();
   const [open, setOpen] = useState(false);
+  const t = useT();
   const quick = (d: Date) => onChange(dateKey(d));
 
   return (
     <Field label={label}>
       <Pressable style={styles.pickerInput} onPress={() => setOpen(true)}>
         <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value ? formatDateKeyDDMM(value) : 'Select date'}</Text>
+        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value ? formatDateKeyDDMM(value) : t('selectDate')}</Text>
         <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
       </Pressable>
       <ChipRow style={{ marginTop: 6 }}>
-        <Chip label="Today" onPress={() => quick(new Date())} />
-        <Chip label="Tomorrow" onPress={() => quick(addDays(new Date(), 1))} />
+        <Chip label={t('todayLabel')} onPress={() => quick(new Date())} />
+        <Chip label={t('tomorrow')} onPress={() => quick(addDays(new Date(), 1))} />
         <Chip label="+1w" onPress={() => quick(addDays(new Date(), 7))} />
         <Chip label="+1m" onPress={() => quick(addDays(new Date(), 30))} />
-        {allowClear && <Chip label="Clear" onPress={() => onChange('')} />}
+        {allowClear && <Chip label={t('clear')} onPress={() => onChange('')} />}
       </ChipRow>
       <DatePickerModal visible={open} value={value} onSelect={onChange} onClose={() => setOpen(false)} />
     </Field>
@@ -151,6 +154,7 @@ export function TimePickerModal({
   const [hh, setHh] = useState(value ? parseInt(value.slice(0, 2), 10) || 0 : 9);
   const [mm, setMm] = useState(value ? parseInt(value.slice(3, 5), 10) || 0 : 0);
   const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const t = useT();
   const ok = () => {
     onSelect(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`);
     onClose();
@@ -160,9 +164,9 @@ export function TimePickerModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.pickerBackdrop} onPress={onClose}>
         <Pressable style={styles.pickerCard} onPress={() => {}}>
-          <Text style={[styles.pickerTitle, { textAlign: 'center', marginBottom: spacing.md }]}>Select time</Text>
+          <Text style={[styles.pickerTitle, { textAlign: 'center', marginBottom: spacing.md }]}>{t('selectTime')}</Text>
           <ScrollView style={{ maxHeight: 320 }}>
-            <Text style={styles.pickerSectionLabel}>Hour</Text>
+            <Text style={styles.pickerSectionLabel}>{t('hour')}</Text>
             <View style={styles.pickerSection}>
               {Array.from({ length: 24 }, (_, h) => (
                 <Pressable key={h} onPress={() => setHh(h)} style={[styles.chipSmall, hh === h && styles.chipSmallOn]}>
@@ -170,7 +174,7 @@ export function TimePickerModal({
                 </Pressable>
               ))}
             </View>
-            <Text style={styles.pickerSectionLabel}>Minute</Text>
+            <Text style={styles.pickerSectionLabel}>{t('minute')}</Text>
             <View style={styles.pickerSection}>
               {minutes.map((m) => (
                 <Pressable key={m} onPress={() => setMm(m)} style={[styles.chipSmall, mm === m && styles.chipSmallOn]}>
@@ -180,8 +184,8 @@ export function TimePickerModal({
             </View>
           </ScrollView>
           <View style={styles.pickerFooter}>
-            <Button title="Cancel" variant="ghost" small onPress={onClose} />
-            <Button title="OK" small onPress={ok} />
+            <Button title={t('cancel')} variant="ghost" small onPress={onClose} />
+            <Button title={t('ok')} small onPress={ok} />
           </View>
         </Pressable>
       </Pressable>
@@ -201,20 +205,21 @@ export function TimeField({
   allowClear?: boolean;
 }) {
   styles = createStyles();
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
     <Field label={label}>
       <Pressable style={styles.pickerInput} onPress={() => setOpen(true)}>
         <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value || 'Select time'}</Text>
+        <Text style={[styles.pickerInputText, !value && { color: colors.textMuted }]}>{value || t('selectTime')}</Text>
         <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
       </Pressable>
       <ChipRow style={{ marginTop: 6 }}>
         <Chip label="9:00" onPress={() => onChange('09:00')} />
         <Chip label="12:00" onPress={() => onChange('12:00')} />
         <Chip label="18:00" onPress={() => onChange('18:00')} />
-        {allowClear && <Chip label="Clear" onPress={() => onChange('')} />}
+        {allowClear && <Chip label={t('clear')} onPress={() => onChange('')} />}
       </ChipRow>
       <TimePickerModal visible={open} value={value} onSelect={onChange} onClose={() => setOpen(false)} />
     </Field>
@@ -225,12 +230,12 @@ export function TimeField({
 // Recurrence
 // ---------------------------------------------------------------------------
 
-const FREQ_LABELS: { value: RecurrenceFreq | ''; label: string }[] = [
-  { value: '', label: 'None' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' },
+const FREQ_LABELS: { value: RecurrenceFreq | ''; tKey: TKey }[] = [
+  { value: '', tKey: 'none' },
+  { value: 'daily', tKey: 'daily' },
+  { value: 'weekly', tKey: 'weekly' },
+  { value: 'monthly', tKey: 'month' },
+  { value: 'yearly', tKey: 'year' },
 ];
 
 export function RecurrenceField({
@@ -250,14 +255,15 @@ export function RecurrenceField({
   };
 
   const activeFreq = value?.freq || '';
+  const t = useT();
 
   return (
-    <Field label="Repeat">
+    <Field label={t('repeat')}>
       <ChipRow>
         {FREQ_LABELS.map((f) => (
           <Chip
-            key={f.label}
-            label={f.label}
+            key={f.tKey}
+            label={t(f.tKey)}
             selected={activeFreq === f.value}
             onPress={() => {
               if (f.value === '') onChange(null);
@@ -271,7 +277,7 @@ export function RecurrenceField({
         <View style={{ marginTop: 6 }}>
           <ChipRow>
             {[1, 2, 3].map((n) => (
-              <Chip key={n} label={n === 1 ? 'every 1' : `every ${n}`} selected={(value.interval || 1) === n} onPress={() => set({ interval: n })} />
+              <Chip key={n} label={`${t('every')} ${n}`} selected={(value.interval || 1) === n} onPress={() => set({ interval: n })} />
             ))}
           </ChipRow>
           {activeFreq === 'weekly' ? (
@@ -294,7 +300,7 @@ export function RecurrenceField({
             </ChipRow>
           ) : null}
           <DateField
-            label="Repeat until (optional)"
+            label={t('repeatUntil')}
             value={value.until || ''}
             onChange={(until) => set({ until: until || null })}
           />
@@ -317,6 +323,7 @@ export function MoneyField({
   cents: number;
   onChange: (cents: number) => void;
 }) {
+  const t = useT();
   const [text, setText] = useState(cents === 0 ? '' : (cents / 100).toFixed(2));
   const valid = text === '' || /^\d+(\.\d{1,2})?$/.test(text.trim());
 

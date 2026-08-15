@@ -19,6 +19,7 @@ import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from './form';
 import { Recurrence } from '../core/types';
+import { useT } from '../i18n';
 
 const EVENT_COLORS = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED', '#DB2777', '#64748B'];
 
@@ -40,6 +41,7 @@ export function EventEditorModal({
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
+  const t = useT();
 
   const editing = eventId ? data.collections.events.find((e) => e.id === eventId && !e.deletedAt) : undefined;
 
@@ -125,38 +127,38 @@ export function EventEditorModal({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>{editing ? 'Edit event' : 'New event'}</Text>
+          <Text style={styles.title}>{editing ? t('editEvent') : t('newEvent')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Title">
-              <TextBox value={title} onChangeText={setTitle} placeholder="Event title" autoFocus={!editing} />
+            <Field label={t('title')}>
+              <TextBox value={title} onChangeText={setTitle} placeholder={t('eventTitle')} autoFocus={!editing} />
             </Field>
             <DateField value={date} onChange={setDate} />
-            <Field label="All day">
+            <Field label={t('allDay')}>
               <ChipRow>
-                <Chip label="All day" selected={allDay} onPress={() => setAllDay((v) => !v)} />
+                <Chip label={t('allDay')} selected={allDay} onPress={() => setAllDay((v) => !v)} />
               </ChipRow>
             </Field>
             {!allDay && <TimeField value={time} onChange={setTime} />}
-            <DateField label="End date (optional)" value={endDate} onChange={setEndDate} />
-            {!allDay && endDate && <TimeField label="End time" value={endTime} onChange={setEndTime} />}
+            <DateField label={t('endDateOpt')} value={endDate} onChange={setEndDate} />
+            {!allDay && endDate && <TimeField label={t('endTime')} value={endTime} onChange={setEndTime} />}
             <RecurrenceField value={recurrence} onChange={setRecurrence} />
-            <Field label="Color">
+            <Field label={t('color')}>
               <ChipRow>
                 {EVENT_COLORS.map((c) => (
                   <PressableDot key={c} color={c} selected={color === c} onPress={() => setColor(c)} />
                 ))}
               </ChipRow>
             </Field>
-            <Field label="Remind before (minutes, optional)">
+            <Field label={t('remindBefore')}>
               <TextBox value={reminderMin} onChangeText={setReminderMin} placeholder="e.g. 30" keyboardType="number-pad" />
             </Field>
-            <Field label="Notes">
-              <TextBox value={notes} onChangeText={setNotes} placeholder="Optional" multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
+            <Field label={t('taskNotes')}>
+              <TextBox value={notes} onChangeText={setNotes} placeholder={t('optional')} multiline style={{ minHeight: 70, textAlignVertical: 'top' }} />
             </Field>
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
