@@ -88,6 +88,13 @@ export function applyTheme(mode: 'light' | 'dark' | 'system', accent: string): v
   Object.assign(colors, base);
   colors.accent = accent;
   colors.accentSoft = accent + '22';
+  // Typography is a plain object referenced directly by screens; updating it
+  // in place keeps text theme-aware without touching every <Text>.
+  typography.title.color = colors.text;
+  typography.section.color = colors.text;
+  typography.body.color = colors.text;
+  typography.caption.color = colors.textSecondary;
+  typography.label.color = colors.textSecondary;
   version++;
 }
 
@@ -126,9 +133,9 @@ export const radius = {
 };
 
 export const typography = {
-  title: { fontSize: 24, fontWeight: '700' as const },
-  section: { fontSize: 17, fontWeight: '600' as const },
-  body: { fontSize: 15, fontWeight: '400' as const },
-  caption: { fontSize: 12, fontWeight: '400' as const },
-  label: { fontSize: 13, fontWeight: '600' as const },
+  title: { fontSize: 24, fontWeight: '700' as const, color: lightColors.text },
+  section: { fontSize: 17, fontWeight: '600' as const, color: lightColors.text },
+  body: { fontSize: 15, fontWeight: '400' as const, color: lightColors.text },
+  caption: { fontSize: 12, fontWeight: '400' as const, color: lightColors.textSecondary },
+  label: { fontSize: 13, fontWeight: '600' as const, color: lightColors.textSecondary },
 };
