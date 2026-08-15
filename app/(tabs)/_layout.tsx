@@ -34,7 +34,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { paddingTop: 4 },
+        tabBarStyle: { paddingTop: 4, backgroundColor: colors.surface, borderTopColor: colors.border },
         tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         tabBarItemStyle: { paddingVertical: 2 },
         // Edge-to-edge: offset every scene below the status bar / display

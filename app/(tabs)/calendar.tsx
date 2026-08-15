@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, Alert, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
@@ -23,6 +23,7 @@ type ViewMode = 'day' | 'week' | 'month' | 'year';
 
 export default function CalendarScreen() {
   styles = createStyles();
+  const { width: windowWidth } = useWindowDimensions();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const t = useT();
@@ -38,6 +39,8 @@ export default function CalendarScreen() {
   const selectedDay = useMemo(() => dayItems(data, selected), [data, selected]);
   const weekHasToday = weekDays.some((d) => dateKey(d.date) === todayKey());
   const nowHour = new Date().getHours();
+  const WEEK_TIME_COL = 46;
+  const colW = Math.max((windowWidth - spacing.lg * 2 - WEEK_TIME_COL) / 7, 40);
 
   const openEvent = (entityId: string) => {
     setEditingEvent(entityId);
@@ -102,15 +105,19 @@ export default function CalendarScreen() {
 
         {mode === 'week' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ minWidth: '100%' }}>
+            <View style={{ width: WEEK_TIME_COL + colW * 7 }}>
               {/* Day headers */}
               <View style={styles.weekGridRow}>
-                <View style={styles.weekTimeCell} />
-                {weekDays.map((d) => (
+                <View style={{ width: WEEK_TIME_COL }} />
+                {weekDays.map((d, di) => (
                   <Pressable
                     key={dateKey(d.date)}
                     onPress={() => setSelected(d.date)}
-                    style={[styles.weekDayHead, dateKey(d.date) === todayKey() && styles.weekHeadToday]}
+                    style={[
+                      styles.weekDayHead,
+                      { width: colW },
+                      dateKey(d.date) === todayKey() && styles.weekHeadToday,
+                    ]}
                   >
                     <Text style={[styles.weekDow, dateKey(d.date) === dateKey(selected) && { color: colors.accent, fontWeight: '700' }]}>
                       {weekdaysShort[(d.date.getDay() + 6) % 7]}
@@ -125,8 +132,8 @@ export default function CalendarScreen() {
               {/* All-day / no-time row */}
               <View style={styles.weekGridRow}>
                 <Text style={[styles.weekTimeCell, styles.weekTimeLabel]}>{t('allDay')}</Text>
-                {weekDays.map((d) => (
-                  <View key={dateKey(d.date)} style={styles.weekDayCell}>
+                {weekDays.map((d, di) => (
+                  <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]}>
                     {d.items.filter((it) => it.allDay || !it.timeLabel).map((it) => (
                       <WeekBlock key={it.id} item={it} onOpen={openEvent} onDelete={deleteItem} />
                     ))}
@@ -137,21 +144,61 @@ export default function CalendarScreen() {
               {/* Hour rows */}
               {Array.from({ length: 24 }, (_, h) => {
                 const isNow = weekHasToday && h === nowHour;
+                // Collect every timed item at this hour, per day column.
+                const hourItems: { it: CalendarItem; di: number }[] = [];
+                weekDays.forEach((d, di) => {
+                  for (const it of d.items) {
+                    if (!it.allDay && it.timeLabel && parseInt(it.timeLabel.slice(0, 2), 10) === h) {
+                      hourItems.push({ it, di });
+                    }
+                  }
+                });
+                // Multi-day (spanning) events are drawn as ONE connected line
+                // across their day columns; everything else as per-day blocks.
+                const spans = new Map<string, { item: CalendarItem; first: number; last: number }>();
+                const singles: { it: CalendarItem; di: number }[] = [];
+                for (const { it, di } of hourItems) {
+                  if (it.spanning) {
+                    const g = spans.get(it.entityId) || { item: it, first: di, last: di };
+                    g.first = Math.min(g.first, di);
+                    g.last = Math.max(g.last, di);
+                    spans.set(it.entityId, g);
+                  } else {
+                    singles.push({ it, di });
+                  }
+                }
                 return (
-                  <View key={h} style={[styles.weekGridRow, isNow && styles.weekRowNow]}>
+                  <View key={h} style={[styles.weekGridRow, { height: 34 }, isNow && styles.weekRowNow]}>
                     <Text style={[styles.weekTimeCell, styles.weekTimeLabel, isNow && { color: colors.danger }]}>
                       {String(h).padStart(2, '0')}:00
                     </Text>
-                    {weekDays.map((d) => {
-                      const items = d.items.filter((it) => !it.allDay && it.timeLabel && parseInt(it.timeLabel.slice(0, 2), 10) === h);
-                      return (
-                        <View key={dateKey(d.date)} style={styles.weekDayCell}>
-                          {items.map((it) => (
-                            <WeekBlock key={it.id} item={it} onOpen={openEvent} onDelete={deleteItem} />
-                          ))}
-                        </View>
-                      );
-                    })}
+                    {weekDays.map((d, di) => (
+                      <View key={dateKey(d.date)} style={[styles.weekDayCell, { width: colW }]}>
+                        {singles.filter((x) => x.di === di).map((x) => (
+                          <WeekBlock key={x.it.id} item={x.it} onOpen={openEvent} onDelete={deleteItem} />
+                        ))}
+                      </View>
+                    ))}
+                    {[...spans.values()].map((g) => (
+                      <Pressable
+                        key={g.item.id}
+                        onPress={() => openEvent(g.item.entityId)}
+                        onLongPress={() => deleteItem(g.item)}
+                        style={[
+                          styles.weekSpanBar,
+                          {
+                            left: WEEK_TIME_COL + g.first * colW,
+                            width: (g.last - g.first + 1) * colW,
+                            backgroundColor: (g.item.color || colors.accent) + '22',
+                            borderLeftColor: g.item.color || colors.accent,
+                          },
+                        ]}
+                      >
+                        <Text numberOfLines={1} style={styles.weekSpanText}>
+                          {g.item.timeLabel} {g.item.title}
+                        </Text>
+                      </Pressable>
+                    ))}
                   </View>
                 );
               })}
@@ -187,7 +234,7 @@ export default function CalendarScreen() {
                         ev.spanning ? (
                           <View key={ev.id} style={[styles.cellLine, { backgroundColor: ev.color || colors.accent }]} />
                         ) : (
-                          <View key={ev.id} style={[styles.cellDot, { backgroundColor: ev.color || colors.accent }]} />
+                          <View key={ev.id} style={[styles.cellLineShort, { backgroundColor: ev.color || colors.accent }]} />
                         )
                       )}
                       {events.length > 3 ? <Text style={styles.cellMore}>+{events.length - 3}</Text> : null}
@@ -361,7 +408,7 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
                 ev.spanning ? (
                   <View key={ev.id} style={[styles.cellLine, { backgroundColor: ev.color || colors.accent }]} />
                 ) : (
-                  <View key={ev.id} style={[styles.cellDot, { backgroundColor: ev.color || colors.accent }]} />
+                  <View key={ev.id} style={[styles.cellLineShort, { backgroundColor: ev.color || colors.accent }]} />
                 )
               )}
             </View>
@@ -403,7 +450,7 @@ function createStyles() {
   cellDim: { color: colors.textMuted },
   cellToday: { color: colors.accent, fontWeight: '700' },
   cellDots: { flexDirection: 'row', gap: 2, marginTop: 2, minHeight: 5, alignItems: 'center' },
-  cellDot: { width: 5, height: 5, borderRadius: 2.5 },
+  cellLineShort: { width: 9, height: 3, borderRadius: 1.5 },
   cellLine: { flex: 1, height: 3, borderRadius: 1.5, maxWidth: 18 },
   cellMore: { fontSize: 8, color: colors.textMuted, fontWeight: '700' },
 
@@ -444,21 +491,31 @@ function createStyles() {
 
   // week (time table)
   weekRow: { flexDirection: 'row', gap: spacing.xs },
-  weekGridRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, minHeight: 30, alignItems: 'stretch' },
+  weekGridRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, minHeight: 30, alignItems: 'stretch', position: 'relative' },
   weekTimeCell: { width: 46, justifyContent: 'center', paddingLeft: 4 },
   weekTimeLabel: { fontSize: 10, color: colors.textMuted, fontVariant: ['tabular-nums'] },
-  weekDayHead: { flex: 1, minWidth: 54, alignItems: 'center', paddingVertical: 4 },
+  weekDayHead: { alignItems: 'center', paddingVertical: 4 },
   weekHeadToday: { backgroundColor: colors.accentSoft },
   weekDow: { fontSize: 10, color: colors.textSecondary },
   weekDayNum: { fontSize: 15, fontWeight: '600', color: colors.text, marginTop: 2 },
   weekDayCell: {
-    flex: 1,
-    minWidth: 54,
     borderLeftWidth: StyleSheet.hairlineWidth,
     borderLeftColor: colors.border,
     padding: 1,
   },
   weekRowNow: { backgroundColor: colors.danger + '0D' },
+  weekSpanBar: {
+    position: 'absolute',
+    top: 5,
+    height: 22,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+    overflow: 'hidden',
+  },
+  weekSpanText: { fontSize: 9, color: colors.text, fontWeight: '600' },
   weekBlock: {
     borderRadius: 4,
     paddingHorizontal: 3,
