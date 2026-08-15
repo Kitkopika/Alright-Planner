@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
+import { useT } from '../../src/i18n';
 import { Note, NoteKind } from '../../src/core/types';
 import { dateKey } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
@@ -34,6 +35,7 @@ interface SearchHit {
 
 export default function NotesScreen() {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
@@ -77,23 +79,24 @@ export default function NotesScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={typography.title}>Notes</Text>
-        <Button title="+ Note" small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
+        <Text style={typography.title}>{t('notes')}</Text>
+        <Button title={t('addNote')} small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
       </View>
       <View style={styles.searchWrap}>
         <Ionicons name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
-        <TextBox value={query} onChangeText={setQuery} placeholder="Search notes, tasks, events…" style={styles.searchInput} />
+        <TextBox value={query} onChangeText={setQuery} placeholder={t('searchPlaceholder')} style={styles.searchInput} />
       </View>
       <ChipRow style={styles.filters}>
-        {(['all', 'note', 'journal', 'project'] as Filter[]).map((f) => (
-          <Chip key={f} label={f === 'all' ? 'All' : f[0].toUpperCase() + f.slice(1)} selected={filter === f} onPress={() => setFilter(f)} />
-        ))}
+        {(['all', 'note', 'journal', 'project'] as Filter[]).map((f) => {
+          const label = f === 'all' ? t('all') : f === 'note' ? t('typeNote') : f === 'journal' ? t('journal') : t('project');
+          return <Chip key={f} label={label} selected={filter === f} onPress={() => setFilter(f)} />;
+        })}
       </ChipRow>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {query.trim() ? (
           searchHits.length === 0 ? (
-            <EmptyState icon="search-outline" title="No matches" />
+            <EmptyState icon="search-outline" title={t('noMatches')} />
           ) : (
             searchHits.map((hit, i) => (
               <Card
@@ -110,7 +113,7 @@ export default function NotesScreen() {
             ))
           )
         ) : notes.length === 0 ? (
-          <EmptyState icon="document-text-outline" title="No notes" subtitle="Capture thoughts with + → Note" />
+          <EmptyState icon="document-text-outline" title={t('noNotes')} subtitle={t('noNotesSub')} />
         ) : (
           notes.map((n) => (
             <Card
@@ -118,7 +121,7 @@ export default function NotesScreen() {
               style={styles.noteCard}
               onPress={() => { setEditingId(n.id); setEditorOpen(true); }}
               onLongPress={() =>
-                Alert.alert('Delete note?', n.title || 'Untitled', [
+                Alert.alert(t('deleteNoteQ'), n.title || t('untitled'), [
                   { text: 'Delete', style: 'destructive', onPress: () => remove('notes', n.id) },
                   { text: 'Cancel', style: 'cancel' },
                 ])
@@ -126,14 +129,14 @@ export default function NotesScreen() {
             >
               <View style={{ flex: 1 }}>
                 <View style={styles.noteTitleRow}>
-                  <Text style={[typography.body, { fontWeight: '600', flex: 1 }]} numberOfLines={1}>{n.title || 'Untitled'}</Text>
+                  <Text style={[typography.body, { fontWeight: '600', flex: 1 }]} numberOfLines={1}>{n.title || t('untitled')}</Text>
                   <Badge text={n.kind2} color={n.kind2 === 'journal' ? colors.warning : n.kind2 === 'project' ? colors.success : colors.textSecondary} bg={n.kind2 === 'journal' ? colors.warningSoft : n.kind2 === 'project' ? colors.successSoft : colors.surfaceAlt} />
                 </View>
                 {n.body ? <Text style={[typography.caption, { color: colors.textSecondary }]} numberOfLines={2}>{n.body}</Text> : null}
                 <View style={styles.noteMeta}>
                   <Text style={[typography.caption, { color: colors.textMuted }]}>{dateKey(new Date(n.updatedAt))}</Text>
                   {(n.tags || []).slice(0, 3).map((t) => <Badge key={t} text={`#${t}`} color={colors.accent} bg={colors.accentSoft} />)}
-                  {n.taskId || n.projectId || n.goalId || n.eventId ? <Badge text="linked" color={colors.info} bg={colors.infoSoft} /> : null}
+                  {n.taskId || n.projectId || n.goalId || n.eventId ? <Badge text={t('linkedBadge')} color={colors.info} bg={colors.infoSoft} /> : null}
                 </View>
               </View>
             </Card>
@@ -152,6 +155,7 @@ export default function NotesScreen() {
 
 function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -226,29 +230,29 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>{editing ? 'Edit note' : 'New note'}</Text>
+          <Text style={styles.sheetTitle}>{editing ? t('editNote') : t('newNote')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Title">
-              <TextBox value={title} onChangeText={setTitle} placeholder="Title" autoFocus={!editing} />
+            <Field label={t('title')}>
+              <TextBox value={title} onChangeText={setTitle} placeholder={t('title')} autoFocus={!editing} />
             </Field>
-            <Field label="Type">
+            <Field label={t('type')}>
               <ChipRow>
                 {(['note', 'journal', 'project'] as NoteKind[]).map((k) => (
-                  <Chip key={k} label={k} selected={kind2 === k} onPress={() => setKind2(k)} />
+                  <Chip key={k} label={k === 'note' ? t('typeNote') : k === 'journal' ? t('journal') : t('project')} selected={kind2 === k} onPress={() => setKind2(k)} />
                 ))}
               </ChipRow>
             </Field>
-            <Field label="Body">
-              <TextBox value={body} onChangeText={setBody} placeholder="Write…" multiline style={{ minHeight: 120, textAlignVertical: 'top' }} />
+            <Field label={t('noteBody')}>
+              <TextBox value={body} onChangeText={setBody} placeholder={t('writeEllipsis')} multiline style={{ minHeight: 120, textAlignVertical: 'top' }} />
             </Field>
-            <Field label="Tags (comma separated)">
+            <Field label={t('tagsComma')}>
               <TextBox value={tags} onChangeText={setTags} placeholder="ideas, work" />
             </Field>
-            <Field label="Links (one per line)">
+            <Field label={t('links')}>
               <TextBox value={links} onChangeText={setLinks} placeholder="https://…" autoCapitalize="none" autoCorrect={false} multiline style={{ minHeight: 50, textAlignVertical: 'top' }} />
             </Field>
 
-            <Field label="Link to">
+            <Field label={t('linkTo')}>
               <Text style={[typography.caption, { color: colors.textMuted, marginBottom: 4 }]}>Task</Text>
               <ChipRow>
                 <Chip label="None" selected={!taskId} onPress={() => setTaskId(null)} />
@@ -280,9 +284,9 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
             </Field>
 
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>

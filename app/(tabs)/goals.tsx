@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
+import { useT } from '../../src/i18n';
 import { Goal, Project } from '../../src/core/types';
 import { goalProgress } from '../../src/features/today';
 import { dateKey, friendlyDateTime } from '../../src/core/time';
@@ -26,6 +27,7 @@ import { DateField } from '../../src/components/form';
 
 export default function GoalsScreen() {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -42,16 +44,16 @@ export default function GoalsScreen() {
     <View style={styles.screen}>
       <View style={styles.header}>
         <Text style={typography.title}>Goals</Text>
-        <Button title="+ Goal" small onPress={() => setEditorOpen(true)} />
+        <Button title={t('addGoal')} small onPress={() => setEditorOpen(true)} />
       </View>
       <ChipRow style={styles.filters}>
         {(['all', 'active', 'done'] as const).map((s) => (
-          <Chip key={s} label={s[0].toUpperCase() + s.slice(1)} selected={statusFilter === s} onPress={() => setStatusFilter(s)} />
+          <Chip key={s} label={s === 'all' ? t('all') : s === 'done' ? t('doneLabel') : t('active')} selected={statusFilter === s} onPress={() => setStatusFilter(s)} />
         ))}
       </ChipRow>
       <ScrollView contentContainerStyle={styles.content}>
         {goals.length === 0 ? (
-          <EmptyState icon="flag-outline" title="No goals yet" subtitle="Goals give your projects and habits a why" />
+          <EmptyState icon="flag-outline" title={t('noGoals')} subtitle={t('noGoalsSub')} />
         ) : (
           goals.map((g) => <GoalCard key={g.id} goal={g} onOpen={() => { setDetailId(g.id); setDetailOpen(true); }} />)
         )}
@@ -65,6 +67,7 @@ export default function GoalsScreen() {
 
 function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const progress = goalProgress(goal.id, data);
@@ -77,7 +80,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
       style={{ marginBottom: spacing.md }}
       onPress={onOpen}
       onLongPress={() =>
-        Alert.alert('Delete goal?', goal.title, [
+        Alert.alert(t('deleteGoalQ'), goal.title, [
           { text: 'Delete', style: 'destructive', onPress: () => remove('goals', goal.id) },
           { text: 'Cancel', style: 'cancel' },
         ])
@@ -90,7 +93,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
         </View>
         <View style={styles.goalRight}>
           <Text style={[typography.body, { fontWeight: '700' }]}>{progress}%</Text>
-          {goal.status === 'done' && <Badge text="done" color={colors.success} bg={colors.successSoft} />}
+          {goal.status === 'done' && <Badge text={t('doneLabel')} color={colors.success} bg={colors.successSoft} />}
         </View>
       </View>
       <ProgressBar pct={progress} color={goal.color || colors.accent} style={{ marginTop: spacing.sm }} />
@@ -110,6 +113,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
 
 function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -158,16 +162,16 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>{editing ? 'Edit goal' : 'New goal'}</Text>
+          <Text style={styles.sheetTitle}>{editing ? t('editGoal') : t('newGoal')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Field label="Title">
-              <TextBox value={title} onChangeText={setTitle} placeholder="e.g. Run a half marathon" autoFocus={!editing} />
+            <Field label={t('title')}>
+              <TextBox value={title} onChangeText={setTitle} placeholder={t('goalExample')} autoFocus={!editing} />
             </Field>
-            <Field label="Description">
-              <TextBox value={description} onChangeText={setDescription} placeholder="Why does this matter?" multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
+            <Field label={t('goalDesc')}>
+              <TextBox value={description} onChangeText={setDescription} placeholder={t('whyMatters')} multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
             </Field>
-            <DateField label="Deadline (optional)" value={deadline} onChange={setDeadline} />
-            <Field label="Status">
+            <DateField label={t('deadline')} value={deadline} onChange={setDeadline} />
+            <Field label={t('status')}>
               <ChipRow>
                 {(['active', 'done', 'archived'] as const).map((s) => (
                   <Chip key={s} label={s} selected={status === s} onPress={() => setStatus(s)} />
@@ -175,9 +179,9 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
               </ChipRow>
             </Field>
             <View style={styles.actions}>
-              {editing && <Button title="Delete" variant="danger" onPress={del} style={{ flex: 1 }} />}
-              <Button title="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Save" onPress={save} style={{ flex: 1 }} />
+              {editing && <Button title={t('delete')} variant="danger" onPress={del} style={{ flex: 1 }} />}
+              <Button title={t('cancel')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
@@ -192,6 +196,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
 
 function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible: boolean; onClose: () => void }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
@@ -238,30 +243,30 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
 
             {habits.length > 0 && (
               <>
-                <SectionHeader title="Linked habits" />
+                <SectionHeader title={t('linkedHabits')} />
                 {habits.map((h) => (
                   <Card key={h.id} style={styles.projectCard}>
                     <Ionicons name="repeat-outline" size={18} color={colors.accent} />
                     <Text style={[typography.body, { flex: 1 }]}>{h.name}</Text>
-                    <Badge text={`${h.completions.length} done`} />
+                    <Badge text={`${h.completions.length} ${t('doneLabel')}`} />
                   </Card>
                 ))}
               </>
             )}
 
-            <SectionHeader title="Projects" />
-            {projects.length === 0 && <EmptyState icon="folder-open-outline" title="No projects yet" />}
+            <SectionHeader title={t('projectsLabel')} />
+            {projects.length === 0 && <EmptyState icon="folder-open-outline" title={t('noProjects')} />}
             {projects.map((p) => (
               <ProjectBlock key={p.id} project={p} newTask={newTask} setNewTask={setNewTask} addTask={addTask} onEdit={() => undefined} />
             ))}
             <View style={styles.addRow}>
-              <TextBox value={newProject} onChangeText={setNewProject} placeholder="New project…" style={{ flex: 1 }} onSubmitEditing={addProject} returnKeyType="done" />
-              <Button title="Add" small onPress={addProject} />
+              <TextBox value={newProject} onChangeText={setNewProject} placeholder={t('newProject')} style={{ flex: 1 }} onSubmitEditing={addProject} returnKeyType="done" />
+              <Button title={t('add')} small onPress={addProject} />
             </View>
 
             <View style={styles.actions}>
-              <Button title="Close" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Delete goal" variant="danger" onPress={() => { remove('goals', goal.id); onClose(); }} style={{ flex: 1 }} />
+              <Button title={t('close')} variant="ghost" onPress={onClose} style={{ flex: 1 }} />
+              <Button title={t('deleteGoal')} variant="danger" onPress={() => { remove('goals', goal.id); onClose(); }} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
@@ -285,6 +290,7 @@ function ProjectBlock({
   onEdit: () => void;
 }) {
   styles = createStyles();
+  const t = useT();
   const data = useLifeOS((s) => s.data);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -297,7 +303,7 @@ function ProjectBlock({
         <View style={{ flex: 1 }}>
           <Text style={typography.body}>{project.name}</Text>
           <Text style={typography.caption}>
-            {tasks.length === 0 ? 'No tasks' : `${done}/${tasks.length} done`}
+            {tasks.length === 0 ? t('noTasks') : `${done}/${tasks.length} ${t('doneLabel')}`}
             {project.deadline ? ` · due ${friendlyDateTime(project.deadline)}` : ''}
           </Text>
         </View>
@@ -316,8 +322,8 @@ function ProjectBlock({
         </View>
       ))}
       <View style={styles.addRow}>
-        <TextBox value={newTask} onChangeText={setNewTask} placeholder={`Add task to ${project.name}…`} style={{ flex: 1 }} onSubmitEditing={() => addTask(project.id)} returnKeyType="done" />
-        <Button title="Add" small onPress={() => addTask(project.id)} />
+        <TextBox value={newTask} onChangeText={setNewTask} placeholder={`${t('addTaskTo')} ${project.name}…`} style={{ flex: 1 }} onSubmitEditing={() => addTask(project.id)} returnKeyType="done" />
+        <Button title={t('add')} small onPress={() => addTask(project.id)} />
       </View>
     </Card>
   );
