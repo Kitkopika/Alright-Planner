@@ -2,7 +2,7 @@
   "expo": {
     "name": "Alright",
     "slug": "alright",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.lifeos.app",
-      "versionCode": 10500,
+      "versionCode": 10501,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -80,7 +80,7 @@ export default function SettingsScreen() {
       <SectionHeader title={t('about')} />
       <Card>
         <Text style={typography.body}>{t('appName')}</Text>
-        <Text style={[typography.caption, { marginTop: spacing.xs }]}>{t('version')} 1.5.0</Text>
+        <Text style={[typography.caption, { marginTop: spacing.xs }]}>{t('version')} 1.5.1</Text>
         <Text style={[typography.caption, { color: colors.textMuted, marginTop: spacing.xs }]}>
           Local-first. Your data never leaves this device.
         </Text>
