@@ -30,7 +30,7 @@ export default function CalendarScreen() {
   const data = useLifeOS((s) => s.data);
   const remove = useLifeOS((s) => s.remove);
   const t = useT();
-  const { months, monthsShort, weekdaysShort } = useDateNames();
+  const { months, monthsShort, weekdaysShortMon } = useDateNames();
   const [mode, setMode] = useState<ViewMode>('month');
   const [selected, setSelected] = useState<Date>(new Date());
   const [editingEvent, setEditingEvent] = useState<string | null | undefined>(undefined);
@@ -152,7 +152,7 @@ export default function CalendarScreen() {
 
   const label =
     mode === 'day'
-      ? `${weekdaysShort[(selected.getDay() + 6) % 7]} ${selected.getDate()} ${monthsShort[selected.getMonth()]} ${selected.getFullYear()}`
+      ? `${weekdaysShortMon[(selected.getDay() + 6) % 7]} ${selected.getDate()} ${monthsShort[selected.getMonth()]} ${selected.getFullYear()}`
       : mode === 'week'
       ? `${weekStart.getDate()} – ${addDays(weekStart, 6).getDate()} ${monthsShort[weekStart.getMonth()]} ${weekStart.getFullYear()}`
       : mode === 'month'
@@ -205,7 +205,7 @@ export default function CalendarScreen() {
                     ]}
                   >
                     <Text style={[styles.weekDow, dateKey(d.date) === dateKey(selected) && { color: colors.accent, fontWeight: '700' }]}>
-                      {weekdaysShort[(d.date.getDay() + 6) % 7]}
+                      {weekdaysShortMon[(d.date.getDay() + 6) % 7]}
                     </Text>
                     <Text style={[styles.weekDayNum, dateKey(d.date) === todayKey() && { color: colors.accent, fontWeight: '700' }]}>
                       {d.date.getDate()}
@@ -332,7 +332,7 @@ export default function CalendarScreen() {
         {mode === 'month' && (
           <>
             <View style={styles.weekRow}>
-              {weekdaysShort.map((w) => (
+              {weekdaysShortMon.map((w) => (
                 <Text key={w} style={styles.weekday}>{w}</Text>
               ))}
             </View>
