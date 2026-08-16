@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { useT } from '../../src/i18n';
 import { Note, NoteKind } from '../../src/core/types';
 import { dateKey } from '../../src/core/time';
@@ -39,7 +39,7 @@ interface SearchHit {
 export default function NotesScreen() {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['notes', 'events', 'goals', 'projects', 'tasks']);
   const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
@@ -170,7 +170,7 @@ export default function NotesScreen() {
 function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['notes', 'events', 'goals', 'projects', 'tasks']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);

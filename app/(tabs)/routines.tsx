@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDateNames, useT } from '../../src/i18n';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { Habit, Routine, RoutineStep } from '../../src/core/types';
 import { addDays, dateKey, todayKey } from '../../src/core/time';
 import { habitScheduledToday, habitStreak } from '../../src/features/today';
@@ -36,7 +36,7 @@ type Tab = 'routines' | 'habits';
 export default function RoutinesScreen() {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['routines', 'habits', 'routineCompletions', 'goals']);
   const [tab, setTab] = useState<Tab>('routines');
   const [routineEditor, setRoutineEditor] = useState<string | null>(null);
   const [habitEditor, setHabitEditor] = useState<string | null>(null);
@@ -100,7 +100,7 @@ function RoutineCard({ routine, onEdit }: { routine: Routine; onEdit: () => void
   styles = createStyles();
   const t = useT();
   const { weekdaysShort } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['routines', 'habits', 'routineCompletions', 'goals']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -188,7 +188,7 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
   };
 
   const scheduled = habitScheduledToday(habit, new Date());
-  const completionRate = useCompletionRate(habit, 30);
+  const rate = completionRate(habit, 30);
 
   return (
     <Card
@@ -206,7 +206,7 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
           <Text style={typography.section}>{habit.name}</Text>
           <Text style={typography.caption}>
             {habit.frequency.type === 'daily' ? t('daily') : habit.frequency.type === 'weekly' ? t('weekly') : t('customDays')}
-            {completionRate != null ? ` · ${completionRate}% ${t('last30d')}` : ''}
+            {rate != null ? ` · ${rate}% ${t('last30d')}` : ''}
           </Text>
         </View>
         <Pressable onPress={toggle} hitSlop={10} style={[styles.habitToggle, doneToday && styles.habitToggleDone]}>
@@ -228,8 +228,7 @@ function HabitCard({ habit, onEdit }: { habit: Habit; onEdit: () => void }) {
   );
 }
 
-function useCompletionRate(habit: Habit, days: number): number | null {
-  const data = useLifeOS((s) => s.data);
+function completionRate(habit: Habit, days: number): number | null {
   let scheduled = 0;
   let done = 0;
   for (let i = days - 1; i >= 0; i--) {
@@ -238,7 +237,6 @@ function useCompletionRate(habit: Habit, days: number): number | null {
     scheduled++;
     if (habit.completions.includes(dateKey(d))) done++;
   }
-  void data;
   return scheduled > 0 ? Math.round((done / scheduled) * 100) : null;
 }
 
@@ -250,7 +248,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
   styles = createStyles();
   const t = useT();
   const { weekdaysShort } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['routines', 'habits', 'routineCompletions', 'goals']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -369,7 +367,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
   styles = createStyles();
   const t = useT();
   const { weekdaysShort } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['routines', 'habits', 'routineCompletions', 'goals']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);

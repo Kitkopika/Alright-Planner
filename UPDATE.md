@@ -5,6 +5,15 @@
 
 ---
 
+## 2.0.3 — Bug Fixes & Smooth Navigation
+
+- **Frosted glass works on Android**: real backdrop blur via `expo-blur` (`BlurView` + root `BlurTargetView`, `dimezisBlurView` method) on `Glass`/`Sheet`; web keeps CSS blur
+- **Smoother animations**: style sheets computed once per theme instead of every render/`map()` iteration; `GradientFill` now uses native `expo-linear-gradient` (no re-render storm in animated buttons); progress bars animate on the UI thread (`scaleX`)
+- **No more white rectangles**: every SVG paints a transparent background (e.g. behind the Focus title); ghost/outlined buttons no longer fill white on Android (elevation reset)
+- **Tab switching is smooth in both directions**: slide → fade transition, scenes stay attached (`detachInactiveScreens: false`), all tabs pre-mounted, and each screen re-renders only when *its own* data changes (`useDataSlice`)
+
+---
+
 ## 2.0.1 — New Icon & Polish
 
 - New app icon/logo: upside-down **V (chevron)** in the app's accent gradient (all icon assets re-rendered from `assets/logo.svg`)

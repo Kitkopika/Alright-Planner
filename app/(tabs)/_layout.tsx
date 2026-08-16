@@ -34,9 +34,16 @@ export default function TabsLayout() {
   return (
     <Tabs
       tabBar={(props) => <TabBar {...(props as any)} />}
+      // Keep every scene attached: detaching + re-attaching on focus makes
+      // the incoming screen repaint its content mid-transition, which shows
+      // up as direction-dependent stutter/black frames.
+      detachInactiveScreens={false}
       screenOptions={{
         headerShown: false,
-        animation: animFx ? 'shift' : 'none',
+        // Fade between tabs: the old slide repainted the whole scene every
+        // frame; a fade only animates opacity, so switching is smooth in
+        // both directions (per the nav-lag analysis).
+        animation: animFx ? 'fade' : 'none',
         // Pre-mount every tab so switching is instant (no blank/lag on first
         // visit to a screen).
         lazy: false,

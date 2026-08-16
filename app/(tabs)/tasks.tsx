@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { Task } from '../../src/core/types';
 import { addDays, dateKey, dayDiff, isoDateTime, startOfWeek, todayKey, tryParseISO } from '../../src/core/time';
 import { themedStyles, colors, priorityColors, radius, spacing, typography  } from '../../src/theme';
@@ -42,7 +42,7 @@ function dueDiff(t: Task, now: Date): number | null {
 
 export default function TasksScreen() {
   styles = createStyles();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['tasks', 'notes', 'projects']);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const [filter, setFilter] = useState<Filter>('all');
@@ -268,7 +268,7 @@ function dueLabel(iso: string, tt: (k: TKey) => string): string {
 export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['tasks', 'notes', 'projects']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);

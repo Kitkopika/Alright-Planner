@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { useDateNames, useT } from '../../src/i18n';
 import { Goal, Project } from '../../src/core/types';
 import { goalProgress } from '../../src/features/today';
@@ -37,7 +37,7 @@ function fmtDue(iso: string | null | undefined, ws: string[], ms: string[]): str
 export default function GoalsScreen() {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['goals', 'habits', 'projects', 'tasks']);
   const create = useLifeOS((s) => s.create);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -82,7 +82,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
   styles = createStyles();
   const t = useT();
   const { monthsShort, weekdaysShortMon } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['goals', 'habits', 'projects', 'tasks']);
   const remove = useLifeOS((s) => s.remove);
   const progress = goalProgress(goal.id, data);
   const projects = data.collections.projects.filter((p) => !p.deletedAt && p.goalId === goal.id && p.status !== 'archived');
@@ -128,7 +128,7 @@ function GoalCard({ goal, onOpen }: { goal: Goal; onOpen: () => void }) {
 function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['goals', 'habits', 'projects', 'tasks']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -212,7 +212,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
   styles = createStyles();
   const t = useT();
   const { monthsShort, weekdaysShortMon } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['goals', 'habits', 'projects', 'tasks']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -307,7 +307,7 @@ function ProjectBlock({
   styles = createStyles();
   const t = useT();
   const { monthsShort, weekdaysShortMon } = useDateNames();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['goals', 'habits', 'projects', 'tasks']);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const tasks = data.collections.tasks.filter((t) => !t.deletedAt && t.projectId === project.id && t.status !== 'cancelled');

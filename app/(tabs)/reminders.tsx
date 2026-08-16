@@ -6,7 +6,7 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { Reminder } from '../../src/core/types';
 import { dateKey, timeHM, tryParseISO } from '../../src/core/time';
 import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
@@ -19,7 +19,7 @@ import { TKey, useT } from '../../src/i18n';
 export default function RemindersScreen() {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['reminders', 'events', 'tasks']);
   const update = useLifeOS((s) => s.update);
   const now = new Date();
   const [addOpen, setAddOpen] = useState(false);

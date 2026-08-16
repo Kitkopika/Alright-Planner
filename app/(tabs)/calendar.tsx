@@ -11,7 +11,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, Alert, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
 import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../../src/core/time';
 import { AppData } from '../../src/core/types';
@@ -29,7 +29,7 @@ const WEEK_TIME_COL = 46;
 export default function CalendarScreen() {
   styles = createStyles();
   const { width: windowWidth } = useWindowDimensions();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['events', 'tasks']);
   const remove = useLifeOS((s) => s.remove);
   const t = useT();
   const { months, monthsShort, weekdaysShortMon } = useDateNames();

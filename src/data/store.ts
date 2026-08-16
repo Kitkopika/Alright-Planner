@@ -4,6 +4,7 @@
  * persistence to the JSON file, and JSON export/import entry points.
  */
 
+import { useRef, useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import {
   AnyEntity,
@@ -317,4 +318,37 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
 /** Convenience: returns an entity by kind+id from the given data. */
 export function getEntity<K extends EntityKind>(data: AppData, kind: K, id: string): CollectionMap[K] | undefined {
   return (data.collections[kind] as CollectionMap[K][]).find((e) => e.id === id && !e.deletedAt);
+}
+
+/**
+ * Subscribe to only the listed collections. Screens built on this re-render
+ * ONLY when one of those collections actually changes — not on every store
+ * write — which keeps tab switches (and the always-mounted screens) cheap.
+ * Returns an object shaped like AppData (`{ collections: {...only the
+ * requested ones} }`) so existing `data.collections.X` reads keep working.
+ */
+export function useDataSlice(kinds: EntityKind[]) {
+  const cache = useRef<{ snap: { collections: AppData['collections'] }; data: AppData } | null>(null);
+  return useSyncExternalStore(
+    useLifeOS.subscribe,
+    () => {
+      const data = useLifeOS.getState().data;
+      const prev = cache.current;
+      if (prev && kinds.every((k) => prev.data.collections[k] === data.collections[k])) {
+        return prev.snap; // unchanged collections -> same reference -> no re-render
+      }
+      const c = data.collections;
+      const collections: Record<string, unknown[]> = {};
+      for (const k of kinds) collections[k] = c[k];
+      const snap = { collections: collections as unknown as AppData['collections'] };
+      cache.current = { snap, data };
+      return snap;
+    },
+    () => {
+      const c = useLifeOS.getInitialState().data.collections;
+      const collections: Record<string, unknown[]> = {};
+      for (const k of kinds) collections[k] = c[k];
+      return { collections: collections as unknown as AppData['collections'] };
+    }
+  );
 }

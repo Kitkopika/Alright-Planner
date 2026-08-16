@@ -17,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { useLifeOS } from '../../src/data/store';
+import { useDataSlice, useLifeOS } from '../../src/data/store';
 import { modalAnimationType, useSettings } from '../../src/data/settings';
 import { useT } from '../../src/i18n';
 import { Category, TransactionKind } from '../../src/core/types';
@@ -38,7 +38,7 @@ const CATEGORY_COLORS = ['#4F46E5', '#7C3AED', '#0891B2', '#16A34A', '#D97706', 
 
 export default function MoneyScreen() {
   styles = createStyles();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['transactions', 'categories']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -280,7 +280,7 @@ function QuickEntry({ categories, onSubmit }: { categories: Category[]; onSubmit
 function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['transactions', 'categories']);
   const create = useLifeOS((s) => s.create);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
@@ -352,7 +352,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
 function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | null; visible: boolean; onClose: () => void }) {
   styles = createStyles();
   const t = useT();
-  const data = useLifeOS((s) => s.data);
+  const data = useDataSlice(['transactions', 'categories']);
   const update = useLifeOS((s) => s.update);
   const remove = useLifeOS((s) => s.remove);
   const editing = txnId ? data.collections.transactions.find((t) => t.id === txnId && !t.deletedAt) : undefined;
