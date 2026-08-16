@@ -14,7 +14,7 @@ import { File, Paths } from 'expo-file-system';
 import { useLifeOS } from '../src/data/store';
 import { useT } from '../src/i18n';
 import { ImportMode, ImportReport, parseDocument } from '../src/data/exchange';
-import { colors, radius, spacing, typography } from '../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../src/theme';
 import { Button, Card, Chip, ChipRow, EmptyState, SectionHeader } from '../src/components/ui';
 
 export default function DataScreen() {
@@ -248,9 +248,8 @@ function TextInputArea({ value, onChangeText, placeholder }: { value: string; on
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 80 },
@@ -269,5 +268,7 @@ function createStyles() {
     textAlignVertical: 'top',
   },
   });
-}
+});
+
+let styles = createStyles();
 

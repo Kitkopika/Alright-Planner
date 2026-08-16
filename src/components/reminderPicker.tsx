@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { Button } from './ui';
 import { WheelPicker3 } from './wheel';
 import { TKey, useT } from '../i18n';
@@ -88,9 +88,8 @@ export function ReminderPicker({ reminders, onChange }: { reminders: ReminderOff
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   list: { marginTop: spacing.sm, gap: spacing.xs },
   row: {
@@ -103,4 +102,6 @@ function createStyles() {
     backgroundColor: colors.surfaceAlt,
   },
   });
-}
+});
+
+let styles = createStyles();

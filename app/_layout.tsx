@@ -9,10 +9,12 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { BlurTargetView } from 'expo-blur';
 import { useLifeOS } from '../src/data/store';
 import { useSettings } from '../src/data/settings';
 import { applyTheme, colors, isDarkMode, themeVersion } from '../src/theme';
 import { useT } from '../src/i18n';
+import { blurTargetRef } from '../src/components/blurTarget';
 
 export default function RootLayout() {
   const hydrate = useLifeOS((s) => s.hydrate);
@@ -39,7 +41,9 @@ export default function RootLayout() {
   return (
     <View key={themeKey} style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style={isDarkMode() ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+      {/* The blur target: sheet/glass BlurViews blur this subtree's content. */}
+      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="settings"
@@ -66,6 +70,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      </BlurTargetView>
     </View>
   );
 }

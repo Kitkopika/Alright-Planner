@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop } from 'react-native-svg';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { useSvgId } from './motion';
 
 /**
@@ -50,7 +50,7 @@ export function TrendChart({
   return (
     <View onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       {w > 0 && (
-        <Svg width={w} height={usable}>
+        <Svg width={w} height={usable} style={{ backgroundColor: 'transparent' }}>
           <Defs>
             <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor={color} stopOpacity={0.32} />
@@ -99,7 +99,7 @@ export function DonutChart({
 
   return (
     <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size}>
+      <Svg width={size} height={size} style={{ backgroundColor: 'transparent' }}>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.surfaceAlt} strokeWidth={strokeWidth} fill="none" />
         {total > 0 &&
           data.map((seg, i) => {
@@ -192,9 +192,8 @@ export function HBars({
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   vWrap: { marginTop: spacing.sm },
   vRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2 },
@@ -211,5 +210,7 @@ function createStyles() {
   donutCenter: { alignItems: 'center', justifyContent: 'center' },
   donutLabel: { ...typography.label, color: colors.text, textAlign: 'center' },
   });
-}
+});
+
+let styles = createStyles();
 

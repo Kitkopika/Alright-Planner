@@ -8,7 +8,7 @@ import { Modal, StyleSheet, Text, View } from 'react-native';
 import { useLifeOS } from '../data/store';
 import { Recurrence } from '../core/types';
 import { todayKey, timeHM } from '../core/time';
-import { spacing, typography } from '../theme';
+import { themedStyles, spacing, typography  } from '../theme';
 import { Button, Field, TextBox, Sheet } from './ui';
 import { DateField, TimeField, RecurrenceField, combineDateTime } from './form';
 import { useT } from '../i18n';
@@ -59,11 +59,12 @@ export function ReminderEditorModal({ visible, onClose }: { visible: boolean; on
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm, marginTop: spacing.md },
   });
-}
+});
+
+let styles = createStyles();

@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
 import { modalAnimationType, useSettings } from '../data/settings';
 import { useDateNames, useT } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button, Sheet } from './ui';
 import { Reveal } from './motion';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
@@ -374,9 +374,8 @@ function GoalForm({ onCreate, onBack }: { onCreate: (p: Record<string, unknown>)
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   backdrop: {
     flex: 1,
@@ -427,5 +426,7 @@ function createStyles() {
     marginTop: spacing.md,
   },
   });
-}
+});
+
+let styles = createStyles();
 

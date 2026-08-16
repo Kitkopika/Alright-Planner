@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { Task } from '../../src/core/types';
 import { addDays, dateKey, dayDiff, isoDateTime, startOfWeek, todayKey, tryParseISO } from '../../src/core/time';
-import { colors, priorityColors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, priorityColors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
@@ -445,9 +445,8 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -476,5 +475,7 @@ function createStyles() {
   subtaskAdd: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   });
-}
+});
+
+let styles = createStyles();
 

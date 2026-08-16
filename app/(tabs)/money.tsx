@@ -24,7 +24,7 @@ import { Category, TransactionKind } from '../../src/core/types';
 import { buildSummaries, formatMoney } from '../../src/features/finance';
 import { transactionsToCSV } from '../../src/features/financeCsv';
 import { dateKey, formatDateKeyDDMM, isoCompare, isoDateTime } from '../../src/core/time';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
@@ -445,9 +445,8 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -481,5 +480,7 @@ function createStyles() {
   catColorDot: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'transparent' },
   catColorDotOn: { borderColor: colors.text },
   });
-}
+});
+
+let styles = createStyles();
 

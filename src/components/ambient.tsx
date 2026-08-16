@@ -45,7 +45,7 @@ export const AmbientBackground = React.memo(function AmbientBackground({ style }
       }}
     >
       {box.w > 0 && box.h > 0 && (
-        <Svg width={box.w} height={box.h}>
+        <Svg width={box.w} height={box.h} style={{ backgroundColor: 'transparent' }}>
           <Defs>
             <RadialGradient id={top} cx="16%" cy="-8%" rx="72%" ry="54%">
               <Stop offset="0%" stopColor={colors.accent} stopOpacity={topOp} />

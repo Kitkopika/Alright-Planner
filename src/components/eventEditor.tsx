@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useLifeOS } from '../data/store';
-import { colors, spacing, typography } from '../theme';
+import { themedStyles, colors, spacing, typography  } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox, Sheet } from './ui';
 import { ReminderPicker, ReminderOffset } from './reminderPicker';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from './form';
@@ -192,9 +192,8 @@ function PressableDotInner({ children, selected, onPress }: { children: React.Re
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   title: { ...typography.title, marginBottom: spacing.lg },
@@ -211,5 +210,7 @@ function createStyles() {
   dotSelected: { transform: [{ scale: 0.85 }] },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   });
-}
+});
+
+let styles = createStyles();
 

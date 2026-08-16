@@ -11,7 +11,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Recurrence, RecurrenceFreq } from '../core/types';
 import { addDays, dateKey, formatDateKeyDDMM, todayKey, tryParseISO, parseDateKey } from '../core/time';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 import { WheelPicker } from './wheel';
 import { TKey, useDateNames, useT } from '../i18n';
@@ -372,9 +372,8 @@ export function splitDateTime(iso: string | null | undefined): { date: string; t
 
 export { todayKey };
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   pickerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   pickerCard: {
@@ -418,6 +417,8 @@ function createStyles() {
   },
   pickerInputText: { flex: 1, fontSize: 15, color: colors.text },
   });
-}
+});
+
+let styles = createStyles();
 
 

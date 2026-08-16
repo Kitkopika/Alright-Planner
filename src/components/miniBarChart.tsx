@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 
 export interface MiniBarChartProps {
   values: number[];
@@ -59,11 +59,12 @@ export function MiniBarChart({ values, labels, max, color, height, showLabels, s
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   baseline: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginTop: 2 },
   label: { flex: 1, textAlign: 'center', fontSize: 10, color: colors.textMuted },
   });
-}
+});
+
+let styles = createStyles();

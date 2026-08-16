@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { modalAnimationType, useSettings, Currency } from '../src/data/settings';
 import { useT } from '../src/i18n';
-import { colors, radius, spacing, typography } from '../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../src/theme';
 import { Button, Card, Chip, ChipRow, SectionHeader } from '../src/components/ui';
 import { useSvgId } from '../src/components/motion';
 
@@ -225,7 +225,7 @@ function RainbowDot({ selected, onPress }: { selected: boolean; onPress: () => v
       accessibilityLabel={t('customColor')}
       style={[styles.dotWrap, selected && { borderColor: colors.text }]}
     >
-      <Svg width={size} height={size}>
+      <Svg width={size} height={size} style={{ backgroundColor: 'transparent' }}>
         {rainbowRingParts(cx, cx, size / 2 - 1, size / 2 - 7, 12)}
       </Svg>
     </Pressable>
@@ -264,7 +264,7 @@ function SVSquare({ hue, sat, val, onChange }: { hue: number; sat: number; val: 
       {...pan.panHandlers}
     >
       {size > 1 && (
-        <Svg width={size} height={size} pointerEvents="none">
+        <Svg width={size} height={size} pointerEvents="none" style={{ backgroundColor: 'transparent' }}>
           <Defs>
             <LinearGradient id={`${id}-sat`} x1="0" y1="0" x2="1" y2="0">
               <Stop offset="0" stopColor="#FFFFFF" stopOpacity={1} />
@@ -315,7 +315,7 @@ function HueSlider({ hue, onChange }: { hue: number; onChange: (h: number) => vo
       {...pan.panHandlers}
     >
       {w > 1 && (
-        <Svg width={w} height={18} pointerEvents="none">
+        <Svg width={w} height={18} pointerEvents="none" style={{ backgroundColor: 'transparent' }}>
           <Defs>
             <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
               <Stop offset="0" stopColor="#FF0000" />
@@ -370,9 +370,8 @@ function ColorWheelModal({ visible, onClose }: { visible: boolean; onClose: () =
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 120 },
@@ -401,5 +400,7 @@ function createStyles() {
   },
   dot: { width: 24, height: 24, borderRadius: 12 },
   });
-}
+});
+
+let styles = createStyles();
 

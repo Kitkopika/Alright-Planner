@@ -11,7 +11,7 @@ import { Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } fr
 import { Ionicons } from '@expo/vector-icons';
 import { modalAnimationType, useSettings, HomeSectionConfig, HomeSectionId, HomeSectionSize, DEFAULT_HOME_LAYOUT, HOME_SECTION_IDS } from '../data/settings';
 import { TKey, useT } from '../i18n';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { Button, Sheet } from './ui';
 import { Reveal } from './motion';
 
@@ -276,9 +276,8 @@ function LayoutRow({
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
@@ -329,4 +328,6 @@ function createStyles() {
   },
   footer: { marginTop: spacing.md, flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm },
   });
-}
+});
+
+let styles = createStyles();

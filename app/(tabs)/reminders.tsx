@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../../src/data/store';
 import { Reminder } from '../../src/core/types';
 import { dateKey, timeHM, tryParseISO } from '../../src/core/time';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, EmptyState } from '../../src/components/ui';
@@ -140,9 +140,8 @@ function dayLabel(d: Date, now: Date, t: (k: TKey) => string): string {
   return d.toLocaleDateString();
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 60 },
@@ -161,4 +160,6 @@ function createStyles() {
   groupLabel: { color: colors.textSecondary, marginBottom: spacing.sm, textTransform: 'uppercase' },
   card: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm, paddingVertical: spacing.md },
   });
-}
+});
+
+let styles = createStyles();

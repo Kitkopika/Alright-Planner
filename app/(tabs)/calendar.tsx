@@ -15,7 +15,7 @@ import { useLifeOS } from '../../src/data/store';
 import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/features/calendar';
 import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../../src/core/time';
 import { AppData } from '../../src/core/types';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Button, Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
@@ -652,9 +652,8 @@ function MiniMonth({ year, month, data }: { year: number; month: number; data: R
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   controls: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm },
@@ -784,5 +783,7 @@ function createStyles() {
   miniCellDeadline: { backgroundColor: colors.danger + '1A', borderRadius: 4 },
   miniDayNum: { fontSize: 9, color: colors.textSecondary },
   });
-}
+});
+
+let styles = createStyles();
 

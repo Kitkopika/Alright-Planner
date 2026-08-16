@@ -99,6 +99,24 @@ export function themeVersion(): number {
   return version;
 }
 
+/**
+ * Memoizes a style factory so it recomputes ONLY when the theme version
+ * changes. Components call `createStyles()` on every render (and inside
+ * `.map()` loops); this wrapper turns those calls into cheap cache hits
+ * instead of re-running `StyleSheet.create` on every frame — a real jank
+ * source on the JS thread during animations.
+ */
+export function themedStyles<T>(factory: () => T): () => T {
+  let cache: { v: number; s: T } | null = null;
+  return () => {
+    const v = version;
+    if (cache && cache.v === v) return cache.s;
+    const s = factory();
+    cache = { v, s };
+    return s;
+  };
+}
+
 /** Priority colors used across tasks/events. */
 export const priorityColors: Record<string, string> = {
   low: '#16A34A',

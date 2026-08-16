@@ -17,12 +17,32 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, glass, isDarkMode, motion, radius, accentGradient, shadow, spacing, typography } from '../theme';
+import { themedStyles, colors, glass, isDarkMode, motion, radius, accentGradient, shadow, spacing, typography  } from '../theme';
 import { GradientFill, Reveal, PressableScale } from './motion';
 import { useSettings } from '../data/settings';
+import { BlurView } from 'expo-blur';
+import { blurTargetRef } from './blurTarget';
 
 /** Web-only frosted-glass (backdrop blur); native falls back to translucent. */
 const FROST = { backdropFilter: 'blur(10px) saturate(150%)', WebkitBackdropFilter: 'blur(10px) saturate(150%)' } as unknown as ViewStyle;
+
+/**
+ * Native frosted-glass layer: real backdrop blur via expo-blur. Uses the
+ * app-root BlurTargetView + dimezisBlurView method (required on Android —
+ * without blurTarget the BlurView silently falls back to 'none').
+ */
+function GlassBlur({ intensity = 32 }: { intensity?: number }) {
+  return (
+    <BlurView
+      pointerEvents="none"
+      intensity={intensity}
+      tint={isDarkMode() ? 'dark' : 'light'}
+      blurTarget={blurTargetRef}
+      blurMethod="dimezisBlurView"
+      style={StyleSheet.absoluteFill}
+    />
+  );
+}
 
 // ---------------------------------------------------------------------------
 
@@ -206,10 +226,12 @@ export const IconButton = React.memo(function IconButton({
 export const ProgressBar = React.memo(function ProgressBar({ pct, color, height = 6, style }: { pct: number; color?: string; height?: number; style?: ViewStyle }) {
   styles = createStyles();
   const clamped = Math.max(0, Math.min(100, pct));
-  const w = useRef(new Animated.Value(clamped)).current;
+  const p = useRef(new Animated.Value(clamped)).current;
   useEffect(() => {
-    Animated.spring(w, { toValue: clamped, useNativeDriver: false, ...motion.spring }).start();
-  }, [w, clamped]);
+    // scaleX transform → animates on the native (UI) thread instead of the
+    // JS thread; the fill is a full-width bar whose origin is pinned left.
+    Animated.spring(p, { toValue: clamped / 100, useNativeDriver: true, ...motion.spring }).start();
+  }, [p, clamped]);
   return (
     <View style={[styles.progressTrack, { height }, style]}>
       <Animated.View
@@ -217,7 +239,7 @@ export const ProgressBar = React.memo(function ProgressBar({ pct, color, height 
           styles.progressFill,
           {
             height,
-            width: w.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }),
+            transform: [{ scaleX: p }],
           },
         ]}
       >
@@ -274,6 +296,7 @@ export function Glass({ children, style }: { children: React.ReactNode; style?: 
   const fx = useSettings((s) => s.visualFx.glass);
   return (
     <View style={[styles.glass, fx && Platform.OS === 'web' && FROST, style]}>
+      {fx && Platform.OS !== 'web' && <GlassBlur />}
       <View style={styles.glassEdge} />
       {children}
     </View>
@@ -307,6 +330,7 @@ export function Sheet({ children, style }: { children: React.ReactNode; style?: 
         },
       ]}
     >
+      {glassFx && Platform.OS !== 'web' && <GlassBlur />}
       {glassFx && <View style={styles.sheetEdge} />}
       <SheetHandle />
       {children}
@@ -316,9 +340,8 @@ export function Sheet({ children, style }: { children: React.ReactNode; style?: 
 
 // ---------------------------------------------------------------------------
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
@@ -332,6 +355,9 @@ function createStyles() {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: colors.border,
+    // Same elevation fix as buttonGhost (inherits shadow.card from `card`).
+    elevation: 0,
+    shadowOpacity: 0,
   },
   cardGlass: {
     backgroundColor: isDarkMode() ? glass.dark : glass.light,
@@ -393,6 +419,10 @@ function createStyles() {
   buttonGhost: {
     borderWidth: 1,
     borderColor: colors.border,
+    // Reset the elevation/shadow inherited from `button` — Android fills a
+    // transparent background white to render an elevation shadow.
+    elevation: 0,
+    shadowOpacity: 0,
   },
   buttonSmall: {
     paddingVertical: spacing.sm,
@@ -413,6 +443,8 @@ function createStyles() {
   progressFill: {
     borderRadius: radius.pill,
     overflow: 'hidden',
+    // Grow from the left edge when animated via scaleX (native driver).
+    transformOrigin: 'left',
   },
   empty: {
     alignItems: 'center',
@@ -471,5 +503,7 @@ function createStyles() {
     marginBottom: spacing.md,
   },
   });
-}
+});
+
+let styles = createStyles();
 

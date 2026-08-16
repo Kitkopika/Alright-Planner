@@ -12,7 +12,7 @@ import { useLifeOS } from '../../src/data/store';
 import { useT, useDateNames } from '../../src/i18n';
 import { computeToday } from '../../src/features/today';
 import { dateKey, isoDateTime, timeHM, tryParseISO } from '../../src/core/time';
-import { colors, radius, accentGradient, shadow, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, accentGradient, shadow, spacing, typography  } from '../../src/theme';
 import { Card, SectionHeader, ProgressBar, Badge, TextBox, Button, EmptyState } from '../../src/components/ui';
 import { HomeLayoutModal } from '../../src/components/homeLayoutModal';
 import { MiniBarChart } from '../../src/components/miniBarChart';
@@ -529,9 +529,8 @@ function StatTile({ icon, color, value, label, small }: { icon: keyof typeof Ion
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 120 },
@@ -623,5 +622,7 @@ function createStyles() {
     ...shadow.float,
   },
   });
-}
+});
+
+let styles = createStyles();
 

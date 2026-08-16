@@ -21,7 +21,7 @@ import { useLifeOS } from '../../src/data/store';
 import { Habit, Routine, RoutineStep } from '../../src/core/types';
 import { addDays, dateKey, todayKey } from '../../src/core/time';
 import { habitScheduledToday, habitStreak } from '../../src/features/today';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
@@ -476,9 +476,8 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -515,5 +514,7 @@ function createStyles() {
   stepAdd: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs, alignItems: 'center' },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   });
-}
+});
+
+let styles = createStyles();
 

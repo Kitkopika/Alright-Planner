@@ -23,7 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../data/store';
 import { isoDateTime } from '../core/time';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox, Sheet } from './ui';
 import { Spotlight } from './motion';
 import { WheelPicker } from './wheel';
@@ -347,9 +347,8 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   backdropLocked: { backgroundColor: 'rgba(8,8,16,0.94)' },
@@ -370,4 +369,6 @@ function createStyles() {
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   sessionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   });
-}
+});
+
+let styles = createStyles();

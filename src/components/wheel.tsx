@@ -10,7 +10,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../theme';
 import { useT } from '../i18n';
 
 export const WHEEL_ITEM = 40; // px per row in the wheel columns
@@ -224,9 +224,8 @@ export function WheelPicker3({
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   wheelWrap: { alignItems: 'center', marginVertical: spacing.md },
   wheelLabels: { flexDirection: 'row', gap: spacing.lg, marginBottom: 4 },
@@ -247,4 +246,6 @@ function createStyles() {
     borderColor: colors.border,
   },
   });
-}
+});
+
+let styles = createStyles();

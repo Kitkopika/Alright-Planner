@@ -21,7 +21,7 @@ import { useDateNames, useT } from '../../src/i18n';
 import { Goal, Project } from '../../src/core/types';
 import { goalProgress } from '../../src/features/today';
 import { dateKey, tryParseISO } from '../../src/core/time';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { themedStyles, colors, radius, spacing, typography  } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
@@ -345,9 +345,8 @@ function ProjectBlock({
   );
 }
 
-let styles = createStyles();
 
-function createStyles() {
+const createStyles = themedStyles(() => {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -373,5 +372,7 @@ function createStyles() {
   addRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', marginTop: spacing.sm },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
   });
-}
+});
+
+let styles = createStyles();
 

@@ -9,7 +9,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Defs, LinearGradient as SvgLinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { colors, motion } from '../theme';
 import { useSettings } from '../data/settings';
 
@@ -132,7 +133,7 @@ export function Spotlight({
   const fx = useSettings((s) => s.visualFx.lighting);
   if (!fx) return null;
   return (
-    <Svg width={size} height={size} style={style} pointerEvents="none">
+    <Svg width={size} height={size} style={[{ backgroundColor: 'transparent' }, style]} pointerEvents="none">
       <Defs>
         <RadialGradient id={gradId} cx="50%" cy="50%" rx="50%" ry="50%">
           <Stop offset="0%" stopColor={color} stopOpacity={opacity} />
@@ -149,32 +150,12 @@ export function Spotlight({
  * Diagonal linear-gradient fill (top-left → bottom-right). Place inside a
  * sized, overflow-hidden container (e.g. a rounded button) to tint it.
  */export function GradientFill({ colors: cs, style }: { colors: [string, string]; style?: StyleProp<ViewStyle> }) {
-  const id = useSvgId('grad');
   const fx = useSettings((s) => s.visualFx.gradients);
-  const [box, setBox] = useState({ w: 0, h: 0 });
   if (!fx) return null;
-  return (
-    <View
-      pointerEvents="none"
-      style={[StyleSheet.absoluteFill, style]}
-      onLayout={(e) => {
-        const { width, height } = e.nativeEvent.layout;
-        if (width !== box.w || height !== box.h) setBox({ w: width, h: height });
-      }}
-    >
-      {box.w > 0 && box.h > 0 && (
-        <Svg width={box.w} height={box.h}>
-          <Defs>
-            <LinearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={cs[0]} />
-              <Stop offset="100%" stopColor={cs[1]} />
-            </LinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width={box.w} height={box.h} fill={`url(#${id})`} />
-        </Svg>
-      )}
-    </View>
-  );
+  // expo-linear-gradient renders natively off the JS thread — no onLayout /
+  // setState re-render storm inside animated views (the old SVG version
+  // re-rendered React on every layout event during animations).
+  return <LinearGradient colors={cs} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} pointerEvents="none" style={[StyleSheet.absoluteFill, style]} />;
 }
 
 /**
@@ -208,12 +189,12 @@ export const FadeEdge = React.memo(function FadeEdge({
       }}
     >
       {w > 0 && (
-        <Svg width={w} height={height}>
+        <Svg width={w} height={height} style={{ backgroundColor: 'transparent' }}>
           <Defs>
-            <LinearGradient id={id} x1="0" y1={atTop ? '0' : '1'} x2="0" y2={atTop ? '1' : '0'}>
+            <SvgLinearGradient id={id} x1="0" y1={atTop ? '0' : '1'} x2="0" y2={atTop ? '1' : '0'}>
               <Stop offset="0" stopColor={color} stopOpacity={0.6} />
               <Stop offset="1" stopColor={color} stopOpacity={0} />
-            </LinearGradient>
+            </SvgLinearGradient>
           </Defs>
           <Rect x="0" y="0" width={w} height={height} fill={`url(#${id})`} />
         </Svg>
