@@ -7,6 +7,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme';
 import { TKey, useT } from '../../src/i18n';
@@ -40,10 +41,10 @@ export default function TabsLayout() {
       detachInactiveScreens={false}
       screenOptions={{
         headerShown: false,
-        // Fade between tabs: the old slide repainted the whole scene every
-        // frame; a fade only animates opacity, so switching is smooth in
-        // both directions (per the nav-lag analysis).
-        animation: animFx ? 'fade' : 'none',
+        // Fade between tabs on web/iOS (cheap, smooth). On Android the
+        // animated transition misbehaves (stutter/black frames with native
+        // screens), so switching is instant there — no transition to glitch.
+        animation: animFx && Platform.OS !== 'android' ? 'fade' : 'none',
         // Pre-mount every tab so switching is instant (no blank/lag on first
         // visit to a screen).
         lazy: false,
