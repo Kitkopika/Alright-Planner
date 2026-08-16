@@ -5,6 +5,15 @@
 
 ---
 
+## 2.0.4 — Real System Notifications
+
+- **Notifications now actually fire on Android**: `expo-notifications` is wired up — the app creates a notification channel, requests the Android 13+ permission on first launch, and mirrors every pending reminder (event/task "remind me before" offsets and standalone reminders) into a real scheduled system notification
+- **Auto-reschedule**: whenever the reminders collection changes (or on app start after the data hydrates), scheduled notifications are re-synced — cancel-all + re-schedule pending future reminders
+- **On-time delivery**: exact alarms (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`) so reminders arrive when they should; boot receiver re-schedules after reboot
+- Notification text follows the app language (EN/TH), e.g. "Tue, Aug 20, 09:30"
+
+---
+
 ## 2.0.3 — Bug Fixes & Smooth Navigation
 
 - **Frosted glass works on Android**: real backdrop blur via `expo-blur` (`BlurView` + root `BlurTargetView`, `dimezisBlurView` method) on `Glass`/`Sheet`; web keeps CSS blur

@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { BlurTargetView } from 'expo-blur';
 import { useLifeOS } from '../src/data/store';
 import { useSettings } from '../src/data/settings';
+import { initNotifications } from '../src/features/notifications';
 import { applyTheme, colors, isDarkMode, themeVersion } from '../src/theme';
 import { useT } from '../src/i18n';
 import { blurTargetRef } from '../src/components/blurTarget';
@@ -37,6 +38,9 @@ export default function RootLayout() {
     applyTheme(settings.theme, settings.accent);
     setThemeKey(themeVersion());
   }, [settings.theme, settings.accent]);
+
+  // System notifications: channel + permission + (re)scheduling reminders.
+  useEffect(() => initNotifications(), []);
 
   return (
     <View key={themeKey} style={{ flex: 1, backgroundColor: colors.background }}>
