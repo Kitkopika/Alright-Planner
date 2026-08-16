@@ -28,6 +28,7 @@ import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/
 import { ReminderPicker, ReminderOffset } from '../../src/components/reminderPicker';
 import { FocusTimerModal } from '../../src/components/focusTimer';
 import { TKey, useT } from '../../src/i18n';
+import { modalAnimationType } from '../../src/data/settings';
 
 type Filter = 'all' | 'today' | 'overdue' | 'upcoming' | 'done' | 'projects';
 
@@ -353,7 +354,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editTask') : t('newTask')}</Text>

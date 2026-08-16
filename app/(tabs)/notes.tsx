@@ -24,6 +24,7 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
+import { modalAnimationType } from '../../src/data/settings';
 
 type Filter = 'all' | NoteKind;
 
@@ -240,7 +241,7 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
   const events = data.collections.events.filter((e) => !e.deletedAt);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editNote') : t('newNote')}</Text>

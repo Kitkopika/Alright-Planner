@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GestureResponderEvent, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
-import { useSettings, Currency } from '../src/data/settings';
+import { modalAnimationType, useSettings, Currency } from '../src/data/settings';
 import { useT } from '../src/i18n';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { Button, Card, Chip, ChipRow, SectionHeader } from '../src/components/ui';
@@ -30,10 +30,10 @@ export default function SettingsScreen() {
       <Card>
         <Text style={styles.cardLabel}>{t('theme')}</Text>
         <ChipRow>
-          {(['light', 'dark', 'system'] as const).map((m) => (
+          {(['light', 'dark'] as const).map((m) => (
             <Chip
               key={m}
-              label={m === 'light' ? t('lightMode') : m === 'dark' ? t('darkMode') : t('systemMode')}
+              label={m === 'light' ? t('lightMode') : t('darkMode')}
               selected={settings.theme === m}
               onPress={() => settings.setTheme(m)}
             />
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
       <SectionHeader title={t('about')} />
       <Card>
         <Text style={typography.body}>{t('appName')}</Text>
-        <Text style={[typography.caption, { marginTop: spacing.xs }]}>{t('version')} 2.0.0</Text>
+        <Text style={[typography.caption, { marginTop: spacing.xs }]}>{t('version')} 2.0.1</Text>
         <Text style={[typography.caption, { color: colors.textMuted, marginTop: spacing.xs }]}>
           Local-first. Your data never leaves this device.
         </Text>
@@ -350,7 +350,7 @@ function ColorWheelModal({ visible, onClose }: { visible: boolean; onClose: () =
     onClose();
   };
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <Pressable style={styles.wheelBackdrop} onPress={onClose}>
         <Pressable style={styles.wheelCard} onPress={() => {}}>
           <Text style={styles.wheelTitle}>{t('customColor')}</Text>

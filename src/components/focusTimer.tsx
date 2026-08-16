@@ -28,7 +28,7 @@ import { Button, Chip, ChipRow, Field, TextBox, Sheet } from './ui';
 import { Spotlight } from './motion';
 import { WheelPicker } from './wheel';
 import { TKey, useT } from '../i18n';
-import { useSettings } from '../data/settings';
+import { modalAnimationType, useSettings } from '../data/settings';
 
 const PRESETS = [25, 50, 90];
 const HOURS = Array.from({ length: 100 }, (_, i) => i); // 0–99 hours
@@ -264,7 +264,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   const lockLabel = subject.trim() || tasks.find((task) => task.id === taskId)?.title || '';
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={requestClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={requestClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.backdrop, locked && styles.backdropLocked]}>
         <Sheet>
           <ScrollView keyboardShouldPersistTaps="handled">

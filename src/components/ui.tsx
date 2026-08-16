@@ -429,8 +429,7 @@ function createStyles() {
   },
   sheet: {
     backgroundColor: isDarkMode() ? glass.dark : glass.light,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderRadius: radius.xl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,

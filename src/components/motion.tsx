@@ -8,7 +8,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { Animated, Easing, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { colors, motion } from '../theme';
 import { useSettings } from '../data/settings';
@@ -34,7 +34,7 @@ export function PressableScale({
   onLongPress,
   disabled,
   style,
-  scaleTo = 0.96,
+  scaleTo = 0.92,
   hitSlop,
 }: {
   children: React.ReactNode;
@@ -48,11 +48,15 @@ export function PressableScale({
   const fx = useSettings((s) => s.visualFx.animations);
   const s = useRef(new Animated.Value(1)).current;
   const animateTo = (to: number) => {
-    if (!fx) return;
-    Animated.spring(s, { toValue: to, useNativeDriver: false, damping: 20, stiffness: 300, mass: 0.6 }).start();
+    if (!fx) {
+      s.setValue(1);
+      return;
+    }
+    Animated.timing(s, { toValue: to, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   };
   const scale = s.interpolate({ inputRange: [0, 1], outputRange: [scaleTo, 1] });
-  const opacity = s.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+  const translateY = s.interpolate({ inputRange: [0, 1], outputRange: [2, 0] });
+  const opacity = s.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] });
   return (
     <Pressable
       onPress={onPress}
@@ -62,7 +66,7 @@ export function PressableScale({
       onPressIn={() => animateTo(0)}
       onPressOut={() => animateTo(1)}
     >
-      <Animated.View style={[style, { transform: [{ scale }], opacity }]}>{children}</Animated.View>
+      <Animated.View style={[style, { transform: [{ scale }, { translateY }], opacity }]}>{children}</Animated.View>
     </Pressable>
   );
 }
@@ -178,7 +182,7 @@ export function Spotlight({
  * edge of a scroll area, so content scrolling under the chrome blends instead
  * of cutting off with a hard edge.
  */
-export function FadeEdge({
+export const FadeEdge = React.memo(function FadeEdge({
   color,
   height = 16,
   position = 'top',
@@ -216,4 +220,4 @@ export function FadeEdge({
       )}
     </View>
   );
-}
+});

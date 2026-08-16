@@ -17,7 +17,7 @@ import { colors, isDarkMode, rotateHue } from '../theme';
 import { useSvgId } from './motion';
 import { useSettings } from '../data/settings';
 
-export function AmbientBackground({ style }: { style?: StyleProp<ViewStyle> }) {
+export const AmbientBackground = React.memo(function AmbientBackground({ style }: { style?: StyleProp<ViewStyle> }) {
   const fx = useSettings((s) => s.visualFx.background);
   const id = useSvgId('amb');
   const light = !isDarkMode();
@@ -68,4 +68,4 @@ export function AmbientBackground({ style }: { style?: StyleProp<ViewStyle> }) {
       )}
     </View>
   );
-}
+});

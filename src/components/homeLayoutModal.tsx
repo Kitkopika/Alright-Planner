@@ -9,7 +9,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSettings, HomeSectionConfig, HomeSectionId, HomeSectionSize, DEFAULT_HOME_LAYOUT, HOME_SECTION_IDS } from '../data/settings';
+import { modalAnimationType, useSettings, HomeSectionConfig, HomeSectionId, HomeSectionSize, DEFAULT_HOME_LAYOUT, HOME_SECTION_IDS } from '../data/settings';
 import { TKey, useT } from '../i18n';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button, Sheet } from './ui';
@@ -156,7 +156,7 @@ export function HomeLayoutModal({ visible, onClose }: { visible: boolean; onClos
   const addable = HOME_SECTION_IDS.filter((id) => !draft.some((s) => s.id === id));
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <Sheet style={{ maxHeight: '85%' }}>
           <View style={styles.header}>

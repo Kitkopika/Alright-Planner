@@ -8,7 +8,7 @@ import { create } from 'zustand';
 import { getSettingsStore } from './persistence';
 import { setDefaultCurrency, setDisplayLanguage } from '../features/finance';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark';
 export type Language = 'en' | 'th';
 export type Currency = 'USD' | 'THB';
 
@@ -121,7 +121,7 @@ export interface SettingsState {
   hydrate: () => Promise<void>;
 }
 
-const DEFAULTS = { theme: 'system' as ThemeMode, accent: '#4F46E5', language: 'en' as Language, currency: 'THB' as Currency, visualFx: DEFAULT_VISUAL_FX };
+const DEFAULTS = { theme: 'light' as ThemeMode, accent: '#4F46E5', language: 'en' as Language, currency: 'THB' as Currency, visualFx: DEFAULT_VISUAL_FX };
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -175,6 +175,15 @@ async function save(s: SettingsState): Promise<void> {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Modal `animationType` that respects the beta "animations" toggle — reading
+ * the store synchronously so it works without subscribing (a modal only needs
+ * the value at open time).
+ */
+export function modalAnimationType(): 'fade' | 'none' {
+  return useSettings.getState().visualFx.animations ? 'fade' : 'none';
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({

@@ -26,6 +26,7 @@ import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField } from '../../src/components/form';
+import { modalAnimationType } from '../../src/data/settings';
 
 function fmtDue(iso: string | null | undefined, ws: string[], ms: string[]): string {
   const d = tryParseISO(iso);
@@ -172,7 +173,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editGoal') : t('newGoal')}</Text>
@@ -240,7 +241,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet style={{ maxHeight: '90%' }}>
           <View style={styles.detailHeader}>

@@ -21,6 +21,7 @@ import { ReminderPicker, ReminderOffset } from './reminderPicker';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from './form';
 import { Recurrence } from '../core/types';
 import { useT } from '../i18n';
+import { modalAnimationType } from '../data/settings';
 
 const EVENT_COLORS = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED', '#DB2777', '#64748B'];
 
@@ -130,7 +131,7 @@ export function EventEditorModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet style={{ maxHeight: '88%' }}>
           <Text style={styles.title}>{editing ? t('editEvent') : t('newEvent')}</Text>

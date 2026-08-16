@@ -15,6 +15,7 @@ import { colors, radius, spacing, typography } from '../theme';
 import { Button, Chip, ChipRow, Field, TextBox } from './ui';
 import { WheelPicker } from './wheel';
 import { TKey, useDateNames, useT } from '../i18n';
+import { modalAnimationType } from '../data/settings';
 
 const PICKER_HOURS = Array.from({ length: 24 }, (_, i) => i); // 0–23
 const PICKER_MINUTES = Array.from({ length: 60 }, (_, i) => i); // 0–59, 1-minute steps
@@ -59,7 +60,7 @@ export function DatePickerModal({
   const shift = (delta: number) => setView(new Date(view.getFullYear(), view.getMonth() + delta, 1));
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <Pressable style={styles.pickerBackdrop} onPress={onClose}>
         <Pressable style={styles.pickerCard} onPress={() => {}}>
           <View style={styles.pickerHeader}>
@@ -162,7 +163,7 @@ export function TimePickerModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <Pressable style={styles.pickerBackdrop} onPress={onClose}>
         <Pressable style={styles.pickerCard} onPress={() => {}}>
           <Text style={[styles.pickerTitle, { textAlign: 'center', marginBottom: spacing.md }]}>{t('selectTime')}</Text>

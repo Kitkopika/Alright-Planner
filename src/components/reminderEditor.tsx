@@ -12,6 +12,7 @@ import { spacing, typography } from '../theme';
 import { Button, Field, TextBox, Sheet } from './ui';
 import { DateField, TimeField, RecurrenceField, combineDateTime } from './form';
 import { useT } from '../i18n';
+import { modalAnimationType } from '../data/settings';
 
 export function ReminderEditorModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   styles = createStyles();
@@ -38,7 +39,7 @@ export function ReminderEditorModal({ visible, onClose }: { visible: boolean; on
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <Sheet>
           <Text style={[typography.title, { marginBottom: spacing.md }]}>{t('addReminder')}</Text>

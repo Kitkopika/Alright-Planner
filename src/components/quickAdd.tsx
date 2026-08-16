@@ -17,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLifeOS } from '../data/store';
-import { useSettings } from '../data/settings';
+import { modalAnimationType, useSettings } from '../data/settings';
 import { useDateNames, useT } from '../i18n';
 import { colors, radius, spacing, typography } from '../theme';
 import { Chip, ChipRow, Field, TextBox, Button, Sheet } from './ui';
@@ -68,11 +68,11 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
   const now = new Date();
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdropInner}>
-          <Pressable onPress={() => {}} style={{ marginBottom: insets.bottom + 52 }}>
-            <Sheet style={{ maxHeight: '85%', paddingBottom: Math.max(spacing.xl, spacing.md) }}>
+          <Pressable onPress={() => {}} style={{ width: '100%', maxHeight: '88%' }}>
+            <Sheet style={{ maxHeight: '100%', paddingBottom: insets.bottom + spacing.md }}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{type ? t(TYPES.find((x) => x.type === type)?.tKey ?? 'typeTask') : t('quickAddTitle')}</Text>
               <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">

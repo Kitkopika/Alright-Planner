@@ -72,18 +72,9 @@ export const colors: Palette = { ...lightColors };
 let isDark = false;
 let version = 0;
 
-/** True when the OS prefers dark (used for 'system' mode). */
-function prefersDarkScheme(): boolean {
-  try {
-    return typeof globalThis.matchMedia === 'function' && globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
-  } catch {
-    return false;
-  }
-}
-
 /** Applies a palette + accent, bumping the theme version (used as remount key). */
-export function applyTheme(mode: 'light' | 'dark' | 'system', accent: string): void {
-  isDark = mode === 'dark' || (mode === 'system' && prefersDarkScheme());
+export function applyTheme(mode: 'light' | 'dark', accent: string): void {
+  isDark = mode === 'dark';
   const base = isDark ? darkColors : lightColors;
   Object.assign(colors, base);
   colors.accent = accent;
@@ -232,10 +223,10 @@ export const shadow = {
 
 /** Frosty-glass material (approximated without a native blur module). */
 export const glass = {
-  light: 'rgba(255,255,255,0.88)',
-  dark: 'rgba(30,30,38,0.88)',
+  light: 'rgba(255,255,255,0.60)',
+  dark: 'rgba(24,24,32,0.60)',
   /** Light-catching top edge on glass surfaces. */
-  highlight: 'rgba(255,255,255,0.55)',
+  highlight: 'rgba(255,255,255,0.5)',
   /** Hairline rim around glass panels. */
-  border: 'rgba(255,255,255,0.28)',
+  border: 'rgba(255,255,255,0.24)',
 };

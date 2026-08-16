@@ -27,6 +27,7 @@ import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField, TimeField } from '../../src/components/form';
 import { newId } from '../../src/core/id';
+import { modalAnimationType } from '../../src/data/settings';
 
 const PALETTE = ['#4F46E5', '#0891B2', '#16A34A', '#D97706', '#DC2626', '#7C3AED', '#DB2777'];
 
@@ -308,7 +309,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editRoutine') : t('newRoutine')}</Text>
@@ -421,7 +422,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editHabit') : t('newHabit')}</Text>

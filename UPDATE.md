@@ -5,6 +5,17 @@
 
 ---
 
+## 2.0.1 — New Icon & Polish
+
+- New app icon/logo: upside-down **V (chevron)** in the app's accent gradient (all icon assets re-rendered from `assets/logo.svg`)
+- Frosted-glass surfaces made more transparent
+- Removed the "System" theme option (Light / Dark only)
+- Quick-add sheet moved flush to the bottom of the screen (safe-area aware)
+- Button press animation: native-driver (smoother), longer + more travel; nav-bar spotlight slide now respects the Animation toggle
+- Tab screens pre-mounted for instant switching (no blank on first visit)
+
+---
+
 ## 2.0.0 — Design System Overhaul
 
 A full visual identity pass across the entire app.

@@ -36,44 +36,35 @@ const SPOT = 48;
 export function TabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const fx = useSettings((s) => s.visualFx.lighting);
+  const lighting = useSettings((s) => s.visualFx.lighting);
+  const animFx = useSettings((s) => s.visualFx.animations);
   const n = Math.max(1, state.routes.length);
   const tabWidth = width / n;
 
   const spot = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (!fx) {
+    if (!lighting) {
       spot.setValue(0);
       return;
     }
     const center = tabWidth * state.index + tabWidth / 2 - SPOT / 2;
-    Animated.timing(spot, { toValue: center, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
-  }, [state.index, tabWidth, spot, fx]);
-
-  // Gentle breathing glow.
-  useEffect(() => {
-    if (!fx) return;
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 1600, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 1600, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse, fx]);
+    if (animFx) {
+      Animated.timing(spot, { toValue: center, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    } else {
+      spot.setValue(center);
+    }
+  }, [state.index, tabWidth, spot, lighting, animFx]);
 
   return (
     <View
       style={[styles.bar, { backgroundColor: colors.surface, borderTopColor: colors.border }, { paddingBottom: Math.max(insets.bottom, 6) }]}
     >
       {/* Sliding spotlight glow */}
-      {fx && (
+      {lighting && (
         <Animated.View
           pointerEvents="none"
-          style={[styles.spot, { transform: [{ translateX: spot }], opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }]}
+          style={[styles.spot, { transform: [{ translateX: spot }], opacity: 0.85 }]}
         >
           <Spotlight size={SPOT} opacity={0.55} />
         </Animated.View>

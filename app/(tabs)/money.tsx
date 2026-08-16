@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useLifeOS } from '../../src/data/store';
-import { useSettings } from '../../src/data/settings';
+import { modalAnimationType, useSettings } from '../../src/data/settings';
 import { useT } from '../../src/i18n';
 import { Category, TransactionKind } from '../../src/core/types';
 import { buildSummaries, formatMoney } from '../../src/features/finance';
@@ -305,7 +305,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
   const cats = data.collections.categories.filter((c) => !c.deletedAt);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{t('categories')}</Text>
@@ -408,7 +408,7 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimationType()} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
         <Sheet>
           <Text style={styles.sheetTitle}>{t('editTransaction')}</Text>

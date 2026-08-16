@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme';
 import { TKey, useT } from '../../src/i18n';
 import { TabBar } from '../../src/components/tabBar';
+import { useSettings } from '../../src/data/settings';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -28,13 +29,17 @@ const TABS: { name: string; tKey: TKey; icon: IconName; iconActive: IconName }[]
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const tt = useT();
+  const animFx = useSettings((s) => s.visualFx.animations);
 
   return (
     <Tabs
       tabBar={(props) => <TabBar {...(props as any)} />}
       screenOptions={{
         headerShown: false,
-        animation: 'shift',
+        animation: animFx ? 'shift' : 'none',
+        // Pre-mount every tab so switching is instant (no blank/lag on first
+        // visit to a screen).
+        lazy: false,
         // Edge-to-edge: offset every scene below the status bar / display
         // cutout using the real inset (never a hardcoded margin). The strip
         // shows the app background so the design is unchanged.
