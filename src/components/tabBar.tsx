@@ -1,6 +1,6 @@
 /**
- * Custom tab bar with a sliding spotlight — the glow springs between tabs as
- * the user switches, and the active icon pops with a spring.
+ * Custom tab bar with a spotlight that fades in on the active tab (no slide /
+ * swipe motion between tabs), and an active icon that pops with a spring.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -41,31 +41,31 @@ export function TabBar({ state, descriptors, navigation }: TabBarProps) {
   const n = Math.max(1, state.routes.length);
   const tabWidth = width / n;
 
-  const spot = useRef(new Animated.Value(0)).current;
+  const glow = useRef(new Animated.Value(0)).current;
+  // Center of the focused tab — computed, not animated (no sliding motion).
+  const spotLeft = tabWidth * state.index + tabWidth / 2 - SPOT / 2;
 
+  // Fade the glow in at the active tab instead of sliding between tabs.
   useEffect(() => {
     if (!lighting) {
-      spot.setValue(0);
+      glow.setValue(0);
       return;
     }
-    const center = tabWidth * state.index + tabWidth / 2 - SPOT / 2;
+    glow.setValue(0);
     if (animFx) {
-      Animated.timing(spot, { toValue: center, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+      Animated.timing(glow, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     } else {
-      spot.setValue(center);
+      glow.setValue(1);
     }
-  }, [state.index, tabWidth, spot, lighting, animFx]);
+  }, [state.index, tabWidth, glow, lighting, animFx]);
 
   return (
     <View
       style={[styles.bar, { backgroundColor: colors.surface, borderTopColor: colors.border }, { paddingBottom: Math.max(insets.bottom, 6) }]}
     >
-      {/* Sliding spotlight glow */}
+      {/* Spotlight glow — fades in on the active tab (no slide/swipe motion) */}
       {lighting && (
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.spot, { transform: [{ translateX: spot }], opacity: 0.85 }]}
-        >
+        <Animated.View pointerEvents="none" style={[styles.spot, { left: spotLeft, opacity: glow }]}>
           <Spotlight size={SPOT} opacity={0.55} />
         </Animated.View>
       )}
