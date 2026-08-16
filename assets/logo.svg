@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#726BEA"/>
+      <stop offset="1" stop-color="#423BC0"/>
+    </linearGradient>
+  </defs>
   <!-- White rounded backdrop -->
   <rect width="512" height="512" rx="112" fill="#FFFFFF"/>
-  <!-- Upside-down "V" = an "A": two strokes meeting at the top, crossbar below.
-       Purple (#6C5CE7) main mark with a lighter purple right stroke. -->
-  <polygon points="256,96 420,416 356,416 256,210 156,416 92,416" fill="#6C5CE7"/>
-  <polygon points="256,210 356,416 316,416 256,292 196,416 156,416" fill="#4F46E5"/>
-  <!-- Crossbar (the A's middle bar) -->
-  <rect x="196" y="340" width="120" height="34" rx="12" fill="#8B8FF8"/>
+  <!-- Upside-down V (chevron) with the app's accent gradient -->
+  <polygon points="256,120 430,400 330,400 256,260 182,400 82,400" fill="url(#g)"/>
 </svg>

@@ -24,9 +24,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLifeOS } from '../data/store';
 import { isoDateTime } from '../core/time';
 import { colors, radius, spacing, typography } from '../theme';
-import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { Button, Chip, ChipRow, Field, TextBox, Sheet } from './ui';
+import { Spotlight } from './motion';
 import { WheelPicker } from './wheel';
 import { TKey, useT } from '../i18n';
+import { useSettings } from '../data/settings';
 
 const PRESETS = [25, 50, 90];
 const HOURS = Array.from({ length: 100 }, (_, i) => i); // 0–99 hours
@@ -79,6 +81,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   const [done, setDone] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const fx = useSettings((s) => s.visualFx.lighting);
   const [subject, setSubject] = useState('');
 
   // Refs mirror the values used by long-lived listeners (AppState, intervals)
@@ -261,14 +264,17 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
   const lockLabel = subject.trim() || tasks.find((task) => task.id === taskId)?.title || '';
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={requestClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={requestClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.backdrop, locked && styles.backdropLocked]}>
-        <View style={styles.sheet}>
+        <Sheet>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>{t('focus')}</Text>
 
             <View style={styles.timerWrap}>
-              <Text style={styles.timer}>{timeLabel}</Text>
+              <View style={styles.timerGlowWrap}>
+                <Spotlight size={280} />
+              </View>
+              <Text style={[styles.timer, !fx && { textShadowColor: 'transparent', textShadowRadius: 0 }]}>{timeLabel}</Text>
               <Text style={styles.timerHint}>{hint}</Text>
             </View>
 
@@ -335,7 +341,7 @@ export function FocusTimerModal({ visible, onClose }: { visible: boolean; onClos
               </>
             )}
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -357,7 +363,8 @@ function createStyles() {
   },
   title: { ...typography.title, marginBottom: spacing.md },
   timerWrap: { alignItems: 'center', paddingVertical: spacing.lg },
-  timer: { fontSize: 56, fontWeight: '800', color: colors.accent, fontVariant: ['tabular-nums'] },
+  timerGlowWrap: { position: 'absolute', left: 0, right: 0, top: -30, alignItems: 'center' },
+  timer: { fontSize: 56, fontWeight: '800', color: colors.accent, fontVariant: ['tabular-nums'], textShadowColor: colors.accent + '88', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 24 },
   timerHint: { ...typography.caption, color: colors.textSecondary, marginTop: 4 },
   lockSubject: { ...typography.section, textAlign: 'center', marginBottom: spacing.md },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },

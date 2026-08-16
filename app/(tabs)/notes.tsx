@@ -21,7 +21,9 @@ import { useT } from '../../src/i18n';
 import { Note, NoteKind } from '../../src/core/types';
 import { dateKey } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 
 type Filter = 'all' | NoteKind;
 
@@ -78,6 +80,7 @@ export default function NotesScreen() {
 
   return (
     <View style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.header}>
         <Text style={typography.title}>{t('notes')}</Text>
         <Button title={t('addNote')} small onPress={() => { setEditingId(null); setEditorOpen(true); }} />
@@ -93,7 +96,9 @@ export default function NotesScreen() {
         })}
       </ChipRow>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {query.trim() ? (
           searchHits.length === 0 ? (
             <EmptyState icon="search-outline" title={t('noMatches')} />
@@ -150,6 +155,7 @@ export default function NotesScreen() {
           ))
         )}
       </ScrollView>
+      </View>
 
       <NoteEditorModal noteId={editingId} visible={editorOpen} onClose={() => setEditorOpen(false)} />
     </View>
@@ -234,9 +240,9 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
   const events = data.collections.events.filter((e) => !e.deletedAt);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editNote') : t('newNote')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('title')}>
@@ -296,7 +302,7 @@ function NoteEditorModal({ noteId, visible, onClose }: { noteId: string | null; 
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -307,11 +313,11 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   searchWrap: { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginTop: spacing.md },
   searchIcon: { position: 'absolute', left: spacing.md, zIndex: 1 },
   searchInput: { flex: 1, paddingLeft: 38 },
-  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.xs, marginBottom: spacing.md },
   content: { padding: spacing.lg, paddingBottom: 120 },
   noteCard: { marginBottom: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.md },
   noteTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

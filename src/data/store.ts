@@ -17,6 +17,7 @@ import {
 } from '../core/types';
 import { newId } from '../core/id';
 import { nowIso } from '../core/time';
+import { remindersForEntity } from '../features/reminders';
 import { getDocumentStore } from './persistence';
 import { refreshWidgets } from '../widgets';
 import {
@@ -119,6 +120,36 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
     }, 400);
   };
 
+  /**
+   * Keep the `reminders` collection in sync with an event/task's
+   * "remind me before" offsets: drop old linked reminders, recreate from the
+   * current offsets. Called after every event/task create/update/remove.
+   */
+  const syncEntityReminders = (kind: 'events' | 'tasks', id: string) => {
+    const data = get().data;
+    const entity = kind === 'events' ? data.collections.events.find((e) => e.id === id) : data.collections.tasks.find((t) => t.id === id);
+    const others = data.collections.reminders.filter((r) => (kind === 'events' ? r.eventId !== id : r.taskId !== id));
+    const desired = entity && !entity.deletedAt ? remindersForEntity(kind === 'events' ? 'event' : 'task', entity) : [];
+    if (others.length === data.collections.reminders.length && desired.length === 0) return;
+    set({ data: withCollection(data, 'reminders', [...others, ...desired]) });
+    scheduleSave();
+  };
+
+  /**
+   * One-time backfill on app start: pre-existing events/tasks (saved before
+   * the reminder sync existed) may carry remind-before offsets with no
+   * corresponding Reminder entity yet — materialize them now.
+   */
+  const backfillReminderSync = () => {
+    const { events, tasks } = get().data.collections;
+    for (const e of events) {
+      if (!e.deletedAt && e.reminders && e.reminders.length > 0) syncEntityReminders('events', e.id);
+    }
+    for (const t of tasks) {
+      if (!t.deletedAt && t.reminders && t.reminders.length > 0) syncEntityReminders('tasks', t.id);
+    }
+  };
+
   return {
     data: emptyData(),
     device: newDeviceInfo(),
@@ -139,6 +170,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
               device: { id: get().device.id, name: parsed.document.device.name },
               hydrated: true,
             });
+            backfillReminderSync();
             return;
           }
           // Invalid main file: fall back to backup if the main file differed.
@@ -151,6 +183,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
                 device: { id: get().device.id, name: parsedBackup.document.device.name },
                 hydrated: true,
               });
+              backfillReminderSync();
               return;
             }
           }
@@ -188,6 +221,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
       const list = [...asList(data, kind), entity];
       set({ data: withCollection(data, kind, list) });
       scheduleSave();
+      if (kind === 'events' || kind === 'tasks') syncEntityReminders(kind, entity.id);
       return entity as unknown as CollectionMap[typeof kind];
     },
 
@@ -210,6 +244,7 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
       copy[index] = next;
       set({ data: withCollection(data, kind, copy) });
       scheduleSave();
+      if (kind === 'events' || kind === 'tasks') syncEntityReminders(kind, id);
     },
 
     remove: (kind, id) => {
@@ -228,6 +263,8 @@ export const useLifeOS = create<LifeOSState>((set, get) => {
       copy[index] = next;
       set({ data: withCollection(data, kind, copy) });
       scheduleSave();
+      // Tombstone + drop linked reminders so they stop surfacing.
+      if (kind === 'events' || kind === 'tasks') syncEntityReminders(kind, id);
     },
 
     restore: (kind, id) => {

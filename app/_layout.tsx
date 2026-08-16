@@ -11,7 +11,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useLifeOS } from '../src/data/store';
 import { useSettings } from '../src/data/settings';
-import { applyTheme, isDarkMode, themeVersion } from '../src/theme';
+import { applyTheme, colors, isDarkMode, themeVersion } from '../src/theme';
 import { useT } from '../src/i18n';
 
 export default function RootLayout() {
@@ -37,12 +37,34 @@ export default function RootLayout() {
   }, [settings.theme, settings.accent]);
 
   return (
-    <View key={themeKey} style={{ flex: 1 }}>
+    <View key={themeKey} style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style={isDarkMode() ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="settings" options={{ presentation: 'modal', headerShown: true, title: t('settings') }} />
-        <Stack.Screen name="data" options={{ presentation: 'modal', headerShown: true, title: t('dataBackup') }} />
+        <Stack.Screen
+          name="settings"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('settings'),
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerTitleStyle: { color: colors.text },
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="data"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('dataBackup'),
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            headerTitleStyle: { color: colors.text },
+            headerShadowVisible: false,
+          }}
+        />
       </Stack>
     </View>
   );

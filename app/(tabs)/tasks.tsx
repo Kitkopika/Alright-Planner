@@ -21,7 +21,9 @@ import { useLifeOS } from '../../src/data/store';
 import { Task } from '../../src/core/types';
 import { addDays, dateKey, dayDiff, isoDateTime, startOfWeek, todayKey, tryParseISO } from '../../src/core/time';
 import { colors, priorityColors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from '../../src/components/form';
 import { ReminderPicker, ReminderOffset } from '../../src/components/reminderPicker';
 import { FocusTimerModal } from '../../src/components/focusTimer';
@@ -51,7 +53,9 @@ export default function TasksScreen() {
 
   const now = new Date();
   const allTasks = data.collections.tasks.filter((t) => !t.deletedAt && t.status !== 'cancelled');
-  const tasks = priorityFilter === 'all' ? allTasks : allTasks.filter((t) => t.priority === priorityFilter);
+  // Subtasks live inside their parent's row — never as standalone main tasks.
+  const mainTasks = allTasks.filter((t) => !t.parentTaskId);
+  const tasks = priorityFilter === 'all' ? mainTasks : mainTasks.filter((t) => t.priority === priorityFilter);
   const projects = data.collections.projects.filter((p) => !p.deletedAt && p.status !== 'archived');
 
   const visible = useMemo(() => {
@@ -133,6 +137,7 @@ export default function TasksScreen() {
 
   return (
     <View style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.header}>
         <View>
           <Text style={typography.title}>{t('tasks')}</Text>
@@ -157,7 +162,9 @@ export default function TasksScreen() {
           <Chip key={p} label={p === 'all' ? t('allPriority') : t(p)} selected={priorityFilter === p} onPress={() => setPriorityFilter(p)} />
         ))}
       </ChipRow>
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         {visible.every((g) => g.items.length === 0) ? (
           <EmptyState icon="checkbox-outline" title={t('noTasksHere')} subtitle={t('usePlusTask')} />
         ) : (
@@ -180,6 +187,7 @@ export default function TasksScreen() {
           )
         )}
       </ScrollView>
+      </View>
 
       <TaskEditorModal taskId={editingId} visible={editorOpen} onClose={() => setEditorOpen(false)} />
       <FocusTimerModal visible={focusOpen} onClose={() => setFocusOpen(false)} />
@@ -345,9 +353,9 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editTask') : t('newTask')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('title')}>
@@ -430,7 +438,7 @@ export function TaskEditorModal({ taskId, visible, onClose }: { taskId: string |
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -441,9 +449,9 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
-  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.xs, marginBottom: spacing.md },
   content: { padding: spacing.lg, paddingBottom: 120 },
   taskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm, paddingVertical: spacing.md },
   taskTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },

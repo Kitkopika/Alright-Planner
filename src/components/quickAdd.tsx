@@ -20,7 +20,8 @@ import { useLifeOS } from '../data/store';
 import { useSettings } from '../data/settings';
 import { useDateNames, useT } from '../i18n';
 import { colors, radius, spacing, typography } from '../theme';
-import { Chip, ChipRow, Field, TextBox, Button } from './ui';
+import { Chip, ChipRow, Field, TextBox, Button, Sheet } from './ui';
+import { Reveal } from './motion';
 import { DateField, MoneyField, RecurrenceField, TimeField, combineDateTime } from './form';
 import { addDays, dateKey, todayKey, timeHM, isoDateTime } from '../core/time';
 import { Priority, Recurrence, TransactionKind } from '../core/types';
@@ -67,11 +68,11 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
   const now = new Date();
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdropInner}>
-          <Pressable style={[styles.sheet, { paddingBottom: Math.max(spacing.xl, insets.bottom + spacing.sm) }]} onPress={() => {}}>
-            <View style={styles.handle} />
+          <Pressable onPress={() => {}} style={{ marginBottom: insets.bottom + 52 }}>
+            <Sheet style={{ maxHeight: '85%', paddingBottom: Math.max(spacing.xl, spacing.md) }}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{type ? t(TYPES.find((x) => x.type === type)?.tKey ?? 'typeTask') : t('quickAddTitle')}</Text>
               <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">
@@ -80,26 +81,31 @@ export function QuickAddModal({ visible, onClose }: { visible: boolean; onClose:
             </View>
 
             {!type ? (
-              <View style={styles.grid}>
-                {TYPES.map((x) => (
-                  <PressableTile key={x.type} icon={x.icon} label={t(x.tKey)} color={x.color} onPress={() => setType(x.type)} />
-                ))}
-              </View>
+              <Reveal key="grid" distance={10}>
+                <View style={styles.grid}>
+                  {TYPES.map((x) => (
+                    <PressableTile key={x.type} icon={x.icon} label={t(x.tKey)} color={x.color} onPress={() => setType(x.type)} />
+                  ))}
+                </View>
+              </Reveal>
             ) : (
-              <ScrollView keyboardShouldPersistTaps="handled">
-                <FormFor
-                  key={resetKey}
-                  type={type}
-                  now={now}
-                  categories={categories}
-                  onCreate={(partial) => {
-                    create(QUICK_ADD_KIND[type], partial as never);
-                    done();
-                  }}
-                  onBack={() => setType(null)}
-                />
-              </ScrollView>
+              <Reveal key="form" distance={10}>
+                <ScrollView keyboardShouldPersistTaps="handled">
+                  <FormFor
+                    key={resetKey}
+                    type={type}
+                    now={now}
+                    categories={categories}
+                    onCreate={(partial) => {
+                      create(QUICK_ADD_KIND[type], partial as never);
+                      done();
+                    }}
+                    onBack={() => setType(null)}
+                  />
+                </ScrollView>
+              </Reveal>
             )}
+            </Sheet>
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
@@ -380,23 +386,6 @@ function createStyles() {
   backdropInner: {
     flex: 1,
     justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    paddingTop: spacing.sm,
-    maxHeight: '85%',
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    marginBottom: spacing.md,
   },
   titleRow: {
     flexDirection: 'row',

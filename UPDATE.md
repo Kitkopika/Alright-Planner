@@ -1,0 +1,102 @@
+# Alright — Update Log
+
+> Local-first life OS for planning your life.
+> Every version below is a **release** of the app (Android APK / iOS build).
+
+---
+
+## 2.0.0 — Design System Overhaul
+
+A full visual identity pass across the entire app.
+
+**Personality & depth**
+- Ambient background layer with theme-colored spotlight glows, gradient washes and frosty blur
+- Shadows, gradients and glass-blur (frosted) surfaces on cards, overlays, quick-add and sheets
+- Text shadow / glow on key headings and the date header
+- Animated transitions: spotlight slides in the nav bar, animated filter chips, animated sheet/overlay presentation
+
+**Theme engine**
+- Fully theme-aware UI in light *and* dark mode (no more leftover hardcoded colors)
+- New **beta visual settings**: independently toggle *Animation*, *Background* and *Lighting* effects
+- Home-screen widgets also follow the theme when the effects are on
+
+**Polish**
+- Calendar's floating "+" circle replaced with a normal button matching other pages
+- New app logo: upside-down V mark in the app theme colors
+
+---
+
+## 1.5.9 — Layout Config, Color Picker & Reminders
+
+- **Configurable Today screen**: reorder / add / remove / scale home widgets (add, remove, move up/down, size scale)
+- **More home widgets**: graph widgets (e.g. mini bar chart), reminders, etc.
+- Home layout is saved to the JSON settings file
+- **Standard square color picker** for custom theme color (saturation/value square + hue slider) — fixed the "click turns black" bug
+- **Reminders page**: a real page that lists reminders from tasks/events/habits and lets you add standalone reminders
+- Sub-tasks no longer duplicate as main tasks; reminder icon removed from the home page
+
+---
+
+## 1.5.8 — Thai Polish, Reminder Presets, Task Rework
+
+- **Thai localization**: daily progress ("0 of 0 done"), +1w/+1m chips, h/m → ชม./น., Link-to labels
+- **Remind before** rebuilt: quick presets (1/2/3 days, 2 hours, 20 min…) and **multiple** reminders per item
+- **Tasks**: removed unused "estimated time"; sub-tasks are inline checklists that auto-tick with the parent; tasks can have reminders
+- Navigation bar un-cluttered (Insights removed); money CSV/Category buttons restyled
+
+---
+
+## 1.5.7
+
+- Rebuilt APK (versionCode 10507)
+
+## 1.5.6 — More Widgets
+
+- Added **Goals** and **Reminders** widgets (6 home-screen widgets total)
+- Crash-proof widget layouts
+
+## 1.5.1
+
+- Fixed weekday labels being off by one (Monday-first indexing)
+
+## 1.5.0 — Home-Screen Widget
+
+- Added the first Android home-screen widget (Today)
+
+---
+
+## 1.4.0 — Persistence, Theme & Focus
+
+- **Settings save to a JSON file** of the app
+- Keyboard no longer hides text inputs (KeyboardAvoidingView on Android edge-to-edge)
+- **Custom theme color** beyond the presets
+- **Focus mode**: scrollable hour/minute wheel picker and a lock system
+- Calendar redesign; smaller app icon
+
+---
+
+## 1.3.0 — Calendar & Money
+
+- Calendar: multi-day events span their full range; connected multi-day lines; week time table; all-day events fill the table
+- Events/tasks ordered and stacked properly; changeable event start/end time
+- **Thai baht suffix (฿)**, localized week calendar
+- Dark-mode tab bar; icons rendered from the logo source
+
+---
+
+## 1.2.0 — Localization, Dark Mode & Insights
+
+- **Full Thai localization** across routines, money, goals, notes, quick add, event editor, calendar, focus timer, data & backup
+- **Dark mode** (theme-aware typography and surfaces)
+- CSV export/import hardened (formula-safe, numeric-safe)
+- Focus timer accuracy, insights charts, calendar timeline + year view, edge-to-edge fixes
+
+---
+
+## 1.1.0 — First Release
+
+- UI pickers (wheel date/time), settings & themes, Thai language + THB currency, calendar polish
+
+## 1.0.2 — Initial Build
+
+- Local-first life OS prototype (Expo / React Native)

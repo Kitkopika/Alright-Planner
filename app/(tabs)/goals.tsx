@@ -22,7 +22,9 @@ import { Goal, Project } from '../../src/core/types';
 import { goalProgress } from '../../src/features/today';
 import { dateKey, tryParseISO } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, ProgressBar, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField } from '../../src/components/form';
 
 function fmtDue(iso: string | null | undefined, ws: string[], ms: string[]): string {
@@ -48,6 +50,7 @@ export default function GoalsScreen() {
 
   return (
     <View style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.header}>
         <Text style={typography.title}>{t('goals')}</Text>
         <Button title={t('addGoal')} small onPress={() => setEditorOpen(true)} />
@@ -57,13 +60,16 @@ export default function GoalsScreen() {
           <Chip key={s} label={s === 'all' ? t('all') : s === 'done' ? t('doneLabel') : t('active')} selected={statusFilter === s} onPress={() => setStatusFilter(s)} />
         ))}
       </ChipRow>
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         {goals.length === 0 ? (
           <EmptyState icon="flag-outline" title={t('noGoals')} subtitle={t('noGoalsSub')} />
         ) : (
           goals.map((g) => <GoalCard key={g.id} goal={g} onOpen={() => { setDetailId(g.id); setDetailOpen(true); }} />)
         )}
       </ScrollView>
+      </View>
 
       <GoalEditorModal goalId={null} visible={editorOpen} onClose={() => setEditorOpen(false)} />
       {detailId && <GoalDetailModal goalId={detailId} visible={detailOpen} onClose={() => setDetailOpen(false)} />}
@@ -166,9 +172,9 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editGoal') : t('newGoal')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('title')}>
@@ -191,7 +197,7 @@ function GoalEditorModal({ goalId, visible, onClose }: { goalId: string | null; 
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -234,9 +240,9 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={[styles.sheet, { maxHeight: '90%' }]}>
+        <Sheet style={{ maxHeight: '90%' }}>
           <View style={styles.detailHeader}>
             <View style={{ flex: 1 }}>
               <Text style={typography.title}>{goal.title}</Text>
@@ -277,7 +283,7 @@ function GoalDetailModal({ goalId, visible, onClose }: { goalId: string; visible
               <Button title={t('deleteGoal')} variant="danger" onPress={() => { remove('goals', goal.id); onClose(); }} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
       <GoalEditorModal goalId={goalId} visible={editingGoal} onClose={() => setEditingGoal(false)} />
     </Modal>
@@ -343,8 +349,8 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.xs, marginBottom: spacing.md },
   content: { padding: spacing.lg, paddingBottom: 120 },
   goalHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   goalRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

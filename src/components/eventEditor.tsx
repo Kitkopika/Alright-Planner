@@ -15,8 +15,8 @@ import {
   View,
 } from 'react-native';
 import { useLifeOS } from '../data/store';
-import { colors, radius, spacing, typography } from '../theme';
-import { Button, Chip, ChipRow, Field, TextBox } from './ui';
+import { colors, spacing, typography } from '../theme';
+import { Button, Chip, ChipRow, Field, TextBox, Sheet } from './ui';
 import { ReminderPicker, ReminderOffset } from './reminderPicker';
 import { DateField, RecurrenceField, TimeField, splitDateTime } from './form';
 import { Recurrence } from '../core/types';
@@ -130,9 +130,9 @@ export function EventEditorModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet style={{ maxHeight: '88%' }}>
           <Text style={styles.title}>{editing ? t('editEvent') : t('newEvent')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('title')}>
@@ -167,7 +167,7 @@ export function EventEditorModal({
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -196,14 +196,6 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-    maxHeight: '88%',
-  },
   title: { ...typography.title, marginBottom: spacing.lg },
   dotWrap: {
     width: 34,

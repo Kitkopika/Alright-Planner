@@ -16,7 +16,9 @@ import { CalendarItem, dayItems, dayItemsRange, monthGrid } from '../../src/feat
 import { addDays, dateKey, formatDateKeyDDMM, startOfWeek, todayKey } from '../../src/core/time';
 import { AppData } from '../../src/core/types';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Button, Chip, ChipRow, EmptyState, IconButton } from '../../src/components/ui';
 import { EventEditorModal } from '../../src/components/eventEditor';
 import { TKey, useDateNames, useT } from '../../src/i18n';
 
@@ -166,6 +168,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.controls}>
         <View style={styles.modeRow}>
           <ChipRow style={{ flex: 1 }}>
@@ -173,7 +176,7 @@ export default function CalendarScreen() {
               <Chip key={m} label={t(m)} selected={mode === m} onPress={() => setMode(m)} />
             ))}
           </ChipRow>
-          <IconButton name="add-circle-outline" size={26} color={colors.accent} onPress={newEvent} />
+          <Button title={t('addEventBtn')} small onPress={newEvent} />
         </View>
         <View style={styles.navRow}>
           <IconButton name="chevron-back" onPress={() => shift(-1)} />
@@ -185,7 +188,9 @@ export default function CalendarScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         {mode === 'day' && <DayTimeline items={selectedDay.items} date={selected} onOpen={openEvent} onDelete={deleteItem} />}
 
         {mode === 'week' && (
@@ -385,6 +390,7 @@ export default function CalendarScreen() {
           </View>
         )}
       </ScrollView>
+      </View>
 
       <EventEditorModal eventId={editingEvent} visible={editorOpen} onClose={() => setEditorOpen(false)} initialDate={dateKey(selected)} />
     </View>
@@ -651,7 +657,7 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  controls: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  controls: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm },
   modeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.sm },
   monthLabel: { ...typography.section, flex: 1, textAlign: 'center' },

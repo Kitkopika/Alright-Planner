@@ -1,6 +1,6 @@
 /**
  * Tab navigation: Today, Calendar, Tasks, Routines, Money, Goals, Notes,
- * Insights. The universal Quick Add ("+") lives only on the Today (Home)
+ * Reminders. The universal Quick Add ("+") lives only on the Today (Home)
  * screen; every other screen has its own page-specific add action.
  */
 
@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme';
 import { TKey, useT } from '../../src/i18n';
+import { TabBar } from '../../src/components/tabBar';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -21,6 +22,7 @@ const TABS: { name: string; tKey: TKey; icon: IconName; iconActive: IconName }[]
   { name: 'money', tKey: 'money', icon: 'wallet-outline', iconActive: 'wallet' },
   { name: 'goals', tKey: 'goals', icon: 'flag-outline', iconActive: 'flag' },
   { name: 'notes', tKey: 'notes', icon: 'document-text-outline', iconActive: 'document-text' },
+  { name: 'reminders', tKey: 'tabReminders', icon: 'notifications-outline', iconActive: 'notifications' },
 ];
 
 export default function TabsLayout() {
@@ -29,13 +31,10 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...(props as any)} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { paddingTop: 4, backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
-        tabBarItemStyle: { paddingVertical: 2 },
+        animation: 'shift',
         // Edge-to-edge: offset every scene below the status bar / display
         // cutout using the real inset (never a hardcoded margin). The strip
         // shows the app background so the design is unchanged.

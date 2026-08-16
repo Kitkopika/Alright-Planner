@@ -129,7 +129,8 @@ export function DateField({
         <Chip label={t('todayLabel')} onPress={() => quick(new Date())} />
         <Chip label={t('tomorrow')} onPress={() => quick(addDays(new Date(), 1))} />
         <Chip label={`+${t('quickWeek')}`} onPress={() => quick(addDays(new Date(), 7))} />
-        <Chip label={`+${t('quickMonth')}`} onPress={() => quick(addDays(new Date(), 30))} />        {allowClear && <Chip label={t('clear')} onPress={() => onChange('')} />}
+        <Chip label={`+${t('quickMonth')}`} onPress={() => quick(addDays(new Date(), 30))} />
+        {allowClear && <Chip label={t('clear')} onPress={() => onChange('')} />}
       </ChipRow>
       <DatePickerModal visible={open} value={value} onSelect={onChange} onClose={() => setOpen(false)} />
     </Field>

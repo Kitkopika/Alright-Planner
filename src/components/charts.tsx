@@ -3,10 +3,81 @@
  * plus an SVG donut for spending breakdowns.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop } from 'react-native-svg';
 import { colors, radius, spacing, typography } from '../theme';
+import { useSvgId } from './motion';
+
+/**
+ * Smooth line + area chart (7-day trends). Supports a signed series (zero
+ * baseline in the middle) for money, or an unsigned one (baseline at bottom).
+ */
+export function TrendChart({
+  values,
+  labels,
+  color,
+  max,
+  height,
+  showLabels,
+  signed = false,
+}: {
+  values: number[];
+  labels?: string[];
+  color: string;
+  max: number;
+  height: number;
+  showLabels?: boolean;
+  signed?: boolean;
+}) {
+  const id = useSvgId('trend');
+  const [w, setW] = useState(0);
+  const labelH = showLabels ? 16 : 0;
+  const usable = Math.max(height - labelH, 8);
+  const n = values.length;
+  const maxAbs = Math.max(max, 0.0001);
+  const pad = 3;
+  const step = n > 1 ? (w - pad * 2) / (n - 1) : w;
+  const yFor = (v: number) =>
+    signed
+      ? usable / 2 - (v / maxAbs) * (usable / 2 - pad)
+      : usable - pad - (v / maxAbs) * (usable - pad * 2);
+  const pts = values.map((v, i) => ({ x: pad + i * step, y: Math.max(pad, Math.min(usable - pad, yFor(v))) }));
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const zeroY = signed ? usable / 2 : usable - pad;
+  const area = `${line} L${pts[pts.length - 1].x.toFixed(1)},${zeroY} L${pts[0].x.toFixed(1)},${zeroY} Z`;
+
+  return (
+    <View onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+      {w > 0 && (
+        <Svg width={w} height={usable}>
+          <Defs>
+            <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={color} stopOpacity={0.32} />
+              <Stop offset="1" stopColor={color} stopOpacity={0} />
+            </LinearGradient>
+          </Defs>
+          {signed && <Line x1={0} y1={zeroY} x2={w} y2={zeroY} stroke={colors.border} strokeWidth={1} />}
+          <Path d={area} fill={`url(#${id})`} />
+          <Path d={line} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        </Svg>
+      )}
+      {showLabels && labels && (
+        <View style={{ flexDirection: 'row', marginTop: 2 }}>
+          {labels.map((l, i) => (
+            <Text
+              key={i}
+              style={[typography.caption, { flex: 1, textAlign: i === 0 ? 'left' : i === n - 1 ? 'right' : 'center', fontSize: 10, color: colors.textMuted }]}
+              numberOfLines={1}
+            >
+              {l}
+            </Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
 
 /** Segmented donut chart (spending by category). */
 export function DonutChart({
@@ -46,8 +117,7 @@ export function DonutChart({
                 fill="none"
                 strokeDasharray={`${len} ${C - len}`}
                 strokeDashoffset={-offset}
-                rotation={-90}
-                origin={`${size / 2}, ${size / 2}`}
+                transform={`rotate(-90 ${size / 2} ${size / 2})`}
               />
             );
           })}

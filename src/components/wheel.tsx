@@ -182,6 +182,48 @@ export function WheelPicker({
   );
 }
 
+/** Three labelled wheel columns (e.g. days + hours + minutes). */
+export function WheelPicker3({
+  firstValues,
+  secondValues,
+  thirdValues,
+  first,
+  second,
+  third,
+  firstLabel,
+  secondLabel,
+  thirdLabel,
+  onChange,
+}: {
+  firstValues: number[];
+  secondValues: number[];
+  thirdValues: number[];
+  first: number;
+  second: number;
+  third: number;
+  firstLabel: string;
+  secondLabel: string;
+  thirdLabel: string;
+  onChange: (a: number, b: number, c: number) => void;
+}) {
+  styles = createStyles();
+  return (
+    <View style={styles.wheelWrap}>
+      <View style={styles.wheelLabels}>
+        <Text style={styles.wheelLabel}>{firstLabel}</Text>
+        <Text style={styles.wheelLabel}>{secondLabel}</Text>
+        <Text style={styles.wheelLabel}>{thirdLabel}</Text>
+      </View>
+      <View style={styles.wheelCols}>
+        <View pointerEvents="none" style={styles.wheelHighlight} />
+        <WheelColumn values={firstValues} selected={first} onSelect={(a) => onChange(a, second, third)} />
+        <WheelColumn values={secondValues} selected={second} onSelect={(b) => onChange(first, b, third)} />
+        <WheelColumn values={thirdValues} selected={third} onSelect={(c) => onChange(first, second, c)} />
+      </View>
+    </View>
+  );
+}
+
 let styles = createStyles();
 
 function createStyles() {

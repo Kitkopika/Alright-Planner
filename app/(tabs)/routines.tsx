@@ -22,7 +22,9 @@ import { Habit, Routine, RoutineStep } from '../../src/core/types';
 import { addDays, dateKey, todayKey } from '../../src/core/time';
 import { habitScheduledToday, habitStreak } from '../../src/features/today';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField, TimeField } from '../../src/components/form';
 import { newId } from '../../src/core/id';
 
@@ -44,6 +46,7 @@ export default function RoutinesScreen() {
 
   return (
     <View style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.header}>
         <Text style={typography.title}>{t('routines')}</Text>
         <View style={styles.headerActions}>
@@ -62,7 +65,9 @@ export default function RoutinesScreen() {
         <Chip label={t('habits')} selected={tab === 'habits'} onPress={() => setTab('habits')} />
       </ChipRow>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         {tab === 'routines' ? (
           routines.length === 0 ? (
             <EmptyState icon="repeat-outline" title={t('noRoutines')} subtitle={t('noRoutinesSub')} />
@@ -75,6 +80,7 @@ export default function RoutinesScreen() {
           habits.map((h) => <HabitCard key={h.id} habit={h} onEdit={() => { setHabitEditor(h.id); setEditorOpen(true); }} />)
         )}
       </ScrollView>
+      </View>
 
       {tab === 'routines' ? (
         <RoutineEditorModal routineId={routineEditor} visible={editorOpen} onClose={() => setEditorOpen(false)} />
@@ -302,9 +308,9 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editRoutine') : t('newRoutine')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('name')}>
@@ -348,7 +354,7 @@ export function RoutineEditorModal({ routineId, visible, onClose }: { routineId:
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -415,9 +421,9 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{editing ? t('editHabit') : t('newHabit')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <Field label={t('name')}>
@@ -463,7 +469,7 @@ export function HabitEditorModal({ habitId, visible, onClose }: { habitId: strin
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -474,9 +480,9 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
-  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.xs, marginBottom: spacing.md },
   content: { padding: spacing.lg, paddingBottom: 120 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   stepRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 6 },

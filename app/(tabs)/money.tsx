@@ -25,7 +25,9 @@ import { buildSummaries, formatMoney } from '../../src/features/finance';
 import { transactionsToCSV } from '../../src/features/financeCsv';
 import { dateKey, formatDateKeyDDMM, isoCompare, isoDateTime } from '../../src/core/time';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox } from '../../src/components/ui';
+import { FadeEdge } from '../../src/components/motion';
+import { AmbientBackground } from '../../src/components/ambient';
+import { Badge, Button, Card, Chip, ChipRow, EmptyState, Field, SectionHeader, TextBox, Sheet } from '../../src/components/ui';
 import { DateField, MoneyField, TimeField, combineDateTime, splitDateTime } from '../../src/components/form';
 import { DonutChart } from '../../src/components/charts';
 
@@ -92,12 +94,14 @@ export default function MoneyScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.screen}>
+      <AmbientBackground />
       <View style={styles.header}>
         <Text style={typography.title}>{t('money')}</Text>
         <View style={styles.headerActions}>
           <Button title="CSV" small onPress={exportCSV} />
           <Button title={t('categories')} small onPress={() => setCategoriesOpen(true)} />
-        </View>      </View>
+        </View>
+      </View>
 
       <ChipRow style={styles.filters}>
         {(['today', 'week', 'month', 'year'] as Range[]).map((r) => (
@@ -116,7 +120,9 @@ export default function MoneyScreen() {
           ))}
       </ChipRow>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1 }}>
+        <FadeEdge color={colors.background} position="top" />
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Summary */}
         <Card>
           <View style={styles.summaryRow3}>
@@ -201,6 +207,7 @@ export default function MoneyScreen() {
           ))
         )}
       </ScrollView>
+      </View>
 
       <CategoriesModal visible={categoriesOpen} onClose={() => setCategoriesOpen(false)} />
       <TransactionEditorModal txnId={editingTxn} visible={txnEditorOpen} onClose={() => setTxnEditorOpen(false)} />
@@ -298,9 +305,9 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
   const cats = data.collections.categories.filter((c) => !c.deletedAt);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{t('categories')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <ChipRow>
@@ -336,7 +343,7 @@ function CategoriesModal({ visible, onClose }: { visible: boolean; onClose: () =
             ))}
             <Button title={t('close')} variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -401,9 +408,9 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Sheet>
           <Text style={styles.sheetTitle}>{t('editTransaction')}</Text>
           <ScrollView keyboardShouldPersistTaps="handled">
             <MoneyField cents={cents} onChange={setCents} label={t('amount')} />
@@ -432,7 +439,7 @@ function TransactionEditorModal({ txnId, visible, onClose }: { txnId: string | n
               <Button title={t('save')} onPress={save} style={{ flex: 1 }} />
             </View>
           </ScrollView>
-        </View>
+        </Sheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -443,9 +450,9 @@ let styles = createStyles();
 function createStyles() {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl, paddingBottom: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerActions: { flexDirection: 'row', gap: spacing.sm },
-  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.sm },
+  filters: { paddingHorizontal: spacing.lg, marginTop: spacing.xs, marginBottom: spacing.md },
   content: { padding: spacing.lg, paddingBottom: 120 },
   summaryRow3: { flexDirection: 'row' },
   catRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },

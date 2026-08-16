@@ -1,14 +1,15 @@
 /**
- * Reminder offsets picker — tap a preset chip to add a "remind me X before"
- * reminder; each added reminder is listed with a remove button. Supports
- * multiple reminders per event/task.
+ * Reminder offsets picker — set a "remind me X before" offset with a
+ * DD:HH:MM wheel (like the time picker), then add it. Supports multiple
+ * reminders per event/task, each listed with a remove button.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing, typography } from '../theme';
-import { Chip, ChipRow } from './ui';
+import { Button } from './ui';
+import { WheelPicker3 } from './wheel';
 import { TKey, useT } from '../i18n';
 import { newId } from '../core/id';
 
@@ -17,36 +18,59 @@ export interface ReminderOffset {
   offsetMin: number;
 }
 
-const PRESETS: { offsetMin: number; tKey: TKey }[] = [
-  { offsetMin: 1440, tKey: 'reminder1d' },
-  { offsetMin: 2880, tKey: 'reminder2d' },
-  { offsetMin: 4320, tKey: 'reminder3d' },
-  { offsetMin: 120, tKey: 'reminder2h' },
-  { offsetMin: 20, tKey: 'reminder20m' },
-];
+const DAYS = Array.from({ length: 31 }, (_, i) => i);
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = Array.from({ length: 60 }, (_, i) => i);
 
 export function reminderLabel(offsetMin: number, t: (k: TKey) => string): string {
-  const preset = PRESETS.find((p) => p.offsetMin === offsetMin);
-  if (preset) return t(preset.tKey);
-  return `${offsetMin} ${t('minShort')}`;
+  const d = Math.floor(offsetMin / 1440);
+  const h = Math.floor((offsetMin % 1440) / 60);
+  const m = offsetMin % 60;
+  const parts: string[] = [];
+  if (d > 0) parts.push(`${d}${t('dayShort')}`);
+  if (h > 0) parts.push(`${h}${t('hourShort')}`);
+  if (m > 0 || parts.length === 0) parts.push(`${m}${t('minShort')}`);
+  return parts.join(' ');
 }
 
 export function ReminderPicker({ reminders, onChange }: { reminders: ReminderOffset[]; onChange: (r: ReminderOffset[]) => void }) {
   styles = createStyles();
   const t = useT();
-  const add = (offsetMin: number) => {
-    if (reminders.some((r) => r.offsetMin === offsetMin)) return;
-    onChange([...reminders, { id: newId(), offsetMin }]);
+  const [day, setDay] = useState(0);
+  const [hour, setHour] = useState(0);
+  const [min, setMin] = useState(0);
+  const total = day * 1440 + hour * 60 + min;
+
+  const add = () => {
+    if (total <= 0) return;
+    if (reminders.some((r) => r.offsetMin === total)) return;
+    onChange([...reminders, { id: newId(), offsetMin: total }]);
+    setDay(0);
+    setHour(0);
+    setMin(0);
   };
+
   const remove = (id: string) => onChange(reminders.filter((r) => r.id !== id));
 
   return (
     <View>
-      <ChipRow>
-        {PRESETS.map((p) => (
-          <Chip key={p.offsetMin} label={t(p.tKey)} selected={reminders.some((r) => r.offsetMin === p.offsetMin)} onPress={() => add(p.offsetMin)} />
-        ))}
-      </ChipRow>
+      <WheelPicker3
+        firstValues={DAYS}
+        secondValues={HOURS}
+        thirdValues={MINUTES}
+        first={day}
+        second={hour}
+        third={min}
+        firstLabel={t('day')}
+        secondLabel={t('hour')}
+        thirdLabel={t('minute')}
+        onChange={(d, h, m) => {
+          setDay(d);
+          setHour(h);
+          setMin(m);
+        }}
+      />
+      <Button title={`+ ${t('remindBefore')}`} small onPress={add} disabled={total <= 0} style={{ marginTop: spacing.sm }} />
       {reminders.length > 0 && (
         <View style={styles.list}>
           {reminders.map((r) => (

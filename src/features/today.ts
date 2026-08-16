@@ -136,7 +136,7 @@ function eventInstances(events: Event[], day: Date): ScheduleItem[] {
 function taskInstances(tasks: Task[], day: Date): TodayTask[] {
   const out: TodayTask[] = [];
   for (const t of tasks) {
-    if (t.deletedAt || t.status === 'cancelled') continue;
+    if (t.deletedAt || t.status === 'cancelled' || t.parentTaskId) continue; // subtasks live inside their parent
     const doneForDay = t.status === 'done';
     if (t.recurrence) {
       const start = tryParseISO(t.dueAt || t.startAt);
@@ -217,7 +217,6 @@ function routinesToday(routines: Routine[], completions: AppData['collections'][
 }
 
 function dueReminders(reminders: Reminder[], day: Date): Reminder[] {
-  const start = startOfDay(day);
   const end = startOfDay(day);
   end.setDate(end.getDate() + 1);
   const key = dateKey(day);
@@ -232,8 +231,9 @@ function dueReminders(reminders: Reminder[], day: Date): Reminder[] {
         if (!happensOn(r.recurrence, when, day)) return false;
         return !(r.triggeredDates || []).includes(key);
       }
-      // One-off: due today, still pending (snoozed until later still shows).
-      return when.getTime() >= start.getTime() && when.getTime() < end.getTime() && r.status === 'pending';
+      // One-off: pending or snoozed, and due today or overdue (still needs
+      // attention). Snoozed reminders keep their +1h remindAt and reappear.
+      return (r.status === 'pending' || r.status === 'snoozed') && when.getTime() < end.getTime();
     })
     .sort((a, b) => isoCompare(a.remindAt, b.remindAt));
 }
