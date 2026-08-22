@@ -5,6 +5,14 @@
 
 ---
 
+## 2.1.0 — Notification Reliability & PWA
+
+- **Android notifications that actually fire**: fixed the scheduling pipeline (channel created before first schedule, re-sync surviving theme changes, hydrate-triggered re-schedule) — plus a **Test** button on the Reminders page to verify delivery and permission in one tap
+- **PWA notifications**: reminders fire as browser notifications on the web build while the app is open (each once)
+- Everything from 2.0.4 included (frosted glass, smooth navigation, reminders page, etc.)
+
+---
+
 ## 2.0.4 — Real System Notifications
 
 - **Notifications now actually fire on Android**: `expo-notifications` is wired up — the app creates a notification channel, requests the Android 13+ permission on first launch, and mirrors every pending reminder (event/task "remind me before" offsets and standalone reminders) into a real scheduled system notification
