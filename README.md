@@ -42,12 +42,23 @@ npm run web          # start in the browser
 
 **Testing on your Android phone (no Android Studio needed):** install **Expo Go** from the Play Store, scan the QR code from `npm start`. For a standalone APK later, use `npx eas build` (Expo EAS).
 
+### PWA (web app install/offline)
+
+The web build is a Progressive Web App: `public/manifest.json`, install icons (`public/icons/`) and an offline service worker (`public/sw.js`) are included automatically in every web export (they land in `dist/`).
+
+```bash
+npm run export:web    # static export to dist/ (SSR + PWA files)
+npx serve dist        # or any static server (must be HTTPS in production)
+```
+
+Open the served URL on a phone/desktop → **Add to Home Screen / Install** to install it as an app; it then works offline (your data is stored locally in the browser, so nothing is lost).
+
 ### Verify locally
 
 ```bash
 npm run typecheck    # tsc --noEmit
 npm test             # jest (core logic: data model, import/export, recurrence, finance, today, insights)
-npm run export:web   # bundles the whole app for web (proves it compiles end to end)
+npm run export:web   # static export (SSR + PWA: manifest, icons, service worker)
 ```
 
 ### Build a standalone APK (Android)

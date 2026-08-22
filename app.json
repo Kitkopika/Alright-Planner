@@ -23,7 +23,13 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "name": "Alright Planner",
+      "shortName": "Alright",
+      "themeColor": "#4F46E5",
+      "backgroundColor": "#F7F7F9",
+      "lang": "en",
+      "favicon": "./assets/favicon.png",
+      "output": "static"
     },
     "plugins": [
       "expo-router",

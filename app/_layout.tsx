@@ -13,6 +13,7 @@ import { BlurTargetView } from 'expo-blur';
 import { useLifeOS } from '../src/data/store';
 import { useSettings } from '../src/data/settings';
 import { initNotifications } from '../src/features/notifications';
+import { registerPwaServiceWorker } from '../src/features/pwa';
 import { applyTheme, colors, isDarkMode, themeVersion } from '../src/theme';
 import { useT } from '../src/i18n';
 import { blurTargetRef } from '../src/components/blurTarget';
@@ -41,6 +42,9 @@ export default function RootLayout() {
 
   // System notifications: channel + permission + (re)scheduling reminders.
   useEffect(() => initNotifications(), []);
+
+  // PWA: register the service worker on web production builds (offline + install).
+  useEffect(() => registerPwaServiceWorker(), []);
 
   return (
     <View key={themeKey} style={{ flex: 1, backgroundColor: colors.background }}>
