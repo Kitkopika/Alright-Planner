@@ -1,8 +1,7 @@
-# Cloudflare Pages configuration (git-connected builds).
-# URL: https://alright.pages.dev
+# Cloudflare Pages configuration.
+# Direct deploys: npx wrangler pages deploy dist --project-name alright
+# (For git-connected auto-builds, set the build command in the dashboard:
+#  Build command: npm ci && npm run export:web — Output directory: dist)
 name = "alright"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "dist"
-
-[build]
-command = "npm ci && npm run export:web"
