@@ -8,8 +8,11 @@
 ## 2.0.4 — Real System Notifications
 
 - **Notifications now actually fire on Android**: `expo-notifications` is wired up — the app creates a notification channel, requests the Android 13+ permission on first launch, and mirrors every pending reminder (event/task "remind me before" offsets and standalone reminders) into a real scheduled system notification
-- **Auto-reschedule**: whenever the reminders collection changes (or on app start after the data hydrates), scheduled notifications are re-synced — cancel-all + re-schedule pending future reminders
-- **On-time delivery**: exact alarms (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`) so reminders arrive when they should; boot receiver re-schedules after reboot
+- **Fixed scheduling reliability**: the channel is created before the first schedule (a missing channel silently drops notifications on some devices); re-sync no longer breaks after a theme change; hydrate triggers a full re-schedule
+- **Test button** on the Reminders page — schedules a notification 2s out and tells you if permission is blocked
+- **PWA notifications**: on the web build, reminders fire as browser notifications while the app is open (each fires once); background delivery while closed needs Web Push (requires a server)
+- **Auto-reschedule**: whenever the reminders collection changes (or on app start after the data hydrates), scheduled notifications are re-synced
+- **On-time delivery**: exact alarms (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`); boot receiver re-schedules after reboot
 - Notification text follows the app language (EN/TH), e.g. "Tue, Aug 20, 09:30"
 
 ---
