@@ -1,0 +1,3 @@
+# SPA fallback: serve index.html for client-side routes so deep links work.
+# Real files (js/css/png/manifest.json/sw.js) are served before this rule.
+/* /index.html 200

@@ -11,7 +11,10 @@
  */
 
 const CACHE = 'alright-v1';
-const PRECACHE = ['/', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+// Relative paths: the SW lives next to the app shell, so './x' resolves
+// correctly whether the app is hosted at a domain root or a subpath
+// (e.g. GitHub Pages project sites).
+const PRECACHE = ['./', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -46,7 +49,7 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(req).then((cached) => cached || caches.match('/'))
+          caches.match(req).then((cached) => cached || caches.match('./'))
         )
     );
     return;

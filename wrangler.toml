@@ -1,0 +1,8 @@
+# Cloudflare Pages configuration (git-connected builds).
+# URL: https://alright.pages.dev
+name = "alright"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+[build]
+command = "npm ci && npm run export:web"

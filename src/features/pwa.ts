@@ -15,8 +15,10 @@ export function registerPwaServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
+    // Relative on purpose: resolves next to the app shell whether it is
+    // hosted at a domain root or a subpath (e.g. GitHub Pages project sites).
     navigator.serviceWorker
-      .register('/sw.js')
+      .register('sw.js')
       .catch((err) => {
         // Non-fatal: the app still works, just without offline/install support.
         console.warn('Service worker registration failed:', err);
