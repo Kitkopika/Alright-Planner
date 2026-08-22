@@ -14,6 +14,7 @@ import { FadeEdge } from '../../src/components/motion';
 import { AmbientBackground } from '../../src/components/ambient';
 import { Badge, Button, Card, EmptyState } from '../../src/components/ui';
 import { ReminderEditorModal } from '../../src/components/reminderEditor';
+import { sendTestNotification } from '../../src/features/notifications';
 import { TKey, useT } from '../../src/i18n';
 
 export default function RemindersScreen() {
@@ -23,6 +24,11 @@ export default function RemindersScreen() {
   const update = useLifeOS((s) => s.update);
   const now = new Date();
   const [addOpen, setAddOpen] = useState(false);
+
+  const runTest = async () => {
+    const ok = await sendTestNotification();
+    Alert.alert(t('testNotification'), ok ? t('testNotifScheduled') : t('testNotifDenied'));
+  };
 
   const tasksById = useMemo(() => new Map(data.collections.tasks.filter((x) => !x.deletedAt).map((x) => [x.id, x])), [data]);
   const eventsById = useMemo(() => new Map(data.collections.events.filter((x) => !x.deletedAt).map((x) => [x.id, x])), [data]);
@@ -85,6 +91,7 @@ export default function RemindersScreen() {
       <View style={styles.header}>
         <Text style={typography.title}>{t('reminders')}</Text>
         <View style={styles.headerActions}>
+          <Button title={t('testNotification')} small variant="ghost" onPress={() => void runTest()} />
           <Button title={`+ ${t('addReminder')}`} small onPress={() => setAddOpen(true)} />
         </View>
       </View>
